@@ -91,6 +91,23 @@ export class Player extends Entity {
     this.dashCooldown = 0;
     this.invisibleTimer = 0;
     this.invisibleCooldown = 0;
+    this.hasDoubleJump = false; // more dream abilities
+    this.hasSpeedBoots = false;
+    this.hasDreamHeal = false;
+    this.hasStarShield = false;
+    this.usedDoubleJump = false;
+    this.healCooldown = 0;
+    this.starShieldHits = 0;
+    this.starShieldTimer = 0;
+    this.starShieldCooldown = 0;
+    // The Star Shield's glowing bubble
+    this.bubble = new THREE.Mesh(
+      new THREE.SphereGeometry(1.3, 16, 12),
+      new THREE.MeshBasicMaterial({ color: '#ffe66b', transparent: true, opacity: 0.25, depthWrite: false }),
+    );
+    this.bubble.position.y = 1;
+    this.bubble.visible = false;
+    this.object3d.add(this.bubble);
 
     this.velocity = new THREE.Vector3();
     this.onGround = true;
@@ -322,6 +339,14 @@ export class Player extends Entity {
    */
   takeDamage(game, amount, fromX, fromZ) {
     if (this.dead || this.invulnerable > 0 || this.godMode) return 'ignored'; // godMode: debug menu cheat
+    if (this.starShieldHits > 0) {
+      // The Star Shield soaks up the hit.
+      this.starShieldHits--;
+      this.invulnerable = 0.5;
+      game.particles?.burst(this.object3d.position.clone().setY(this.object3d.position.y + 1), { count: 18, colors: ['#ffe66b', '#ffffff'], speed: 5, size: 0.12, life: 0.5 });
+      if (this.starShieldHits === 0) this.endStarShield(game);
+      return 'blocked';
+    }
     const pos = this.object3d.position;
     let dx = pos.x - fromX;
     let dz = pos.z - fromZ;
@@ -455,6 +480,7 @@ export class Player extends Entity {
     }
     let speed = fast ? RUN_SPEED : WALK_SPEED;
     if (this.swimming) speed = fast ? SWIM_FAST : SWIM_SPEED;
+    if (this.hasSpeedBoots) speed *= DREAM.speedBoost;
     else if (this.shielding) speed = this.shieldTier >= 1 ? WALK_SPEED : SHIELD_SPEED;
     if (this.drawing) speed = Math.min(speed, SHIELD_SPEED); // steady while aiming
     this.updateAbilities(dt, game, controls);
@@ -468,6 +494,11 @@ export class Player extends Entity {
     if (controls && this.onGround && !this.swimming && input.hit('jump')) {
       this.velocity.y = JUMP_SPEED;
       this.onGround = false;
+    } else if (controls && !this.onGround && !this.swimming && this.hasDoubleJump && !this.usedDoubleJump && input.hit('jump')) {
+      // Double jump (dream ability): a second jump in mid-air.
+      this.velocity.y = JUMP_SPEED * 0.9;
+      this.usedDoubleJump = true;
+      game.particles?.burst(pos.clone(), { count: 12, colors: ['#c8a8ff', '#ffffff'], speed: 3, size: 0.12, life: 0.4 });
     }
     // No sword swings (or arrows) while the shield is up.
     const free = controls && !this.shielding && !this.isAttacking && !this.usingBow && this.toolTimer === 0;
@@ -525,6 +556,7 @@ export class Player extends Entity {
         pos.y = ground;
         this.velocity.y = 0;
         this.onGround = true;
+        this.usedDoubleJump = false;
       } else if (pos.y > ground + 0.05) {
         this.onGround = false; // walked off a ledge
       }
@@ -703,6 +735,23 @@ export class Player extends Entity {
     this.dashTimer = Math.max(0, this.dashTimer - dt);
     this.dashCooldown = Math.max(0, this.dashCooldown - dt);
     this.invisibleCooldown = Math.max(0, this.invisibleCooldown - dt);
+    this.healCooldown = Math.max(0, this.healCooldown - dt);
+    this.starShieldCooldown = Math.max(0, this.starShieldCooldown - dt);
+    if (this.starShieldHits > 0 && (this.starShieldTimer -= dt) <= 0) this.endStarShield(game);
+    if (this.bubble.visible) this.bubble.scale.setScalar(1 + Math.sin(game.elapsed * 6) * 0.04);
+    if (controls && this.hasDreamHeal && this.healCooldown === 0 && game.input.hit('dreamHeal')) {
+      this.health = this.maxHealth;
+      this.healCooldown = DREAM.healCooldown;
+      game.particles?.burst(this.object3d.position.clone().setY(this.object3d.position.y + 1.2), { count: 30, colors: ['#7dff8a', '#ffffff', '#ffe66b'], speed: 3, size: 0.14, gravity: -3 });
+      game.questLog?.toast('Dream Heal! You feel all better.');
+    }
+    if (controls && this.hasStarShield && this.starShieldCooldown === 0 && this.starShieldHits === 0 && game.input.hit('starShield')) {
+      this.starShieldHits = DREAM.starShieldHits;
+      this.starShieldTimer = DREAM.starShieldTime;
+      this.starShieldCooldown = DREAM.starShieldCooldown;
+      this.bubble.visible = true;
+      game.questLog?.toast('Star Shield! It blocks the next few hits.');
+    }
     if (this.invisibleTimer > 0 && (this.invisibleTimer = Math.max(0, this.invisibleTimer - dt)) === 0) {
       this.setSeeThrough(false);
       game.questLog?.toast("You're visible again.");
@@ -726,6 +775,12 @@ export class Player extends Entity {
       this.setSeeThrough(true);
       game.questLog?.toast("You're invisible! Monsters can't see you.");
     }
+  }
+
+  endStarShield(game) {
+    this.starShieldHits = 0;
+    this.bubble.visible = false;
+    game.questLog?.toast('Your Star Shield faded.');
   }
 
   setSeeThrough(on) {

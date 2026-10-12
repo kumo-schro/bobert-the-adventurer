@@ -161,6 +161,17 @@ export const PLACES = {
 export const DREAM = {
   dashCost: 4,
   invisibleCost: 4,
+  doubleJumpCost: 3,
+  speedBootsCost: 3,
+  healCost: 4,
+  starShieldCost: 5,
+  speedBoost: 1.35, // Speed Boots: run and swim this much faster
+  healCooldown: 60, // Dream Heal: seconds before you can heal again
+  starShieldHits: 3, // Star Shield: blocks this many hits...
+  starShieldTime: 12, // ...or until this many seconds pass
+  starShieldCooldown: 30,
+  wispDreamPoints: 1, // each wandering wisp you pop in the dream gives this many dream points
+  wispRespawn: 25, // seconds before a popped wisp floats back
   dashSpeed: 24,
   dashTime: 0.22, // seconds of dashing
   dashCooldown: 1.2,
@@ -178,10 +189,11 @@ export const BOAT = {
 export const CHARIBDIS = {
   health: 30,
   damage: 5, // to anyone in the whirlpool...
-  tickSeconds: 2, // ...every this many seconds
+  tickSeconds: 3, // ...every this many seconds
   whirlpoolRadius: 6,
-  onSeconds: 10, // whirlpool spins this long...
-  offSeconds: 10, // ...then stops this long, then summons helpers and starts again
+  onSeconds: 5, // whirlpool spins this long...
+  offSeconds: 9, // ...then stops this long, then starts again
+  summonsHelpers: false, // true: calls 3 sharks or an eel each time the whirlpool starts
   maxHelpers: 6,
   // Extra ways it fights back (so it isn't too easy):
   pull: 2.2, // how hard the whirlpool drags you in

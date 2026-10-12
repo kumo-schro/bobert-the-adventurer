@@ -39,7 +39,7 @@ make slime smaller
 add texture to the world
 lower Apple and bread prices
 charibdis has 30 HP, and does 5 damage every 3 seconds to anyone in the small whirlpool around it.
-it turns off the whirlpool every 5 seconds for 9 seconds. When the whirlpool ends it summons either 3 sharks or an eel.
+it turns off the whirlpool every 5 seconds for 9 seconds.
 bow takes one second to fire and starts with 10 arrows you can buy 10 arrows from the forge for 20 gold
 Once you fire all your arrows, you cannot fire anymore until you buy more
  change prices in the Forge
@@ -94,3 +94,44 @@ Once you do the special quest in the dream dimension, you'll get things called d
 In the jungle somewhere, add a NPC named master Oak, who teaches you how to do a spin attack what you do by holding down the sword swinging button
 Make it so to get taught the spin attack you must defeat Oak in battle
 It will be very strong and do 10 damage if he hits you, however he has only five health and does attack slowly to
+add more dream shrine abilities
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

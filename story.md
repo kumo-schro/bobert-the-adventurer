@@ -72,8 +72,8 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 ## Chapter 7: Slay Charibdis
 *Checkpoints: `charibdis`, `charibdis-done`*
 - The key opens the gate to Charibdis's big flooded cave.
-- Charibdis (30 hits) lives in a big flooded cave and spins a whirlpool: 5 hearts every 2 seconds to anyone caught in it.
-- The whirlpool spins for 10 seconds, then stops for 10. Then Charibdis calls 3 sharks or an eel and starts again.
+- Charibdis (30 hits) lives in a big flooded cave and spins a whirlpool that hurts anyone caught in it every 3 seconds.
+- The whirlpool spins for 5 seconds, then stops for 9, then starts again.
 - While it spins, the water shields Charibdis, and it spits water balls at anyone outside.
 - While it's stopped, Bobert can attack, but Charibdis bites anyone who gets too close (3 hearts).
 - Bobert slays Charibdis and tells Keegan, who gives him his treasure (150 coins).
@@ -107,7 +107,12 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
   - Catch the fallen stars (3 points).
   - Chase away the nightmare wisps (3 points).
   - Jump up the cloud stones to the summit (2 points).
-- At the shrine, Luma trades dream points for powers: **dash** (press L) and **invisibility** (press I).
+- Wandering wisps float around the islands. Popping one gives 1 dream point, and they come back after a while.
+- At the shrine, Luma trades dream points for powers:
+  - **Dash** (press L) and **Invisibility** (press I).
+  - **Double Jump** (press Space again in mid-air) and **Speed Boots** (always faster).
+  - **Dream Heal** (press U to heal all the way, once a minute).
+  - **Star Shield** (press O for a bubble that blocks the next 3 hits).
 
 ## What happens next?
 - (Add the next chapter here!)

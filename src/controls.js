@@ -16,6 +16,8 @@ export const ACTIONS = [
   { id: 'interact', label: 'Talk / open / chop / mine', keys: ['KeyT'] },
   { id: 'dash', label: 'Dash (dream ability)', keys: ['KeyL'] },
   { id: 'invisible', label: 'Turn invisible (dream ability)', keys: ['KeyI'] },
+  { id: 'dreamHeal', label: 'Dream Heal (dream ability)', keys: ['KeyU'] },
+  { id: 'starShield', label: 'Star Shield (dream ability)', keys: ['KeyO'] },
   { id: 'camLeft', label: 'Turn camera left', keys: ['KeyQ'] },
   { id: 'camRight', label: 'Turn camera right', keys: ['KeyE'] },
   { id: 'tiltUp', label: 'Tilt camera up', keys: ['KeyR'] },

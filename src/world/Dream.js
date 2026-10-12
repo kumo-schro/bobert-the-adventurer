@@ -173,6 +173,26 @@ export class DreamWorld extends Entity {
     game.dream = this;
   }
 
+  /**
+   * Wandering wisps float around the islands. Each one popped gives dream points, and comes
+   * back after a while, so you can always earn more for the shrine. `makeWisp(spot)` builds one.
+   */
+  addWanderingWisps(game, makeWisp, { dreamPoints, respawnSeconds }) {
+    const spots = [
+      ...this.satellites.map((s) => ({ x: s.x - 4, y: this.y + 3, z: s.z + 3 })),
+      { x: this.center.x + 8, y: this.y + 3.5, z: this.center.z - 8 },
+      { x: this.center.x - 9, y: this.y + 3, z: this.center.z + 7 },
+    ];
+    const spawn = (spot) => {
+      const wisp = game.add(makeWisp(spot));
+      wisp.dreamPoints = dreamPoints;
+      wisp.respawnSeconds = respawnSeconds;
+      wisp.respawn = spawn;
+      return wisp;
+    };
+    spots.forEach(spawn);
+  }
+
   /** Is (x, y, z) up in the dream dimension? */
   contains(x, y, z) {
     return y > this.y - 40 && Math.hypot(x - this.center.x, z - this.center.z) < 120;

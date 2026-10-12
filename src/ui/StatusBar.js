@@ -116,12 +116,20 @@ export class StatusBar extends Entity {
     }
     // Dream points and dream powers (dimmed while they recharge).
     const p = game.player;
-    const dream = `${p.dreamPoints},${p.hasDash && p.dashCooldown === 0},${p.hasInvisibility && p.invisibleCooldown === 0},${p.hasDash},${p.hasInvisibility}`;
+    const powers = [
+      [p.hasDash, p.dashCooldown === 0, 'dash', '💨'],
+      [p.hasInvisibility, p.invisibleCooldown === 0, 'invisible', '👻'],
+      [p.hasDreamHeal, p.healCooldown === 0, 'dreamHeal', '🌈'],
+      [p.hasStarShield, p.starShieldCooldown === 0 && p.starShieldHits === 0, 'starShield', '🔮'],
+    ];
+    const passives = `${p.hasDoubleJump ? '🦘' : ''}${p.hasSpeedBoots ? '👟' : ''}`;
+    const dream = `${p.dreamPoints},${powers.map(([has, ready]) => `${has}${ready}`).join()},${passives}`;
     if (dream !== this.shown.dream) {
       const key = (action) => keyName(game.input.bindings[action][0] ?? '?');
       const power = (has, ready, action, icon) => (has ? `<span class="${ready ? '' : 'cooling'}"><kbd>${key(action)}</kbd>${icon}</span>` : '');
-      this.dreamEl.innerHTML = `✨ ${p.dreamPoints} ${power(p.hasDash, p.dashCooldown === 0, 'dash', '💨')} ${power(p.hasInvisibility, p.invisibleCooldown === 0, 'invisible', '👻')}`;
-      this.dreamEl.classList.toggle('hidden', !p.dreamPoints && !p.hasDash && !p.hasInvisibility && !game.dream?.contains(p.object3d.position.x, p.object3d.position.y, p.object3d.position.z));
+      this.dreamEl.innerHTML = `✨ ${p.dreamPoints} ${powers.map(([has, ready, action, icon]) => power(has, ready, action, icon)).join(' ')} ${passives}`;
+      const anyPower = powers.some(([has]) => has) || passives;
+      this.dreamEl.classList.toggle('hidden', !p.dreamPoints && !anyPower && !game.dream?.contains(p.object3d.position.x, p.object3d.position.y, p.object3d.position.z));
     }
     this.shown = { health, maxHealth, coins, food, arrows, tempHealth, materials, dream, charge: charging ? game.player.arrowDamage : null };
   }

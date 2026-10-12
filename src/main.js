@@ -59,7 +59,7 @@ import { createShell } from './models/gear.js';
 import { LOOKS } from './models/people.js';
 import { SIDE_QUESTS, BLACKSMITH, BAKER, VILLAGER_CHATTER } from './story.js';
 import { FORGE_SHOP, BAKERY_SHOP, BOAT_MENU, DREAM_SHRINE } from './shops.js';
-import { VILLAGE, SEA, PLACES } from './config.js';
+import { VILLAGE, SEA, PLACES, DREAM } from './config.js';
 
 const game = new Game(document.getElementById('app'));
 
@@ -93,6 +93,7 @@ const charibdisCave = game.add(new CharibdisCave());
 const jungle = game.add(new Jungle());
 game.add(new DreamPortal(jungle.portalSpot)); // opens once the Vine is beaten
 const dream = game.add(new DreamWorld());
+dream.addWanderingWisps(game, (spot) => new Wisp(spot), { dreamPoints: DREAM.wispDreamPoints, respawnSeconds: DREAM.wispRespawn });
 
 // Living things. The player spawns in the middle of the village plaza.
 game.add(new Particles());

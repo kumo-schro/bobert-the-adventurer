@@ -3,6 +3,22 @@ import { Monster } from './Monster.js';
 import { part } from '../models/character.js';
 
 const FLOAT_SPEED = 2.6;
+
+/** Run `fn` after `seconds` of game time (a tiny helper entity counts down). */
+function setTimeoutGame(game, seconds, fn) {
+  game.add({
+    object3d: new THREE.Group(),
+    left: seconds,
+    onAdd() {},
+    onRemove() {},
+    update(dt) {
+      if ((this.left -= dt) <= 0) {
+        game.remove(this);
+        fn();
+      }
+    },
+  });
+}
 const NOTICE = 10;
 
 /**
@@ -36,6 +52,18 @@ export class Wisp extends Monster {
     const to = goal.sub(pos);
     const d = to.length() || 1;
     this.velocity.lerp(to.multiplyScalar(Math.min(FLOAT_SPEED, d * 2) / d), 1 - Math.exp(-3 * dt));
+  }
+
+  /** Wandering wisps (not quest ones) give dream points when popped, then float back later. */
+  defeat(game) {
+    if (this.dreamPoints) {
+      game.player.dreamPoints += this.dreamPoints;
+      game.questLog?.toast(`+${this.dreamPoints} dream point ✨`);
+      const { x, y, z } = this.home;
+      const make = this.respawn;
+      if (make) setTimeoutGame(game, this.respawnSeconds, () => make({ x, y, z }));
+    }
+    super.defeat(game);
   }
 
   bitPlayer() {

@@ -45,8 +45,8 @@ class WaterBall extends Entity {
 /**
  * Charibdis: a giant fish with a huge mouth, covered in eyes, living in the flooded sea cave.
  * It spins a whirlpool around itself: anyone swimming in it gets dragged round and takes
- * 5 hearts of damage every 3 seconds. The whirlpool runs for 10 seconds, then stops for 30,
- * then Charibdis calls for help (3 sharks or an eel) and starts it again. 15 hits to defeat.
+ * hurt every few seconds. The whirlpool spins for a few seconds, then stops for a while, then
+ * starts again (see CHARIBDIS in config.js; it can also call sharks and eels for help).
  *
  * It's tough:
  *  - While the whirlpool spins, the water shields it: your sword and arrows bounce off.
@@ -159,7 +159,7 @@ export class Charibdis extends Monster {
 
     if (!this.awake) {
       if (dist < WAKE_RANGE && !player.dead) {
-        this.summonHelpers(game); // it doesn't fight alone
+        if (CHARIBDIS.summonsHelpers) this.summonHelpers(game); // it doesn't fight alone
         this.startWhirlpool(game, false);
       }
       return;
@@ -191,7 +191,7 @@ export class Charibdis extends Monster {
       this.updateBite(dt, game, dist);
       if (this.phaseTimer <= 0) {
         this.biteWindup = 0;
-        this.summonHelpers(game);
+        if (CHARIBDIS.summonsHelpers) this.summonHelpers(game);
         this.startWhirlpool(game, true);
       }
     }
