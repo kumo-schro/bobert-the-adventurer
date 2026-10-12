@@ -203,7 +203,7 @@ export class Suggestions extends Entity {
       player: {
         position: roundVector(pos),
         swimming: p.swimming,
-        hearts: `${p.health}/${p.maxHealth}`,
+        health: `${p.health}/${p.maxHealth}`,
         coins: p.coins,
         gear: [
           p.hasShield && (p.shieldTier >= 1 ? 'iron shield' : 'shield'),

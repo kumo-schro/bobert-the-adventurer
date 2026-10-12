@@ -41,7 +41,7 @@ export class DebugMenu extends Entity {
     return [
       { id: 'coins', label: '+100 coins', run: () => p.addCoins(100) },
       { id: 'materials', label: '+20 wood & stone', run: () => ((p.wood += 20), (p.stone += 20)) },
-      { id: 'heal', label: 'Full hearts', run: () => (p.health = p.maxHealth) },
+      { id: 'heal', label: 'Heal fully', run: () => (p.health = p.maxHealth) },
       { id: 'god', label: `Can't get hurt: ${p.godMode ? 'ON' : 'off'}`, run: () => (p.godMode = !p.godMode) },
       { id: 'day', label: 'Make it day', run: () => (game.dayNight.time = 0.1) },
       { id: 'night', label: 'Make it night', run: () => (game.dayNight.time = 0.72) },

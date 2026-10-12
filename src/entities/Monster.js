@@ -157,6 +157,7 @@ export class Monster extends Entity {
     const strike = player.strike;
     if (strike && strike.id !== this.lastSwing && player.slashReaches(this)) {
       this.lastSwing = strike.id;
+      player.swordHit?.(game, this);
       this.hit(game, toPlayer, strike.damage);
       if (this.health <= 0) return;
     }

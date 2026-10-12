@@ -4,6 +4,8 @@ import { pushOut } from '../core/collision.js';
 import { createCharacter, poseWalk, turnToward } from '../models/character.js';
 import { createSword, createShield, createBow, addArmor, createAxe, createPickaxe } from '../models/gear.js';
 import { Arrow } from './Arrow.js';
+import { SwordTrail } from './SwordTrail.js';
+import { MOVES, poseAt } from './swordMoves.js';
 import { PLAYER, SWORDS, FORGE, FOOD, BOW, SEA, DREAM } from '../config.js';
 
 const WALK_SPEED = 6;
@@ -16,8 +18,7 @@ const STEP_UP = 0.6; // tallest ledge you can walk up without jumping (stairs ar
 const JUMP_SPEED = 9;
 const GRAVITY = 28;
 const RADIUS = 0.4;
-const ATTACK_TIME = 0.55; // seconds for one sword swing
-const STRIKE_WINDOW = [0.25, 0.8]; // part of the swing that can hit things
+const COMBO_WINDOW = 0.45; // swing again within this many seconds to chain the next move of the combo
 const SLASH_ARC = Math.cos(THREE.MathUtils.degToRad(80)); // the slash sweeps 80 degrees to each side
 const SPIN_TIME = 0.6; // seconds for one spin attack
 const SPIN_CHARGE = 0.5; // hold the swing button this long (after a swing) to charge a spin
@@ -28,6 +29,9 @@ const HURT_INVULNERABLE = 1.2; // seconds of safety after being hit
 const RESPAWN_TIME = 2.5;
 
 const _forward = new THREE.Vector3();
+const _pose = {};
+const _trailBase = new THREE.Vector3();
+const _trailTip = new THREE.Vector3();
 const _right = new THREE.Vector3();
 const _move = new THREE.Vector3();
 
@@ -47,6 +51,11 @@ export class Player extends Entity {
     this.model = createCharacter();
     this.model.armR.rotation.order = 'YXZ'; // so the sword arm can sweep sideways (rotation.y)
     this.model.root.rotation.order = 'YXZ'; // so lying flat to swim works whichever way we face
+    // A pivot between the root (which way we face) and the body, for twisting and leaning into
+    // sword swings without changing which way we're facing.
+    this.pose = new THREE.Group();
+    while (this.model.root.children.length) this.pose.add(this.model.root.children[0]);
+    this.model.root.add(this.pose);
     this.prone = 0; // 0 = upright, 1 = lying flat on the water doing the front crawl
     this.object3d.add(this.model.root);
     this.object3d.position.copy(this.spawn);
@@ -89,6 +98,11 @@ export class Player extends Entity {
     this.walkPhase = 0;
     this.swimPhase = 0;
     this.attackTimer = 0;
+    this.attackDuration = 1;
+    this.move = MOVES[0]; // the sword move we're doing (see swordMoves.js)
+    this.comboStep = 0;
+    this.lastSwingEnd = -99;
+    this.queuedSwing = false;
     this.swingId = 0;
     this.drawing = false; // pulling the bowstring back
     this.charge = 0; // seconds the string has been pulled
@@ -105,6 +119,7 @@ export class Player extends Entity {
 
   onAdd(game) {
     game.player = this;
+    this.trail = game.add(new SwordTrail());
   }
 
   get swordStats() {
@@ -130,6 +145,11 @@ export class Player extends Entity {
     return THREE.MathUtils.clamp(Math.floor(this.charge / BOW.secondsPerDamage), 1, BOW.maxDamage);
   }
 
+  /** How far through the current swing we are, 0..1. */
+  get swingProgress() {
+    return 1 - this.attackTimer / this.attackDuration;
+  }
+
   /** True during a sword swing. */
   get isAttacking() {
     return this.attackTimer > 0;
@@ -143,8 +163,8 @@ export class Player extends Entity {
   get strike() {
     if (!this.isAttacking) return null;
     if (this.spinning) return { id: this.swingId, damage: this.swordStats.damage + 1 }; // the whole spin hits
-    const t = 1 - this.attackTimer / ATTACK_TIME;
-    if (t < STRIKE_WINDOW[0] || t > STRIKE_WINDOW[1]) return null;
+    const t = this.swingProgress;
+    if (t < this.move.strike[0] || t > this.move.strike[1]) return null;
     return { id: this.swingId, damage: this.swordStats.damage };
   }
 
@@ -246,7 +266,7 @@ export class Player extends Entity {
     this.armor = true;
     this.maxHealth += FORGE.armorHearts;
     this.health = this.maxHealth;
-    addArmor(this.model);
+    addArmor({ ...this.model, root: this.pose });
   }
 
   /** Returns false if your bag is already full. */
@@ -451,16 +471,28 @@ export class Player extends Entity {
     }
     // No sword swings (or arrows) while the shield is up.
     const free = controls && !this.shielding && !this.isAttacking && !this.usingBow && this.toolTimer === 0;
-    if (free && (input.hit('swing') || input.clicked)) {
-      this.attackTimer = ATTACK_TIME;
-      this.swingId++;
+    const swingPressed = input.hit('swing') || input.clicked;
+    // Pressing swing near the end of a swing lines up the next move of the combo.
+    if (swingPressed && this.isAttacking && !this.spinning && this.swingProgress > 0.4) this.queuedSwing = true;
+    if (free && (swingPressed || this.queuedSwing)) {
+      this.startSwing(game);
     } else if (free && this.hasBow && input.hit('bow')) {
       this.startDraw(game);
     }
     if (controls && input.hit('eat')) this.tryEat(game);
     this.updateSpin(dt, game, controls);
+    const wasAttacking = this.isAttacking;
+    const before = this.swingProgress;
     this.attackTimer = Math.max(0, this.attackTimer - dt);
+    if (wasAttacking && !this.isAttacking) {
+      this.lastSwingEnd = game.elapsed;
+      if (!controls) this.queuedSwing = false;
+    }
     if (this.attackTimer === 0) this.spinning = false;
+    // The overhead finisher slams into the ground.
+    if (this.isAttacking && !this.spinning && this.move.slam && before < this.move.slam && this.swingProgress >= this.move.slam) {
+      this.groundSlam(game);
+    }
     this.updateTool(dt);
     if (this.drawing) {
       this.charge = Math.min(this.charge + dt, BOW.maxDamage * BOW.secondsPerDamage);
@@ -547,14 +579,14 @@ export class Player extends Entity {
     }
     const eaten = this.eat(game);
     if (!eaten) {
-      game.questLog?.toast("You're not hungry. Your hearts are full!");
+      game.questLog?.toast("You're not hungry. You're already feeling great!");
       return;
     }
     const { item, healed, extra } = eaten;
     const parts = [];
-    if (healed) parts.push(`+${healed} ${healed === 1 ? 'heart' : 'hearts'}`);
-    if (extra) parts.push(`+${extra} golden ${extra === 1 ? 'heart' : 'hearts'}`);
-    game.questLog?.toast(`Yum! ${item.icon} ${item.name} ${parts.join(', ') || ''}`.trim());
+    if (healed) parts.push(healed >= this.maxHealth - 1 ? 'you feel all better!' : 'you feel better!');
+    if (extra) parts.push('you glow with golden health!');
+    game.questLog?.toast(`Yum! ${item.icon} ${item.name}: ${parts.join(' And ')}`);
   }
 
   /** K: start pulling the bowstring back. The arrow flies after BOW.drawTime seconds. */
@@ -609,8 +641,50 @@ export class Player extends Entity {
     this.shootTimer = FOLLOW_THROUGH;
   }
 
+  /** Start the next sword move: keep swinging quickly to go through the whole combo. */
+  startSwing(game) {
+    const chained = this.queuedSwing || game.elapsed - this.lastSwingEnd < COMBO_WINDOW;
+    this.comboStep = chained ? (this.comboStep + 1) % MOVES.length : 0;
+    this.move = MOVES[this.comboStep];
+    this.attackDuration = this.move.duration;
+    this.attackTimer = this.move.duration;
+    this.queuedSwing = false;
+    this.swingId++;
+  }
+
+  /** The finisher's sword hits the ground: a puff of dust and a thump. */
+  groundSlam(game) {
+    const tip = this.sword.localToWorld(new THREE.Vector3(0, 0.9, 0));
+    const ground = this.swimming ? tip.y : game.heightAt(tip.x, tip.z);
+    game.particles?.burst(new THREE.Vector3(tip.x, ground + 0.1, tip.z), {
+      count: 22,
+      colors: this.swimming ? ['#e8fbff', '#bfe6ff'] : ['#c9a46b', '#e0c9a0', '#ffffff'],
+      speed: 4,
+      size: 0.18,
+      life: 0.6,
+      up: 0.4,
+    });
+    game.cameraRig?.shake(0.35);
+  }
+
+  /** Called by a monster when our sword connects: sparks, a tiny pause and a shake. */
+  swordHit(game, monster) {
+    const m = monster.object3d.position;
+    const finisher = this.move.slam && !this.spinning;
+    game.particles?.burst(new THREE.Vector3(m.x, m.y + Math.max(0.6, monster.radius), m.z), {
+      count: finisher ? 26 : 16,
+      colors: ['#ffffff', '#fff3b0', '#ffd23f'],
+      speed: finisher ? 8 : 6,
+      size: 0.12,
+      life: 0.35,
+      up: 0.5,
+    });
+    game.hitStop?.(finisher ? 0.12 : 0.06);
+    game.cameraRig?.shake(finisher ? 0.3 : 0.15);
+  }
+
   wearBowOnBack() {
-    this.model.root.add(this.bow);
+    this.pose.add(this.bow);
     this.bow.position.set(0, 1.15, -0.26);
     this.bow.rotation.set(0, 0, 0.6);
     if (this.hasShield) this.shield.visible = true;
@@ -795,23 +869,51 @@ export class Player extends Entity {
       armR.rotation.x = t < 0.4 ? THREE.MathUtils.lerp(0, -2.7, t / 0.4) : THREE.MathUtils.lerp(-2.7, -0.4, (t - 0.4) / 0.6);
     }
 
+    // The body twists, leans and steps into each move (see swordMoves.js).
+    const pose = this.pose;
+    pose.rotation.set(0, 0, 0);
+    pose.position.set(0, 0, 0);
     if (this.spinning) {
-      // Spin all the way round with the sword held straight out.
+      // Spin all the way round with the sword held straight out, crouched low.
       const t = 1 - this.attackTimer / SPIN_TIME;
-      root.rotation.y = this.spinFacing + t * Math.PI * 2;
+      root.rotation.y = this.spinFacing + (1 - (1 - t) ** 2) * Math.PI * 2;
       armR.rotation.x = -1.4;
       armR.rotation.y = -1.2;
+      armL.rotation.x = -0.9;
+      armL.rotation.y = 0.8;
+      pose.rotation.x = 0.15;
+      pose.position.y = -0.15;
       this.sword.rotation.x = Math.PI - 0.15;
     } else if (this.isAttacking) {
-      // A sideways slash: arm out level, wind back to the right, then sweep across to the left.
-      const t = 1 - this.attackTimer / ATTACK_TIME;
-      const windUp = 0.25;
-      armR.rotation.x = -1.4;
-      armR.rotation.y =
-        t < windUp
-          ? THREE.MathUtils.lerp(0, -1.6, t / windUp)
-          : THREE.MathUtils.lerp(-1.6, 1.4, 1 - (1 - (t - windUp) / (1 - windUp)) ** 3);
-      this.sword.rotation.x = Math.PI - 0.15; // blade held out flat, along the arm
+      const t = this.swingProgress;
+      const p = poseAt(this.move, t, _pose);
+      // Blend in at the very start and back out at the end, so the walk animation flows into it.
+      const w = Math.min(1, t / 0.06) * (t > 0.8 ? 1 - THREE.MathUtils.smoothstep(t, 0.8, 1) : 1);
+      const mix = (from, to) => from + (to - from) * w;
+      armR.rotation.x = mix(armR.rotation.x, p.armRx);
+      armR.rotation.y = mix(armR.rotation.y, p.armRy);
+      armL.rotation.x = mix(armL.rotation.x, p.armLx);
+      armL.rotation.y = mix(armL.rotation.y ?? 0, p.armLy);
+      pose.rotation.y = p.twist * w;
+      pose.rotation.x = p.lean * w;
+      pose.position.z = p.lunge * w;
+      pose.position.y = p.drop * w;
+      this.sword.rotation.x = SWORD_REST + (Math.PI - 0.15 - SWORD_REST) * p.blade * w;
+    } else {
+      armL.rotation.y = 0;
     }
+    this.updateTrail();
+  }
+
+  /** Leave a glowing swoosh behind the blade while swinging. */
+  updateTrail() {
+    if (!this.trail) return;
+    if (!this.isAttacking || this.dead) return;
+    this.model.root.updateMatrixWorld(true);
+    const length = this.swordTier >= 1 ? 1.2 : 0.95;
+    const base = this.sword.localToWorld(_trailBase.set(0, 0.35, 0));
+    const tip = this.sword.localToWorld(_trailTip.set(0, length, 0));
+    const color = this.spinning ? '#ffd23f' : this.move.slam ? '#ff9a3d' : this.swordTier >= 1 ? '#7fc4ff' : '#e8fbff';
+    this.trail.add(base, tip, color);
   }
 }

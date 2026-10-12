@@ -110,7 +110,7 @@ export const FORGE_SHOP = {
       upgrade({
         name: 'Knight Armor',
         icon: '🦺',
-        description: `Sturdy steel armor: +${FORGE.armorHearts} max hearts.`,
+        description: 'Sturdy steel armor: you can take more hits before you get knocked out.',
         price: U.armor,
         owned: player.armor,
         buy: () => player.giveArmor(),
@@ -138,7 +138,7 @@ export const FORGE_SHOP = {
   },
 };
 
-/** Hana's bakery. After you upgrade her oven (wood + stone) she bakes special food with golden hearts. */
+/** Hana's bakery. After you upgrade her oven (wood + stone) she bakes special food that gives golden extra health. */
 export const BAKERY_SHOP = {
   title: `${BAKER.name}'s Bakery`,
   greeting: BAKER.greeting,
@@ -149,9 +149,9 @@ export const BAKERY_SHOP = {
       name: food.name,
       article: 'a',
       icon: food.icon,
-      section: food.upgraded && food === foods.find((f) => f.upgraded) ? 'Special food (golden hearts!)' : undefined,
-      description: `Heals ${food.heals === 1 ? '1 heart' : food.heals >= 99 ? 'all your hearts' : `${food.heals} hearts`}${
-        food.extra ? ` and gives ${food.extra} golden ${food.extra === 1 ? 'heart' : 'hearts'} (extra hearts that go away when you get hit)` : ''
+      section: food.upgraded && food === foods.find((f) => f.upgraded) ? 'Special food (golden health!)' : undefined,
+      description: `${food.heals >= 99 ? 'Makes you feel all better' : food.heals >= 2 ? 'Heals you a lot' : 'Heals you a little'}${
+        food.extra ? `, and gives you ${food.extra >= 3 ? 'lots of ' : ''}extra golden health that soaks up the next hits` : ''
       }. (You have ${player.food.length}/${FOOD.carry} food.)`,
       price: food.price,
       locked: player.food.length >= FOOD.carry ? 'Bag full' : null,
@@ -165,7 +165,7 @@ export const BAKERY_SHOP = {
         section: 'Upgrade',
         name: 'Bigger Oven',
         icon: '🔥',
-        description: 'Help Hana build a bigger oven, and she can bake special food that gives golden extra hearts!',
+        description: 'Help Hana build a bigger oven, and she can bake special food that gives extra golden health!',
         price: o.coins,
         wood: o.wood,
         stone: o.stone,

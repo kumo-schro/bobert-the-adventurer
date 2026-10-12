@@ -82,6 +82,11 @@ export class Game {
     return this.lands.some((land) => land.isInside(x, z, margin));
   }
 
+  /** Freeze the action for a split second (makes big hits feel punchy). */
+  hitStop(seconds) {
+    this.hitStopTimer = Math.max(this.hitStopTimer ?? 0, seconds);
+  }
+
   /** Move the player somewhere else instantly (down a trapdoor...), with a quick fade. */
   teleport(x, z, { y = 0, facing } = {}) {
     const player = this.player;
@@ -106,8 +111,12 @@ export class Game {
   tick() {
     const now = performance.now();
     // Clamp dt so a backgrounded tab doesn't cause a giant physics step.
-    const dt = Math.min((now - this._last) / 1000, 0.05);
+    let dt = Math.min((now - this._last) / 1000, 0.05);
     this._last = now;
+    if (this.hitStopTimer > 0) {
+      this.hitStopTimer -= dt;
+      dt *= 0.05; // nearly frozen
+    }
     this.elapsed += dt;
 
     for (const entity of this.entities) entity.update(dt, this);

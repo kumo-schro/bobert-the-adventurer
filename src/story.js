@@ -182,7 +182,7 @@ Object.assign(SIDE_QUESTS, {
       offer: [
         'Ahoy, hero! Old Keegan told me you slew Charibdis! Now the sea is safe, I can show you something.',
         'Far away there is a wild jungle island. I know a secret way there through the sea currents.',
-        'But beware: giant Venus fly traps grow there. They cannot move and they bite slowly, but one bite takes 5 hearts! One good hit and they are done for.',
+        'But beware: giant Venus fly traps grow there. They cannot move and they bite slowly, but one bite really hurts! One good hit and they are done for.',
         'Hold on tight... here we go!',
       ],
       active: [
@@ -204,10 +204,11 @@ Object.assign(SIDE_QUESTS, {
       offer: [
         'Hmm. A young adventurer, deep in my jungle. I am Master Oak.',
         'I know a secret sword move: the SPIN ATTACK. But I only teach those who can beat me in battle.',
-        'Be warned: my staff hits very hard (10 hearts!). But I am old and slow. Watch my staff: when it glows, get out of the way. Then strike!',
+        'Be warned: I begin with my own spin attack, and it hurts a LOT. Then I must charge up the next one.',
+        'While my staff glows, strike fast! When it sparkles, it is ready, so stay out of reach or I will spin again. I am old and slow, but I do not flinch!',
         'Are you ready? Then let us begin!',
       ],
-      active: ['Defeat Master Oak in battle!'],
+      active: ['Defeat Master Oak in battle! Strike while his staff charges, and keep away when it sparkles.'],
       turnIn: [
         'Ha! You have beaten me, fair and square. Now, the spin attack:',
         'Hold down your sword button after a swing until your sword sparkles. Then let go, and spin round to hit everything near you!',
@@ -221,7 +222,7 @@ Object.assign(SIDE_QUESTS, {
     text: {
       offer: [
         'Now hear me. To the east grows the Vine, the boss of this jungle. A giant plant with arms like a kraken.',
-        'Its arms SLAM down where you stand: 5 hearts! When you see a red circle under your feet, run!',
+        'Its arms SLAM down where you stand, and that hurts a lot! When you see a red circle under your feet, run!',
         'Defeat the Vine and the jungle will be free. It takes many, many hits. Use everything you have learned.',
       ],
       active: ['The Vine grows to the east. Watch for the red circles, and keep hitting it!'],
@@ -318,6 +319,6 @@ export const BLACKSMITH = {
 
 export const BAKER = {
   name: 'Hana',
-  greeting: 'Fresh from the oven! Food heals your hearts. Press F to eat. You can carry 5 things.',
-  bought: 'Enjoy! Press F to eat it when you need some hearts back.',
+  greeting: 'Fresh from the oven! Food makes you feel better when you are hurt. Press F to eat. You can carry 5 things.',
+  bought: 'Enjoy! Press F to eat it when you are hurt.',
 };

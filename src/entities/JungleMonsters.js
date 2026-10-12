@@ -415,61 +415,128 @@ export class Vine extends Monster {
 }
 
 /**
- * Master Oak in battle: very strong (10 hearts a hit!) but slow, and only 5 hit points.
- * He raises his staff (it glows) for a long moment before he swings. Watch, dodge, strike!
+ * Master Oak in battle: very strong (one hit hurts a LOT) but slow, and only 5 hit points.
+ * He opens the duel with a spin attack, then charges up the next one (his staff glows brighter
+ * and brighter and sparkles). Once it's charged, he spins the moment you come close. Hit him
+ * while he's charging, then get out of reach before the spin! He doesn't flinch when hit.
  * When beaten he doesn't vanish: he bows, and the duel is over.
  */
+const OAK_SPIN_TIME = 0.8;
+const OAK_CHARGE_TIME = 3; // seconds to charge the next spin
+const OAK_SPIN_REACH = 3.2;
+
 export class OakFighter extends Monster {
   constructor({ x, z }, model) {
     super({ x, z, health: 5, damage: 10, coins: 0, radius: 0.6, barHeight: 2.6, colors: ['#3fae3a', '#8a5a35', '#ffd23f'], touchDamage: false });
     this.model = model;
     this.body.add(model.root);
-    this.windup = 0;
-    this.cooldown = 1.5;
+    this.model.armR.rotation.order = 'YXZ';
+    this.spinTimer = 0.01; // he starts the duel with a spin!
+    this.charge = 0;
     this.walkPhase = 0;
+    this.sparkTimer = 0;
+  }
+
+  get charged() {
+    return this.charge >= OAK_CHARGE_TIME;
   }
 
   think(dt, game, toPlayer) {
-    this.cooldown -= dt;
-    const close = toPlayer.dist < 2.8;
-    if (this.windup > 0) {
-      this.velocity.x = this.velocity.z = 0;
-      this.windup -= dt;
-      if (this.windup <= 0) {
-        this.cooldown = 2;
-        const player = game.player;
-        game.particles?.burst(this.object3d.position.clone().setY(1.5), { count: 16, colors: ['#3fae3a', '#ffd23f'], speed: 5, size: 0.14 });
-        if (!player.dead && toPlayer.dist < 3) player.takeDamage(game, this.power, this.object3d.position.x, this.object3d.position.z);
-      }
+    this.velocity.x = this.velocity.z = 0;
+    if (this.spinTimer > 0) return; // busy spinning
+    if (!toPlayer.playerDown) this.charge = Math.min(OAK_CHARGE_TIME, this.charge + dt);
+    if (this.charged && !toPlayer.playerDown && toPlayer.dist < OAK_SPIN_REACH) {
+      this.spinTimer = OAK_SPIN_TIME;
+      this.hitThisSpin = false;
       return;
     }
-    if (close && this.cooldown <= 0 && !toPlayer.playerDown) {
-      this.windup = 1.6; // slooow
-      return;
-    }
-    const speed = toPlayer.playerDown || close ? 0 : 1.6;
+    // Walk slowly toward you (but not right on top of you).
+    const speed = toPlayer.playerDown || toPlayer.dist < 1.8 ? 0 : 1.5;
     this.velocity.x = toPlayer.x * speed;
     this.velocity.z = toPlayer.z * speed;
     this.moving = speed;
   }
 
+  update(dt, game) {
+    super.update(dt, game);
+    if (this.health <= 0 || game.isUiOpen()) return;
+    if (this.spinTimer > 0) this.updateSpin(dt, game);
+  }
+
+  updateSpin(dt, game) {
+    this.spinTimer = Math.max(0, this.spinTimer - dt);
+    const pos = this.object3d.position;
+    const player = game.player;
+    const p = player.object3d.position;
+    if (!this.hitThisSpin && !player.dead && Math.hypot(p.x - pos.x, p.z - pos.z) < OAK_SPIN_REACH && Math.abs(p.y - pos.y) < 2) {
+      this.hitThisSpin = true;
+      player.takeDamage(game, this.power, pos.x, pos.z);
+    }
+    if (game.elapsed % 0.08 < dt) {
+      const a = Math.random() * Math.PI * 2;
+      game.particles?.burst(new THREE.Vector3(pos.x + Math.cos(a) * 2.2, pos.y + 1.2, pos.z + Math.sin(a) * 2.2), {
+        count: 3,
+        colors: ['#7dff6b', '#3fae3a', '#ffffff'],
+        speed: 2,
+        size: 0.12,
+        life: 0.4,
+      });
+    }
+    if (this.spinTimer === 0) this.charge = 0; // start charging the next one
+  }
+
+  /** Master Oak doesn't flinch: hits hurt him, but don't knock him back or stop him. */
+  hit(game, toPlayer, damage) {
+    super.hit(game, toPlayer, damage);
+    this.stunTimer = 0;
+    this.velocity.set(0, 0, 0);
+  }
+
   /** He bows instead of bursting. */
   defeat(game) {
     const where = this.object3d.position.clone();
-    game.particles?.burst(where.clone().setY(1.5), { count: 40, colors: ['#3fae3a', '#ffd23f', '#ffffff'], speed: 5, size: 0.16 });
+    game.particles?.burst(where.clone().setY(where.y + 1.5), { count: 40, colors: ['#3fae3a', '#ffd23f', '#ffffff'], speed: 5, size: 0.16 });
     game.remove(this);
     this.onDefeated?.(where);
   }
 
   animate(dt, game) {
-    const { root, armR, legL, legR } = this.model;
+    const { root, armR, armL, legL, legR } = this.model;
     const p = game.player.object3d.position;
     const pos = this.object3d.position;
-    root.rotation.y = Math.atan2(p.x - pos.x, p.z - pos.z);
+    const face = Math.atan2(p.x - pos.x, p.z - pos.z);
     this.walkPhase += dt * (this.moving ? 5 : 0);
     legL.rotation.x = Math.sin(this.walkPhase) * 0.5;
     legR.rotation.x = -Math.sin(this.walkPhase) * 0.5;
-    armR.rotation.x = this.windup > 0 ? -2.9 : this.cooldown > 1.6 ? 0.4 : -0.3; // staff up high, then down
-    this.model.staffGlow.material.emissiveIntensity = this.windup > 0 ? 1.2 : 0.2;
+    const glow = this.model.staffGlow.material;
+    if (this.spinTimer > 0) {
+      // Spinning: staff held straight out, whirling round twice.
+      const t = 1 - this.spinTimer / OAK_SPIN_TIME;
+      root.rotation.y = face + t * Math.PI * 4;
+      armR.rotation.x = -1.5;
+      armR.rotation.y = -1.3;
+      armL.rotation.x = -1;
+      glow.emissiveIntensity = 1.5;
+      return;
+    }
+    root.rotation.y = face;
+    // Charging: staff raised, glowing brighter and brighter; fully charged it sparkles.
+    const c = this.charge / OAK_CHARGE_TIME;
+    armR.rotation.x = -0.4 - c * 2.3;
+    armR.rotation.y = 0;
+    armL.rotation.x = -0.3;
+    glow.emissiveIntensity = 0.2 + c * 1.2;
+    this.sparkTimer -= dt;
+    if (this.charged && this.sparkTimer <= 0) {
+      this.sparkTimer = 0.1;
+      game.particles?.burst(this.model.staffGlow.getWorldPosition(new THREE.Vector3()), {
+        count: 2,
+        colors: ['#7dff6b', '#ffffff'],
+        speed: 1.5,
+        size: 0.1,
+        life: 0.4,
+        gravity: -2,
+      });
+    }
   }
 }

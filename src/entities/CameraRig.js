@@ -38,6 +38,11 @@ export class CameraRig extends Entity {
     this.update(0, game);
   }
 
+  /** Give the camera a little shake (0.1 = a tap, 0.4 = a big thump). */
+  shake(amount) {
+    this.shakeAmount = Math.max(this.shakeAmount ?? 0, amount);
+  }
+
   /** Jump straight to the target (after a teleport), looking from behind it. */
   snap() {
     this.yaw = this.target.model.root.rotation.y + Math.PI;
@@ -120,6 +125,12 @@ export class CameraRig extends Entity {
 
     camera.position.copy(this.focus).addScaledVector(_dir, distance);
     camera.lookAt(this.focus);
+    if (this.shakeAmount > 0.001) {
+      const s = this.shakeAmount;
+      camera.position.x += (Math.random() - 0.5) * s;
+      camera.position.y += (Math.random() - 0.5) * s;
+      this.shakeAmount *= Math.exp(-14 * dt);
+    }
   }
 }
 

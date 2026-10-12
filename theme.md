@@ -93,4 +93,4 @@ Make it so once you defeat, the boss of the jungle, the vine you unlock a dream 
 Once you do the special quest in the dream dimension, you'll get things called dream points with enough dream points you'll be able to unlock abilities like being able to dash or become invisible
 In the jungle somewhere, add a NPC named master Oak, who teaches you how to do a spin attack what you do by holding down the sword swinging button
 Make it so to get taught the spin attack you must defeat Oak in battle
-It will be very strong and do 10 damage if he hits you, however he has only five health and does attack slowly
+It will be very strong and do 10 damage if he hits you, however he has only five health and does attack slowly to
