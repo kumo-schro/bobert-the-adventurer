@@ -3,3 +3,6 @@ dist
 .DS_Store
 .vercel
 .env*
+# Players' suggestions (pulled with npm run recommendations)
+recommendations.json
+recommendations/

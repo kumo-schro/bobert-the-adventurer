@@ -12,6 +12,9 @@ const NUMBER_KEYS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6',
  *   { name, icon, description, price, wood, stone, owned, locked, buy, bought, section }
  *   price / wood / stone: what it costs (wood and stone are optional, for upgrades)
  *   section: a heading to show above this item (like "Upgrades")
+ *   currency: 'coins' (default) or 'dreamPoints'
+ *   action: true for menu choices that aren't things you buy (like "Sail to the jungle"):
+ *           the button shows `buttonLabel` and the menu closes after
  *   owned:  already bought (shows "Owned")
  *   locked: a short reason it can't be bought yet (shown on the button), or null
  *   lockedMessage: what the shopkeeper says if you try anyway (optional)
@@ -63,18 +66,26 @@ export class Shop extends Entity {
     if (!item || item.owned) return;
     if (item.locked) {
       this.message = item.lockedMessage ?? `Sorry, you can't buy that yet: ${item.locked}.`;
-    } else if (player.coins < item.price) {
-      this.message = `You need ${item.price - player.coins} more coins for that. Try quests and treasure chests!`;
+    } else if (player[item.currency ?? 'coins'] < item.price) {
+      const have = player[item.currency ?? 'coins'];
+      this.message =
+        item.currency === 'dreamPoints'
+          ? `You need ${item.price - have} more dream points. Do the Dream Keeper's quests to earn them!`
+          : `You need ${item.price - have} more coins for that. Try quests and treasure chests!`;
     } else if (player.wood < (item.wood ?? 0) || player.stone < (item.stone ?? 0)) {
       const need = [];
       if (player.wood < item.wood) need.push(`${item.wood - player.wood} more wood (chop trees with an axe)`);
       if (player.stone < item.stone) need.push(`${item.stone - player.stone} more stone (mine boulders with a pickaxe)`);
       this.message = `You need ${need.join(' and ')}.`;
     } else {
-      player.coins -= item.price;
+      player[item.currency ?? 'coins'] -= item.price;
       player.wood -= item.wood ?? 0;
       player.stone -= item.stone ?? 0;
       item.buy();
+      if (item.action) {
+        this.close();
+        return;
+      }
       this.message = item.bought ?? `Here's your ${item.name}! Use it well.`;
       const article = item.article === 'a' && /^[aeiou]/i.test(item.name) ? 'an' : (item.article ?? 'the');
       this.game.questLog?.toast(`You bought ${article ? `${article} ` : ''}${item.name}!`);
@@ -89,11 +100,13 @@ export class Shop extends Entity {
   }
 
   render() {
-    const { coins, wood, stone } = this.game.player;
+    const { coins, wood, stone, dreamPoints } = this.game.player;
     const cost = (item) => {
-      let text = `${item.price} coins`;
-      if (item.wood) text += ` + ${item.wood} 🪵`;
-      if (item.stone) text += ` + ${item.stone} 🪨`;
+      if (item.action) return item.buttonLabel ?? 'Go';
+      let text = item.currency === 'dreamPoints' ? `${item.price} ✨` : `${item.price} coins`;
+      if (!item.price && (item.wood || item.stone)) text = '';
+      if (item.wood) text += `${text ? ' + ' : ''}${item.wood} 🪵`;
+      if (item.stone) text += `${text ? ' + ' : ''}${item.stone} 🪨`;
       return text;
     };
     const button = (item) => {
@@ -101,11 +114,15 @@ export class Shop extends Entity {
       if (item.locked) return item.locked;
       return cost(item);
     };
-    const affordable = (item) => coins >= item.price && wood >= (item.wood ?? 0) && stone >= (item.stone ?? 0);
+    const wallet = { coins, dreamPoints };
+    const affordable = (item) =>
+      wallet[item.currency ?? 'coins'] >= item.price && wood >= (item.wood ?? 0) && stone >= (item.stone ?? 0);
     this.el.innerHTML = `
       <div class="shop-header">
         <div class="shop-title">${this.title}</div>
-        <div class="shop-coins"><span class="coin"></span>${coins} &nbsp;🪵 ${wood} &nbsp;🪨 ${stone}</div>
+        <div class="shop-coins">${
+          this.config.showDreamPoints ? `✨ ${dreamPoints}` : `<span class="coin"></span>${coins} &nbsp;🪵 ${wood} &nbsp;🪨 ${stone}`
+        }</div>
       </div>
       <p class="shop-message">${this.message}</p>
       ${this.items()

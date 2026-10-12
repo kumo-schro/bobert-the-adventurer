@@ -22,7 +22,10 @@ export class Input {
     let downX = 0;
     let downY = 0;
 
+    // Typing in a text box (like the suggestion box) shouldn't move the player.
+    const typing = (e) => e.target instanceof HTMLElement && e.target.closest('input, textarea');
     window.addEventListener('keydown', (e) => {
+      if (typing(e)) return;
       if (BLOCKED_KEYS.has(e.code)) e.preventDefault();
       if (!this.keys.has(e.code)) this.pressed.add(e.code);
       this.keys.add(e.code);
@@ -51,6 +54,8 @@ export class Input {
       // Only a left click counts as a click (it swings the sword); other buttons just look around.
       if (this.drag.active && this.drag.button === 0 && Math.hypot(e.clientX - downX, e.clientY - downY) < 6) {
         this.clicked = true;
+        this.clickX = e.clientX; // where on the screen (for picking things to suggest changes to)
+        this.clickY = e.clientY;
       }
       endDrag();
     });

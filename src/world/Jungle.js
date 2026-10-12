@@ -4,8 +4,8 @@ import { barkTexture, leafTexture, stoneTexture, texturedVoxelMaterial, grassMat
 import { createRng, createNoise2D } from '../utils/random.js';
 import { vary } from '../utils/color.js';
 import { Chest } from '../entities/Chest.js';
-import { FlyTrap, Snake, Gorilla } from '../entities/JungleMonsters.js';
-import { SEED, PLACES } from '../config.js';
+import { FlyTrap, Snake, Gorilla, Frog, Panther } from '../entities/JungleMonsters.js';
+import { SEED, PLACES, SEA } from '../config.js';
 
 const GRASS = ['#2f9e3a', '#38a83f', '#278a33', '#44b04a'];
 const SAND = '#ecd38f';
@@ -18,7 +18,9 @@ const stoneMaterial = texturedVoxelMaterial(stoneTexture);
  * The jungle island, far across the sea. Captain Finn brings you here after Charibdis is
  * slain. Huge trees with vines, ferns, an old temple with treasure, and monsters: giant Venus
  * fly traps, snakes and gorillas. You can't swim away (the currents are too strong); talk to
- * Finn on the beach to go home. Exposes `arrive` and `finnSpot`; `travel(game)` takes you there.
+ * Finn on the beach to go home. Master Oak lives in a clearing to the west, and the Vine (the
+ * jungle's boss) grows to the east. Exposes `arrive`, `finnSpot`, `oakSpot`, `vineSpot`,
+ * `portalSpot`; `travel(game)` takes you there.
  */
 export class Jungle extends Entity {
   constructor({ x, z, radius } = PLACES.jungle) {
@@ -32,6 +34,14 @@ export class Jungle extends Entity {
     this.arrive = { x, z: z + south - 2, facing: Math.PI };
     this.finnSpot = { x: x + 2.5, z: z + south - 1.5 };
     this.templeSpot = { x: x - 4, z: z - radius * 0.45 };
+    this.oakSpot = { x: x - 26, z: z + 6 }; // Master Oak's clearing
+    this.vineSpot = { x: x + 26, z: z - 8 }; // where the Vine grows
+    this.portalSpot = { x: x + 26, z: z + 1 }; // the dream portal opens here once the Vine is gone
+    this.clearings = [
+      { ...this.oakSpot, r: 6 },
+      { ...this.vineSpot, r: 11 },
+      { ...this.portalSpot, r: 4 },
+    ];
     this.trees = [];
   }
 
@@ -61,7 +71,9 @@ export class Jungle extends Entity {
 
   /** Captain Finn takes you here. */
   travel(game) {
+    game.player.boat = null;
     game.teleport(this.arrive.x, this.arrive.z, { facing: this.arrive.facing });
+    game.player.visitedJungle = true; // now a boat can be built at the dock
     game.questLog?.toast('Captain Finn takes you to the jungle island!');
   }
 
@@ -81,7 +93,7 @@ export class Jungle extends Entity {
         const d = Math.hypot(dx, dz);
         const edge = this.edgeRadius(dx, dz);
         if (d > edge) continue;
-        if (d > edge - 1.5) sand.add(x, -1.5, z, vary(WET_SAND, rng));
+        if (d > edge - 1.5) sand.box(x, (SEA.floor - 1) / 2, z, 1, -1 - SEA.floor, 1, vary(WET_SAND, rng));
         else if (d > edge - 4) sand.add(x, -0.5, z, vary(SAND, rng));
         else {
           grass.add(x, -0.5, z, vary(rng.pick(GRASS), rng, 0.06));
@@ -146,6 +158,7 @@ export class Jungle extends Entity {
       if (!this.isInside(x, z, 3)) continue;
       if (Math.hypot(x - this.arrive.x, z - this.arrive.z) < 8) continue; // keep the landing beach clear
       if (Math.abs(x - this.templeSpot.x) < 11 && Math.abs(z - this.templeSpot.z) < 13) continue;
+      if (this.clearings.some((c) => Math.hypot(c.x - x, c.z - z) < c.r + 3)) continue;
       if (this.trees.some((t) => Math.hypot(t.x - x, t.z - z) < 6.5)) continue;
 
       // A tall jungle tree: long trunk, flat layered canopy, and vines hanging down.
@@ -183,6 +196,7 @@ export class Jungle extends Entity {
         if (Math.hypot(x - this.arrive.x, z - this.arrive.z) < minFromBeach) continue;
         if (Math.abs(x - this.templeSpot.x) < 9 && Math.abs(z - this.templeSpot.z) < 11) continue;
         if (this.trees.some((t) => Math.hypot(t.x - x, t.z - z) < 2)) continue;
+        if (this.clearings.some((c) => Math.hypot(c.x - x, c.z - z) < c.r + 4)) continue;
         if (spots.some((s) => Math.hypot(s.x - x, s.z - z) < 7)) continue;
         const spot = { x, z };
         spots.push(spot);
@@ -194,13 +208,21 @@ export class Jungle extends Entity {
       const s = pick(14);
       if (s) game.add(new FlyTrap(s));
     }
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 8; i++) {
       const s = pick(16);
       if (s) game.add(new Snake(s));
     }
     for (let i = 0; i < 3; i++) {
       const s = pick(22);
       if (s) game.add(new Gorilla(s));
+    }
+    for (let i = 0; i < 5; i++) {
+      const s = pick(14);
+      if (s) game.add(new Frog(s));
+    }
+    for (let i = 0; i < 3; i++) {
+      const s = pick(24);
+      if (s) game.add(new Panther(s));
     }
   }
 }

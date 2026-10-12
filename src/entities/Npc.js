@@ -58,6 +58,7 @@ export class Npc extends Entity {
     facing = 0,
     home = null,
     quests = null,
+    onTalk = null,
   }) {
     super();
     this.name = name;
@@ -66,12 +67,13 @@ export class Npc extends Entity {
     for (const q of this.quests) q.giver = this;
     this.lines = lines;
     this.onInteract = onInteract;
+    this.onTalk = onTalk; // called every time you talk to them (before anything else)
     this.interactText = interactText ?? `Press T to talk to ${name}`;
     this.wander = wander;
     this.home = home;
     this.asleep = false;
     this.zzzTimer = 0;
-    this.object3d.position.set(position.x, 0, position.z);
+    this.object3d.position.set(position.x, position.y ?? 0, position.z);
 
     this.model = createCharacter(look.colors);
     look.decorate?.(this.model);
@@ -105,6 +107,7 @@ export class Npc extends Entity {
   }
 
   talk(game) {
+    this.onTalk?.(game);
     if (this.onInteract) {
       this.onInteract(game);
       return;
@@ -177,6 +180,8 @@ export class Npc extends Entity {
   }
 
   update(dt, game) {
+    this.quest?.update?.(dt, game); // some quests need to keep an eye on things (like a duel)
+    if (this.hidden) return; // off doing something else (Master Oak, mid-duel)
     const pos = this.object3d.position;
     const player = game.player;
     const p = player.object3d.position;
@@ -215,7 +220,7 @@ export class Npc extends Entity {
         this.walkToward(this.post.x, this.post.z, WALK_SPEED, dt, game); // back to work!
         this.returnTimer = (this.returnTimer ?? 0) + dt;
         // Can't find the way round a house? Just turn up at work (nobody's looking).
-        if (this.stuckTimer > 2 || this.returnTimer > 15) pos.set(this.post.x, 0, this.post.z);
+        if (this.stuckTimer > 2 || this.returnTimer > 15) pos.set(this.post.x, pos.y, this.post.z);
       } else if (this.post) {
         this.returnTimer = 0;
         turnToward(this.model, this.post.facing, dt, 4);

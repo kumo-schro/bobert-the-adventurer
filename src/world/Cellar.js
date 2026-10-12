@@ -24,6 +24,7 @@ export class Cellar extends Entity {
   constructor({ x, z } = PLACES.cellar) {
     super();
     this.center = { x, z };
+    this.inside = false; // only change the camera when we go in or come out
     this.ladder = { x: x - HALF_X + 1.2, z: z - HALF_Z + 1 };
     this.arrive = { x: this.ladder.x + 1.2, z: this.ladder.z + 1.2, facing: 0.8 };
     this.keeganSpot = { x: x + 2.5, z: z + 0.5 };

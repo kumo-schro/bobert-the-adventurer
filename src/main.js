@@ -13,6 +13,9 @@ import { Cellar } from './world/Cellar.js';
 import { DayNight } from './world/DayNight.js';
 import { Gathering } from './world/Gathering.js';
 import { Jungle } from './world/Jungle.js';
+import { Underwater } from './world/Underwater.js';
+import { DreamWorld, DreamPortal } from './world/Dream.js';
+import { Wisp } from './entities/Wisp.js';
 import { Village } from './world/Village.js';
 import { Cave } from './world/Cave.js';
 import { StoneCircle } from './world/StoneCircle.js';
@@ -28,12 +31,15 @@ import { Eel } from './entities/Eel.js';
 import { Kraken } from './entities/Kraken.js';
 import { Charibdis } from './entities/Charibdis.js';
 import { Trapdoor } from './entities/Trapdoor.js';
+import { Boat } from './entities/Boat.js';
 import { CameraRig } from './entities/CameraRig.js';
 import { Dialog } from './ui/Dialog.js';
 import { Shop } from './ui/Shop.js';
 import { QuestLog } from './ui/QuestLog.js';
 import { StatusBar } from './ui/StatusBar.js';
 import { ControlsMenu } from './ui/ControlsMenu.js';
+import { DebugMenu } from './ui/DebugMenu.js';
+import { Suggestions } from './ui/Suggestions.js';
 import { ArtifactQuest } from './quest/ArtifactQuest.js';
 import {
   FindGemsQuest,
@@ -43,11 +49,16 @@ import {
   CharibdisQuest,
   DeliveryQuest,
   JungleQuest,
+  OakDuelQuest,
+  VineQuest,
+  DreamStarsQuest,
+  DreamWispsQuest,
+  CloudHopQuest,
 } from './quest/sideQuests.js';
 import { createShell } from './models/gear.js';
 import { LOOKS } from './models/people.js';
-import { SIDE_QUESTS, BLACKSMITH, BAKER } from './story.js';
-import { FORGE_SHOP, BAKERY_SHOP } from './shops.js';
+import { SIDE_QUESTS, BLACKSMITH, BAKER, VILLAGER_CHATTER } from './story.js';
+import { FORGE_SHOP, BAKERY_SHOP, BOAT_MENU, DREAM_SHRINE } from './shops.js';
 import { VILLAGE, SEA, PLACES } from './config.js';
 
 const game = new Game(document.getElementById('app'));
@@ -80,6 +91,8 @@ const towerIsland = game.add(new TowerIsland());
 SEA.islands.forEach((island, i) => game.add(new SmallIsland(island, i)));
 const charibdisCave = game.add(new CharibdisCave());
 const jungle = game.add(new Jungle());
+game.add(new DreamPortal(jungle.portalSpot)); // opens once the Vine is beaten
+const dream = game.add(new DreamWorld());
 
 // Living things. The player spawns in the middle of the village plaza.
 game.add(new Particles());
@@ -89,7 +102,12 @@ for (const spot of SEA.sharks) game.add(new Shark(spot));
 
 // Shops (their menus open when you talk to the shopkeeper).
 const forgeShop = new Shop(FORGE_SHOP);
+FORGE_SHOP.onBuilt = () => village.upgradeForge(game); // the forge grows a big new wing
 const bakeryShop = new Shop(BAKERY_SHOP);
+const boatMenu = new Shop(BOAT_MENU);
+const dreamShrine = new Shop(DREAM_SHRINE);
+BOAT_MENU.game = game;
+game.add(new Boat(dock, boatMenu)); // built at the end of the dock once you've been to the jungle
 
 // Townsfolk. The merchant waits at the market stall with the main quest; the villagers
 // stroll around the village with side quests ("!" over their heads) once you've helped the
@@ -139,16 +157,25 @@ const keeganQuest = new CharibdisQuest(game, {
   makeCharibdis: () => new Charibdis(charibdisCave.lairSpot),
 });
 const crystalQuest = new CrystalQuest(game, { island: towerIsland, trapdoor, requires: afterMerchant });
+const jungleQuest = new JungleQuest(game, { jungle, after: crystalQuest, requires: () => keeganQuest.stage === 'complete' });
+// The big story quests, by name (the debug menu's checkpoints use these).
+game.quests = { main: mainQuest, crystal: crystalQuest, keegan: keeganQuest, jungle: jungleQuest };
 game.add(
   new Npc({
     name: SIDE_QUESTS.crystal.giver,
     look: LOOKS.sailor,
     position: dock.keeperSpot,
     facing: -Math.PI / 2,
+    // After talking to Finn you can jump in the sea from any beach, not just the dock.
+    onTalk: (g) => {
+      if (g.player.canSwimFromBeach) return;
+      g.player.canSwimFromBeach = true;
+      g.questLog.toast('Captain Finn showed you how to swim from any beach!');
+    },
     quests: [
       crystalQuest,
       // After Charibdis is slain (and you've told Keegan), Finn takes you to the jungle.
-      new JungleQuest(game, { jungle, after: crystalQuest, requires: () => keeganQuest.stage === 'complete' }),
+      jungleQuest,
     ],
   }),
 );
@@ -173,6 +200,42 @@ game.add(
       g.teleport(dock.keeperSpot.x - 1.5, dock.keeperSpot.z, { facing: -Math.PI / 2 });
       g.questLog.toast('Back home at the dock!');
     },
+  }),
+);
+
+// Master Oak, in his jungle clearing: beat him to learn the spin attack, then take on the Vine.
+const oakDuel = new OakDuelQuest(game);
+const vineQuest = new VineQuest(game, { jungle, after: oakDuel });
+game.add(
+  new Npc({
+    name: 'Master Oak',
+    look: LOOKS.oak,
+    position: jungle.oakSpot,
+    facing: Math.PI / 2,
+    quests: [oakDuel, vineQuest],
+  }),
+);
+
+// The dream dimension: the Dream Keeper's quests earn dream points; Luma's shrine turns them into powers.
+const starsQuest = new DreamStarsQuest(game, { dream });
+const wispsQuest = new DreamWispsQuest(game, { dream, makeWisp: (spot) => new Wisp(spot), after: starsQuest });
+game.add(
+  new Npc({
+    name: 'Dream Keeper',
+    look: LOOKS.dreamKeeper,
+    position: dream.keeperSpot,
+    facing: Math.PI,
+    quests: [starsQuest, wispsQuest, new CloudHopQuest(game, { dream, after: wispsQuest })],
+  }),
+);
+game.add(
+  new Npc({
+    name: 'Luma',
+    look: LOOKS.sprite,
+    position: dream.shrineSpot,
+    facing: Math.PI,
+    interactText: 'Press T to visit the dream shrine',
+    onInteract: () => dreamShrine.open(),
   }),
 );
 
@@ -227,18 +290,45 @@ const villagers = [
 villagers.forEach((v, i) => {
   game.add(new Npc({ ...v, position: { x: v.at[0], z: v.at[1] }, wander: strolling, home: houses[i].door }));
 });
+// More villagers, living in the outer ring of houses.
+const neighbours = [
+  { name: 'Rosa', look: LOOKS.gardener },
+  { name: 'Milo', look: LOOKS.fisher },
+  { name: 'Greta', look: LOOKS.grandma },
+  { name: 'Juno', look: LOOKS.guard },
+  { name: 'Wren', look: LOOKS.painter },
+];
+houses
+  .filter((h) => h.outer)
+  .forEach((house, i) => {
+    const v = neighbours[i % neighbours.length];
+    const at = { x: house.door.x + house.front.x * 2, z: house.door.z + house.front.z * 2 };
+    game.add(new Npc({ ...v, lines: VILLAGER_CHATTER[v.name], position: at, wander: strolling, home: house.door }));
+  });
 
 // UI after the characters, so the key that closes a dialog doesn't also swing the sword.
 game.add(new Dialog());
 game.add(forgeShop);
 game.add(bakeryShop);
+game.add(boatMenu);
+game.add(dreamShrine);
 game.add(new QuestLog());
 game.add(new StatusBar());
 game.add(new ControlsMenu());
+const debugMenu = game.add(new DebugMenu());
+game.add(new Suggestions()); // 💡 click on something and suggest a change
 mainQuest.announce();
 
 // Camera last so it follows the player's final position each frame
 game.add(new CameraRig(player));
+game.add(new Underwater()); // after the camera: switches to the underwater look when it dips below the waves
+
+game.quests.oak = oakDuel;
+game.quests.vine = vineQuest;
+game.quests.stars = starsQuest;
+
+// Opened with ?checkpoint=... (from the debug menu)? Jump to that point in the story.
+debugMenu.start();
 
 game.start();
 

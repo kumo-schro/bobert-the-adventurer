@@ -146,7 +146,7 @@ export class Kraken extends Monster {
       s.landed = true;
       const player = game.player;
       const p = player.object3d.position;
-      game.particles?.burst(new THREE.Vector3(s.x, SEA.level + 0.3, s.z), {
+      game.particles?.burst(new THREE.Vector3(s.x, pos.y + 0.3, s.z), {
         count: 40,
         colors: ['#ffffff', '#bfe6ff', '#3cc6ea'],
         speed: 7,

@@ -110,7 +110,8 @@ export class TowerIsland extends Entity {
         const rx = x + rng.range(-1.5, 1.5);
         const rz = z + rng.range(-1.5, 1.5);
         const h = rng.range(0.6, 1.6);
-        tower.box(rx, SEA.level - 1 + h / 2, rz, rng.range(0.8, 1.6), h + 1, rng.range(0.8, 1.6), vary(rng.pick(STONE), rng, 0.08));
+        const top = SEA.level + h - 1;
+        tower.box(rx, (top + SEA.floor) / 2, rz, rng.range(0.8, 1.6), top - SEA.floor, rng.range(0.8, 1.6), vary(rng.pick(STONE), rng, 0.08));
       }
       if (i === 0 || i === 2) this.eelSpots.push({ x: X + Math.cos(a) * (d - 0.5), z: Z + Math.sin(a) * (d - 0.5) });
     }

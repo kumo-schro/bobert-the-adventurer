@@ -8,26 +8,22 @@ npm run dev      # http://localhost:5173
 npm run build    # production build into dist/
 ```
 
-**Controls** (change any of them in-game by pressing **Command**): WASD / arrow keys move (and swim), Space jumps, Shift runs, **Return** (or left click) swings your sword in a wide sideways slash, hold **J** to block with a shield, **K** shoots the bow (hold it to charge the power bow), **F** eats food, **T** talks / opens / chops / mines / uses doors, Enter/Space/click advances dialog. Camera: drag with the left or right mouse button, **Q/E** turn, **R/G** tilt, **C** swings round behind you, scroll or **-/=** zoom. Press **Option** to show or hide the quest panel and the controls list.
+**Controls** (change any of them in-game by pressing **Command**): WASD / arrow keys move (and swim), Space jumps, Shift runs, **Return** (or left click) swings your sword in a wide sideways slash, hold **J** to block with a shield, **K** shoots the bow (hold it to charge the power bow), **F** eats food, **T** talks / opens / shops / chops / mines / boards the boat, **L** dashes and **I** turns invisible (dream powers), **/** suggests a change, **`** opens the debug menu, Enter/Space/click advances dialog. Camera: drag with the left or right mouse button, **Q/E** turn, **R/G** tilt, **C** swings round behind you, scroll or **-/=** zoom. Press **Option** to show or hide the quest panel and the controls list.
 
-**The game so far** (see `theme.md`):
-- You start in a stone village on a big, not-quite-round island with a sword (no shield) and 5 hearts. Lose all your hearts and you wake up back in the village. Hearts slowly come back if you stay out of trouble.
-- The merchant waits at the market stall with the main quest: slay the Gelationus Slime (10 hits) in the mountain cave and bring back the artifact. **Nobody gives you side quests until you've done this.**
-- Every two minutes the world goes through a day and night. At night everyone in town (shopkeepers and the merchant too) goes home to bed, and monsters get stronger (1 more damage, 20% faster).
-- Monsters that notice you keep following you until you get far away.
-- Side quests, with new ones over time (about a minute after finishing one): Pip (6 gems, then 5 seashells on the beaches), Bram (5 blue slimes, then 10 wood for his fence), Elda (6 rainbow stones in order, then backwards), Tomas (8 stone for the well).
-- **Wood and stone:** buy an axe and a pickaxe at the forge, then press T next to a tree to chop wood or next to a boulder to mine stone. Each gives 3, then rests for a minute.
-- **The forge** sells a Shield (25), Bow (40, with 10 arrows), 10 Arrows (20, quiver holds 100), Axe (10) and Pickaxe (10), plus upgrades that cost coins + wood + stone: Knight's Sword, Power Bow (hold K: +1 damage per 2 seconds, up to 5), Iron Shield, Knight Armor (+2 hearts).
-- **Hana's bakery** sells apples (2), bread (4) and berry pie (15). Upgrade her oven with wood and stone for special food that also gives golden extra hearts (they go away when you get hit). Carry up to 5; press F to eat.
-- **The sea:** walk off the dock (at the end of the road from town) to swim. Lots of sharks, a few eels, little islands to rest on, and a huge tower guarded by gargoyles with the mystery crystal on top (Captain Finn's quest).
-- The crystal opens the trapdoor by the road, down to Old Man Keegan: defeat the Kraken or the Sea Serpent for the key, then slay Charibdis in its big flooded sea cave (whirlpool: 5 hearts every 3 seconds; on for 10 seconds, off for 30, then it calls 3 sharks or an eel).
-- Then Captain Finn takes you to **the jungle island**: giant Venus fly traps (they can't move and bite slowly, but a bite is 5 hearts; one hit defeats them), snakes, gorillas, and a temple with treasure. Talk to Finn on the jungle beach to go home.
+**The story** is in [`story.md`](story.md): a short outline, chapter by chapter. Edit it (add details, change what happens, add chapters) and ask Claude to "update the game from story.md". Feature requests can also go in `theme.md`, one line each.
+
+**Debug menu:** press **`** (the key above Tab) to jump to any chapter of the story (each chapter in `story.md` lists its checkpoint), or use cheats: coins, wood and stone, healing, can't-get-hurt mode, day/night, and teleports. You can also open the game at a checkpoint directly, like `http://localhost:5173/?checkpoint=charibdis`.
+
+**💡 Suggest a change:** press **/** (or click the button in the corner), click on anything in the game, and type how you'd like it changed. It's saved with where you were, what you clicked, your quest and a small screenshot. Nothing happens automatically; the ideas are just collected for later:
+- Playing locally (`npm run dev`), ideas go straight into `recommendations.json` (screenshots in `recommendations/`).
+- On the live site, they're saved to a private Vercel Blob store. Run `npm run recommendations` to download everyone's ideas into `recommendations.json` (it needs `RECOMMENDATIONS_KEY` from `.env.local`; get it with `npx vercel env pull`). Then ask Claude to review them.
 
 ## How it's organized
 
 ```
 src/
   main.js              Builds the world: adds every entity and character to the game
+  checkpoints.js       Story checkpoints for the debug menu (match the chapters in story.md)
   config.js            Tweakable settings (sizes, counts, health, prices, places, camera)
   story.js             Everything characters say
   shops.js             What each shop sells (forge, bakery)
@@ -45,16 +41,21 @@ src/
                        Dock (where you jump in to swim), Road (town to dock), TowerIsland (tower +
                        spiral stairs), SmallIsland, CharibdisCave (locked sea cave), Cellar
                        (Keegan's room under the trapdoor), DayNight (lighting cycle),
-                       Gathering (trees and boulders for wood and stone), Jungle (the jungle island)
+                       Gathering (trees and boulders for wood and stone), Jungle (the jungle island),
+                       Underwater (seabed + underwater/dream look), Dream (dream dimension + portal)
   entities/            Player, Npc (townsfolk), Monster (base) -> Slime, Spider, Shark, Eel (and
                        the sea serpent), Kraken, Gargoyle, Charibdis, JungleMonsters (FlyTrap,
-                       Snake, Gorilla); Arrow, Trapdoor, Chest,
+                       Snake, Gorilla, Frog, Panther, Vine, OakFighter), Wisp; Boat, Arrow, Trapdoor, Chest,
                        Collectible, Artifact, Particles, Butterflies, CameraRig
   quest/               Quest (base, with `requires` / `after` for quest chains), ArtifactQuest (main),
                        sideQuests (find things, hunt, puzzle, deliveries, crystal, Charibdis, jungle)
   models/              Voxel model recipes: trees, buildings, character, people (outfits), gear
   ui/                  Dialog (+ "Press T" prompts), QuestLog, StatusBar (hearts/coins/food), Shop,
-                       ControlsMenu (Command to change keys, Option to show panels)
+                       ControlsMenu (Command to change keys, Option to show panels), DebugMenu (`),
+                       Suggestions (💡 click on something and suggest a change)
+api/recommendations.js Vercel Function that saves suggestions (and lets the owner download them)
+server/                Code shared by that function and the local dev server (vite.config.js)
+scripts/               npm run recommendations: download everyone's suggestions
   utils/               Seeded random, noise, color helpers
 ```
 

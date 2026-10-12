@@ -4,14 +4,14 @@ import { pushOut } from '../core/collision.js';
 import { createCharacter, poseWalk, turnToward } from '../models/character.js';
 import { createSword, createShield, createBow, addArmor, createAxe, createPickaxe } from '../models/gear.js';
 import { Arrow } from './Arrow.js';
-import { PLAYER, SWORDS, FORGE, FOOD, BOW, SEA } from '../config.js';
+import { PLAYER, SWORDS, FORGE, FOOD, BOW, SEA, DREAM } from '../config.js';
 
 const WALK_SPEED = 6;
 const RUN_SPEED = 11;
 const SHIELD_SPEED = 3; // you move slowly while holding the wooden shield up
 const SWIM_SPEED = 4.5;
 const SWIM_FAST = 6.5;
-const SWIM_DEPTH = 1.1; // how far below the water surface your feet are
+const SWIM_DEPTH = SEA.swimDepth; // swimming happens underwater
 const STEP_UP = 0.6; // tallest ledge you can walk up without jumping (stairs are 0.5)
 const JUMP_SPEED = 9;
 const GRAVITY = 28;
@@ -19,6 +19,8 @@ const RADIUS = 0.4;
 const ATTACK_TIME = 0.55; // seconds for one sword swing
 const STRIKE_WINDOW = [0.25, 0.8]; // part of the swing that can hit things
 const SLASH_ARC = Math.cos(THREE.MathUtils.degToRad(80)); // the slash sweeps 80 degrees to each side
+const SPIN_TIME = 0.6; // seconds for one spin attack
+const SPIN_CHARGE = 0.5; // hold the swing button this long (after a swing) to charge a spin
 const SWORD_REST = Math.PI / 2 - 0.5; // how the sword sits in the hand (see createSword)
 const FOLLOW_THROUGH = 0.3; // seconds the bow stays up after the arrow flies
 const AIM_CONE = Math.cos(THREE.MathUtils.degToRad(35)); // arrows lock on to monsters roughly ahead
@@ -62,8 +64,8 @@ export class Player extends Entity {
     this.wearBowOnBack();
     this.armor = false;
     this.food = []; // ids from FOOD.menu, at most FOOD.carry
-    this.hasAxe = false;
-    this.hasPickaxe = false;
+    this.axeTier = -1; // -1 none, 0 axe, 1 steel axe
+    this.pickaxeTier = -1;
     this.wood = 0;
     this.stone = 0;
     this.toolTimer = 0; // > 0 while chopping or mining
@@ -73,6 +75,13 @@ export class Player extends Entity {
     this.health = this.maxHealth;
     this.tempHealth = 0;
     this.coins = 0;
+    this.dreamPoints = 0;
+    this.hasDash = false; // dream abilities
+    this.hasInvisibility = false;
+    this.dashTimer = 0;
+    this.dashCooldown = 0;
+    this.invisibleTimer = 0;
+    this.invisibleCooldown = 0;
 
     this.velocity = new THREE.Vector3();
     this.onGround = true;
@@ -106,6 +115,11 @@ export class Player extends Entity {
     return this.shieldTier >= 0;
   }
 
+  /** Monsters can't see you while this is true (the dream ability). */
+  get invisible() {
+    return this.invisibleTimer > 0;
+  }
+
   get hasBow() {
     return this.bowTier >= 0;
   }
@@ -128,6 +142,7 @@ export class Player extends Entity {
    */
   get strike() {
     if (!this.isAttacking) return null;
+    if (this.spinning) return { id: this.swingId, damage: this.swordStats.damage + 1 }; // the whole spin hits
     const t = 1 - this.attackTimer / ATTACK_TIME;
     if (t < STRIKE_WINDOW[0] || t > STRIKE_WINDOW[1]) return null;
     return { id: this.swingId, damage: this.swordStats.damage };
@@ -140,9 +155,10 @@ export class Player extends Entity {
     const dx = m.x - pos.x;
     const dz = m.z - pos.z;
     const dist = Math.hypot(dx, dz);
-    if (dist - monster.radius > this.swordStats.reach + 0.9) return false;
+    const reach = this.swordStats.reach + 0.9 + (this.spinning ? 1 : 0);
+    if (dist - monster.radius > reach) return false;
     if (monster.flying && Math.abs(m.y - (pos.y + 1)) > monster.radius + 1.6) return false;
-    if (dist < monster.radius + 0.4) return true; // right on top of us
+    if (dist < monster.radius + 0.4 || this.spinning) return true; // right on top of us, or spinning all the way round
     const facing = this.model.root.rotation.y;
     return (dx * Math.sin(facing) + dz * Math.cos(facing)) / dist > SLASH_ARC;
   }
@@ -193,9 +209,23 @@ export class Player extends Entity {
     this.bow.traverse((o) => o.material?.color.set?.(o.material.color.getHex() === 0xf4ecd8 ? '#ffe08a' : '#5e2b8a'));
   }
 
+  get hasAxe() {
+    return this.axeTier >= 0;
+  }
+
+  get hasPickaxe() {
+    return this.pickaxeTier >= 0;
+  }
+
   giveTool(kind) {
-    if (kind === 'axe') this.hasAxe = true;
-    else this.hasPickaxe = true;
+    if (kind === 'axe') this.axeTier = Math.max(this.axeTier, 0);
+    else this.pickaxeTier = Math.max(this.pickaxeTier, 0);
+  }
+
+  /** Steel tools gather more per chop. */
+  upgradeTool(kind) {
+    if (kind === 'axe') this.axeTier = 1;
+    else this.pickaxeTier = 1;
   }
 
   /** Swing the axe or pickaxe once (the chopping/mining itself is done by whoever asked). */
@@ -271,7 +301,7 @@ export class Player extends Entity {
    * Returns 'blocked', 'hurt', or 'ignored' (already hurt recently, or knocked out).
    */
   takeDamage(game, amount, fromX, fromZ) {
-    if (this.dead || this.invulnerable > 0) return 'ignored';
+    if (this.dead || this.invulnerable > 0 || this.godMode) return 'ignored'; // godMode: debug menu cheat
     const pos = this.object3d.position;
     let dx = pos.x - fromX;
     let dz = pos.z - fromZ;
@@ -318,6 +348,7 @@ export class Player extends Entity {
   respawn(game) {
     this.dead = false;
     this.swimming = false;
+    this.boat = null;
     this.health = this.maxHealth;
     this.object3d.position.copy(this.spawn);
     this.velocity.set(0, 0, 0);
@@ -339,8 +370,10 @@ export class Player extends Entity {
       return Math.hypot(x, z) < SEA.radius;
     }
     if (game.isWalkable(x, z)) return game.heightAt(x, z) <= pos.y + STEP_UP;
-    // You get into the sea off the dock (or off the shore of an island out at sea).
+    // You get into the sea off the dock (or off the shore of an island out at sea). Once Captain
+    // Finn has shown you how, you can wade in from any beach of the home island too.
     if (game.dock?.isInside(pos.x, pos.z)) return true;
+    if (this.canSwimFromBeach && game.terrain.isInside(pos.x, pos.z) && Math.hypot(x, z) < SEA.radius) return true;
     return game.lands.some((land) => land.swimFromShore && land.isInside(pos.x, pos.z) && pos.y < 0.5);
   }
 
@@ -355,7 +388,7 @@ export class Player extends Entity {
       this.deadTimer -= dt;
       this.model.root.rotation.x = THREE.MathUtils.lerp(this.model.root.rotation.x, -Math.PI / 2, 1 - Math.exp(-8 * dt));
       this.model.root.visible = true;
-      const floor = this.swimming ? SEA.level - 0.3 : game.heightAt(pos.x, pos.z);
+      const floor = this.swimming ? pos.y - 1 : game.heightAt(pos.x, pos.z);
       pos.y = Math.max(floor, pos.y - 8 * dt); // drop to the ground (or float)
       if (this.deadTimer <= 0) this.respawn(game);
       return;
@@ -390,11 +423,22 @@ export class Player extends Entity {
     }
 
     const fast = input.held('run');
+    if (this.boat) {
+      // Sailing: the boat goes where you steer, and you sit in it.
+      const seat = this.boat.drive(dt, game, _move, fast);
+      pos.copy(seat);
+      this.velocity.set(0, 0, 0);
+      this.onGround = true;
+      this.model.root.rotation.y = this.boat.heading;
+      this.animateSailing(game);
+      return;
+    }
     let speed = fast ? RUN_SPEED : WALK_SPEED;
     if (this.swimming) speed = fast ? SWIM_FAST : SWIM_SPEED;
     else if (this.shielding) speed = this.shieldTier >= 1 ? WALK_SPEED : SHIELD_SPEED;
     if (this.drawing) speed = Math.min(speed, SHIELD_SPEED); // steady while aiming
-    if (this.stunTimer === 0) {
+    this.updateAbilities(dt, game, controls);
+    if (this.stunTimer === 0 && this.dashTimer === 0) {
       const grip = this.swimming ? 5 : this.onGround ? 14 : 4;
       const accel = 1 - Math.exp(-grip * dt);
       this.velocity.x += (_move.x * speed - this.velocity.x) * accel;
@@ -414,7 +458,9 @@ export class Player extends Entity {
       this.startDraw(game);
     }
     if (controls && input.hit('eat')) this.tryEat(game);
+    this.updateSpin(dt, game, controls);
     this.attackTimer = Math.max(0, this.attackTimer - dt);
+    if (this.attackTimer === 0) this.spinning = false;
     this.updateTool(dt);
     if (this.drawing) {
       this.charge = Math.min(this.charge + dt, BOW.maxDamage * BOW.secondsPerDamage);
@@ -470,6 +516,18 @@ export class Player extends Entity {
       this.onGround = true;
       this.splash(game, 12);
     }
+  }
+
+  bubbles(game) {
+    const pos = this.object3d.position;
+    game.particles?.burst(new THREE.Vector3(pos.x, pos.y + 1.6, pos.z), {
+      count: 3,
+      colors: ['#e8fbff', '#bfe6ff'],
+      speed: 0.6,
+      size: 0.1,
+      life: 1.4,
+      gravity: -3, // float up
+    });
   }
 
   splash(game, count) {
@@ -546,7 +604,7 @@ export class Player extends Entity {
     this.model.root.rotation.y = angle;
 
     const start = pos.clone().add(new THREE.Vector3(Math.sin(angle) * 0.6, 0, Math.cos(angle) * 0.6));
-    start.y = this.swimming ? SEA.level + 0.9 : pos.y + 1.3;
+    start.y = pos.y + (this.swimming ? 1.2 : 1.3);
     game.add(new Arrow(start, Arrow.aim(start, aimAt, angle), damage));
     this.shootTimer = FOLLOW_THROUGH;
   }
@@ -563,6 +621,89 @@ export class Player extends Entity {
     this.bow.position.set(0, -0.05, 0.1);
     this.bow.rotation.set(Math.PI / 2, 0, 0);
     this.shield.visible = false;
+  }
+
+  /** Dream abilities: dash (a quick burst forward) and turning invisible. */
+  updateAbilities(dt, game, controls) {
+    const { input } = game;
+    this.dashTimer = Math.max(0, this.dashTimer - dt);
+    this.dashCooldown = Math.max(0, this.dashCooldown - dt);
+    this.invisibleCooldown = Math.max(0, this.invisibleCooldown - dt);
+    if (this.invisibleTimer > 0 && (this.invisibleTimer = Math.max(0, this.invisibleTimer - dt)) === 0) {
+      this.setSeeThrough(false);
+      game.questLog?.toast("You're visible again.");
+    }
+    if (!controls) return;
+    if (this.hasDash && this.dashCooldown === 0 && input.hit('dash')) {
+      const f = this.model.root.rotation.y;
+      const len = Math.hypot(_move.x, _move.z);
+      const dx = len > 0.1 ? _move.x / len : Math.sin(f);
+      const dz = len > 0.1 ? _move.z / len : Math.cos(f);
+      this.velocity.x = dx * DREAM.dashSpeed;
+      this.velocity.z = dz * DREAM.dashSpeed;
+      this.dashTimer = DREAM.dashTime;
+      this.dashCooldown = DREAM.dashCooldown;
+      this.invulnerable = Math.max(this.invulnerable, DREAM.dashTime + 0.1);
+      game.particles?.burst(this.object3d.position.clone().setY(this.object3d.position.y + 1), { count: 14, colors: ['#ffffff', '#c8a8ff'], speed: 3, size: 0.14, life: 0.4 });
+    }
+    if (this.hasInvisibility && this.invisibleCooldown === 0 && input.hit('invisible')) {
+      this.invisibleTimer = DREAM.invisibleTime;
+      this.invisibleCooldown = DREAM.invisibleCooldown;
+      this.setSeeThrough(true);
+      game.questLog?.toast("You're invisible! Monsters can't see you.");
+    }
+  }
+
+  setSeeThrough(on) {
+    this.model.root.traverse((o) => {
+      if (!o.material) return;
+      o.material.transparent = on;
+      o.material.opacity = on ? 0.25 : 1;
+    });
+  }
+
+  /**
+   * The spin attack (taught by Master Oak): keep holding the swing button after a swing to
+   * charge it up (the sword sparkles), then let go to spin round, hitting everything nearby.
+   */
+  updateSpin(dt, game, controls) {
+    if (!this.knowsSpin) return;
+    const holding = controls && game.input.held('swing') && !this.shielding && !this.usingBow && !this.swimming;
+    if (holding) {
+      if (!this.isAttacking) this.spinCharge = (this.spinCharge ?? 0) + dt;
+      if (this.spinCharge >= SPIN_CHARGE && game.elapsed % 0.15 < dt) {
+        const tip = this.sword.getWorldPosition(new THREE.Vector3());
+        game.particles?.burst(tip, { count: 2, colors: ['#ffe08a', '#ffffff'], speed: 1.5, size: 0.08, life: 0.4, gravity: -2 });
+      }
+      return;
+    }
+    if (this.spinCharge >= SPIN_CHARGE && controls && !this.isAttacking) {
+      this.spinning = true;
+      this.attackTimer = SPIN_TIME;
+      this.spinFacing = this.model.root.rotation.y;
+      this.swingId++;
+      game.particles?.burst(this.object3d.position.clone().setY(this.object3d.position.y + 1), {
+        count: 24,
+        colors: ['#ffffff', '#ffe08a', '#bfe6ff'],
+        speed: 6,
+        size: 0.12,
+        life: 0.4,
+        up: 0.2,
+      });
+    }
+    this.spinCharge = 0;
+  }
+
+  /** Sitting in the boat, holding the tiller. */
+  animateSailing(game) {
+    const { root, armL, armR, legL, legR } = this.model;
+    root.visible = true;
+    root.rotation.x = 0;
+    root.position.set(0, -0.45, 0);
+    legL.rotation.x = legR.rotation.x = -1.4;
+    armR.rotation.set(-0.8 + Math.sin(game.elapsed * 2) * 0.1, 0, 0);
+    armL.rotation.x = -0.5;
+    this.model.head.rotation.y = 0;
   }
 
   /** Turn to look at a point (used when someone talks to us). */
@@ -605,7 +746,7 @@ export class Player extends Entity {
         legL.rotation.x = Math.sin(p * 3) * 0.3;
         legR.rotation.x = -Math.sin(p * 3) * 0.3;
         this.model.head.rotation.y = Math.max(0, Math.sin(p)) * 0.7;
-        if (Math.floor(p / Math.PI) !== Math.floor((p - dt * 4.2) / Math.PI)) this.splash(game, 3); // hand hits the water
+        if (Math.floor(p / Math.PI) !== Math.floor((p - dt * 4.2) / Math.PI)) this.bubbles(game); // a stream of bubbles
       } else {
         // Treading water: hands scull side to side, legs pedal slowly.
         armR.rotation.x = -0.3;
@@ -654,7 +795,14 @@ export class Player extends Entity {
       armR.rotation.x = t < 0.4 ? THREE.MathUtils.lerp(0, -2.7, t / 0.4) : THREE.MathUtils.lerp(-2.7, -0.4, (t - 0.4) / 0.6);
     }
 
-    if (this.isAttacking) {
+    if (this.spinning) {
+      // Spin all the way round with the sword held straight out.
+      const t = 1 - this.attackTimer / SPIN_TIME;
+      root.rotation.y = this.spinFacing + t * Math.PI * 2;
+      armR.rotation.x = -1.4;
+      armR.rotation.y = -1.2;
+      this.sword.rotation.x = Math.PI - 0.15;
+    } else if (this.isAttacking) {
       // A sideways slash: arm out level, wind back to the right, then sweep across to the left.
       const t = 1 - this.attackTimer / ATTACK_TIME;
       const windUp = 0.25;

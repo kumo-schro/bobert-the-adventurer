@@ -307,3 +307,35 @@ export function forge(put, rng, { roof = '#4a4f5a' } = {}) {
 
   return { halfX: hw + 0.5, halfZ: hd + 0.5 };
 }
+
+/**
+ * The forge's new wing, built when you help make a bigger forge: a huge furnace with a tall
+ * chimney, a big anvil, a water trough and a grindstone. Drawn beside the forge (local x 4..9).
+ */
+export function forgeWing(put, rng, { roof = '#4a4f5a' } = {}) {
+  const x0 = 4.2;
+  // Back and outer side walls
+  for (let y = 0; y < 4; y++) {
+    for (let x = 0; x <= 4; x++) put(x0 + x, y + 0.5, -2, vary(rng.pick(STONE), rng, 0.05));
+    for (let z = -2; z <= 2; z++) put(x0 + 4, y + 0.5, z, vary(rng.pick(STONE), rng, 0.05));
+  }
+  put(x0 + 2, 4.25, 0, vary(roof, rng, 0.04), 6, 0.5, 5); // roof
+  put(x0 + 0.2, 1.5, 2, DARK_WOOD, 0.5, 3, 0.5); // front post
+  // Huge furnace
+  put(x0 + 2, 1.4, -1.1, DARK_STONE, 2.8, 2.8, 1.6);
+  put.glow(x0 + 2, 1, -0.28, '#ff7a1a', 1.8, 1, 0.06);
+  put.glow(x0 + 2, 0.8, -0.26, '#ffd23f', 1, 0.4, 0.06);
+  put(x0 + 2, 5, -1.3, DARK_STONE, 1, 4, 1); // tall chimney
+  put(x0 + 2, 7.1, -1.3, '#3b3b3b', 1.3, 0.25, 1.3);
+  // Big anvil, water trough, grindstone
+  put(x0 + 1.2, 0.35, 1.2, '#3b3b3b', 0.7, 0.7, 0.6);
+  put(x0 + 1.2, 0.85, 1.2, '#55595f', 1.4, 0.35, 0.6);
+  put(x0 + 3.2, 0.35, 1.0, DARK_WOOD, 1.2, 0.7, 0.7);
+  put(x0 + 3.2, 0.62, 1.0, '#3cc6ea', 1.0, 0.1, 0.5);
+  put(x0 + 3.3, 0.7, -0.2, '#9a9ca3', 0.25, 1.1, 1.1);
+  // A banner showing a hammer
+  put(x0 + 4.1, 2.6, 0, '#d9293f', 0.06, 1.6, 1);
+  put(x0 + 4.15, 2.8, 0, '#ffc93c', 0.04, 0.2, 0.6);
+  put(x0 + 4.15, 2.5, 0, '#ffc93c', 0.04, 0.6, 0.15);
+  return { center: [x0 + 2, 0], halfX: 2.6, halfZ: 2.5, smoke: [x0 + 2, 7.6, -1.3] };
+}

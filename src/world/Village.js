@@ -4,9 +4,17 @@ import { VoxelBuilder } from '../core/VoxelBuilder.js';
 import { blockMaterial, dirtMaterial } from '../core/textures.js';
 import { createRng } from '../utils/random.js';
 import { vary } from '../utils/color.js';
-import { stoneHouse, marketStall, bakeryStall, well, forge } from '../models/buildings.js';
-import { SEED, VILLAGE, CAMERA } from '../config.js';
+import { stoneHouse, marketStall, bakeryStall, well, forge, forgeWing } from '../models/buildings.js';
+import { SEED, VILLAGE, CAMERA, PLACES, WORLD } from '../config.js';
 
+const ROOF_NAMES = {
+  '#d9493f': 'red',
+  '#3f7fd9': 'blue',
+  '#e08a2e': 'orange',
+  '#7a4fd1': 'purple',
+  '#2fa36b': 'green',
+  '#d94f9a': 'pink',
+};
 const COBBLE = ['#b9b4aa', '#a8a39a', '#c7c2b8', '#9d9a94'];
 const DIRT = ['#c9a46b', '#bf9a60', '#d1ad75'];
 export const glowMaterial = new THREE.MeshLambertMaterial({ emissive: '#ffb300', emissiveIntensity: 0.6 });
@@ -48,6 +56,7 @@ export class Village extends Entity {
     this.chimneys = []; // where smoke comes out
     this.houses = []; // { door, front } for each house, so villagers can go home to sleep
     this.ringAngles = []; // angle of every building around the ring (for finding gaps between them)
+    this.landmarks = []; // { name, x, z } for describing what someone clicked on
     this.colliders = [];
     this.reserved = [];
     this.rng = createRng(SEED + 5);
@@ -69,7 +78,8 @@ export class Village extends Entity {
       this.ringAngles.push(angle);
       const radius = VILLAGE.ringRadius + this.rng.range(-1.5, 1.5);
       if (i === 0) {
-        const smithy = this.place(forge, angle, radius - 1);
+        const smithy = this.place(forge, angle, radius - 1, undefined, 'the forge');
+        this.smithy = smithy;
         this.buildPath(smithy, 2 + 2.3);
         this.reserved.push({ ...smithy.center, radius: 5 });
         this.blacksmithSpot = new THREE.Vector3(
@@ -85,7 +95,7 @@ export class Village extends Entity {
       const roof = VILLAGE.roofColors[i % VILLAGE.roofColors.length];
       const hw = this.rng.int(3, 4);
       const hd = this.rng.int(2, 3);
-      const house = this.place(stoneHouse, angle, radius, { hw, hd, roof, style: i });
+      const house = this.place(stoneHouse, angle, radius, { hw, hd, roof, style: i }, `a house (the one with the ${ROOF_NAMES[roof] ?? 'colored'} roof)`);
       this.buildPath(house, hd + 1.3);
       this.reserved.push({ ...house.center, radius: Math.hypot(hw + 2, hd) + 1 });
       this.houses.push({
@@ -94,7 +104,8 @@ export class Village extends Entity {
       });
     }
 
-    const stall = this.place(marketStall, stallAngle, VILLAGE.plazaRadius + 4);
+    const stall = this.place(marketStall, stallAngle, VILLAGE.plazaRadius + 4, undefined, "the merchant's market stall");
+    this.ringAngles.push(stallAngle);
     this.reserved.push({ ...stall.center, radius: 4 });
     this.merchantSpot = new THREE.Vector3(
       stall.center.x + stall.front.x * 2.2,
@@ -104,7 +115,8 @@ export class Village extends Entity {
     this.merchantFacing = Math.atan2(stall.front.x, stall.front.z);
 
     // The bakery sits between two houses on the left of the starting view (the forge is on the right).
-    const bakery = this.place(bakeryStall, stallAngle - gap / 2 - step / 2, VILLAGE.plazaRadius + 4.5);
+    const bakeryAngle = stallAngle - gap / 2 - step / 2;
+    const bakery = this.place(bakeryStall, bakeryAngle, VILLAGE.plazaRadius + 4.5, undefined, "Hana's bakery");
     this.reserved.push({ ...bakery.center, radius: 4.5 });
     this.bakerSpot = new THREE.Vector3(
       bakery.center.x + bakery.front.x * 2.2,
@@ -115,21 +127,22 @@ export class Village extends Entity {
 
     // Well off to the side so it isn't in the merchant's way.
     const wellAngle = stallAngle - Math.PI / 2;
-    const w = this.place(well, wellAngle, VILLAGE.plazaRadius - 2.5, { roof: '#d9493f' });
+    const w = this.place(well, wellAngle, VILLAGE.plazaRadius - 2.5, { roof: '#d9493f' }, 'the well');
     this.reserved.push({ ...w.center, radius: 2.5 });
+
+    this.buildOuterRing(bakeryAngle);
 
     this.object3d.add(this.builder.build({ material: blockMaterial }));
     this.object3d.add(this.floor.build({ castShadow: false, material: dirtMaterial }));
     this.object3d.add(this.glow.build({ material: glowMaterial, castShadow: false }));
     this.smokeTimer = 0;
-    this.ringAngles.push(stallAngle);
   }
 
   /**
    * Places a building recipe at (angle, radius) from the plaza center, rotated to face
    * the center. Returns where it ended up and which way its front faces.
    */
-  place(recipe, angle, radius, options) {
+  place(recipe, angle, radius, options, name = 'a building') {
     const cx = Math.floor(Math.cos(angle) * radius) + 0.5;
     const cz = Math.floor(Math.sin(angle) * radius) + 0.5;
     const k = facing(-cx, -cz);
@@ -149,7 +162,8 @@ export class Village extends Entity {
     this.colliders.push({ x: cx, z: cz, halfX: hx, halfZ: hz });
 
     const [fx, fz] = rotate(0, 1, k);
-    return { center: { x: cx, z: cz }, front: { x: fx, z: fz } };
+    this.landmarks.push({ name, x: cx, z: cz });
+    return { center: { x: cx, z: cz }, front: { x: fx, z: fz }, k };
   }
 
   buildPlaza() {
@@ -187,6 +201,80 @@ export class Village extends Entity {
       }
       this.reserved.push({ x: px, z: pz, radius: 1.5 });
     }
+  }
+
+  /**
+   * More houses: an outer ring, each one out through a gap between the inner houses (so its
+   * path doesn't run through anything). Skips the gaps used by the bakery and the road to the
+   * dock, and anywhere too close to the mountain, the stone circle or the slime meadow.
+   */
+  buildOuterRing(bakeryAngle) {
+    const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+    const roadGap = this.gapToward(Math.atan2(PLACES.dockZ, WORLD.islandRadius));
+    const sorted = this.ringAngles.map(wrap).sort((a, b) => a - b);
+    const avoid = [
+      { ...PLACES.cave, r: 32 },
+      { ...PLACES.stoneCircle, r: 16 },
+      { ...PLACES.slimeMeadow, r: 14 },
+    ];
+    let n = 0;
+    sorted.forEach((a, i) => {
+      const b = i + 1 < sorted.length ? sorted[i + 1] : sorted[0] + Math.PI * 2;
+      const angle = (a + b) / 2;
+      if (Math.abs(wrap(angle - bakeryAngle)) < 0.35 || Math.abs(wrap(angle - roadGap)) < 0.35) return;
+      const radius = VILLAGE.outerRingRadius + this.rng.range(-1.5, 1.5);
+      const x = Math.cos(angle) * radius;
+      const z = Math.sin(angle) * radius;
+      if (avoid.some((p) => Math.hypot(p.x - x, p.z - z) < p.r)) return;
+      const roof = VILLAGE.roofColors[(n + 3) % VILLAGE.roofColors.length];
+      const hw = this.rng.int(3, 4);
+      const hd = this.rng.int(2, 3);
+      const house = this.place(stoneHouse, angle, radius, { hw, hd, roof, style: n + 1 }, `a house (the one with the ${ROOF_NAMES[roof] ?? 'colored'} roof)`);
+      this.buildPath(house, hd + 1.3);
+      this.reserved.push({ ...house.center, radius: Math.hypot(hw + 2, hd) + 1 });
+      this.houses.push({
+        door: { x: house.center.x + house.front.x * (hd + 1.3), z: house.center.z + house.front.z * (hd + 1.3) },
+        front: house.front,
+        outer: true,
+      });
+      n++;
+    });
+  }
+
+  /** Build the forge's big new wing (when the player helps make a bigger forge). */
+  upgradeForge(game) {
+    if (this.forgeUpgraded) return;
+    this.forgeUpgraded = true;
+    const { center, k } = this.smithy;
+    const builder = new VoxelBuilder();
+    const glow = new VoxelBuilder();
+    const into = (b) => (x, y, z, color, sx = 1, sy = 1, sz = 1) => {
+      const [rx, rz] = rotate(x, z, k);
+      const [w, d] = k % 2 ? [sz, sx] : [sx, sz];
+      b.box(center.x + rx, y, center.z + rz, w, sy, d, color);
+    };
+    const put = into(builder);
+    put.glow = into(glow);
+    const wing = forgeWing(put, this.rng);
+    this.object3d.add(builder.build({ material: blockMaterial }), glow.build({ material: glowMaterial, castShadow: false }));
+    const [wx, wz] = rotate(wing.center[0], wing.center[1], k);
+    const [hx, hz] = k % 2 ? [wing.halfZ, wing.halfX] : [wing.halfX, wing.halfZ];
+    game.colliders.push({ x: center.x + wx, z: center.z + wz, halfX: hx, halfZ: hz });
+    const [sx, sz] = rotate(wing.smoke[0], wing.smoke[2], k);
+    this.chimneys.push(new THREE.Vector3(center.x + sx, wing.smoke[1], center.z + sz));
+    this.landmarks.push({ name: 'the big forge', x: center.x + wx, z: center.z + wz });
+    game.particles?.burst(new THREE.Vector3(center.x + wx, 2, center.z + wz), { count: 60, colors: ['#ffc93c', '#ff7a1a', '#ffffff'], speed: 6, size: 0.2 });
+  }
+
+  /** What's at this spot (for the "suggest a change" tool): the nearest building, or the plaza. */
+  describe(point) {
+    if (Math.hypot(point.x, point.z) < VILLAGE.plazaRadius && point.y < 0.3) return 'the village plaza';
+    let best = null;
+    for (const l of this.landmarks) {
+      const d = Math.hypot(l.x - point.x, l.z - point.z);
+      if (!best || d < best.d) best = { name: l.name, d };
+    }
+    return best && best.d < 8 ? best.name : 'a path in the village';
   }
 
   /** The middle of the gap between ring buildings that points most toward `angle`. */

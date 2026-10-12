@@ -3,7 +3,7 @@ import { VoxelBuilder } from '../core/VoxelBuilder.js';
 import { grassMaterial, sandMaterial } from '../core/textures.js';
 import { createRng, createNoise2D, fbm } from '../utils/random.js';
 import { vary } from '../utils/color.js';
-import { SEED, WORLD } from '../config.js';
+import { SEED, WORLD, SEA } from '../config.js';
 
 const GRASS = ['#4fb83a', '#5cc93b', '#6fd64a', '#83e05a'];
 const SAND = '#f5dfa0';
@@ -33,7 +33,7 @@ export class Ground extends Entity {
 
         if (d > edge - 1.5) {
           // Outer ring sits one block lower so it looks like sand under the water.
-          sand.add(cx, -1.5, cz, vary(WET_SAND, rng));
+          sand.box(cx, (SEA.floor - 1) / 2, cz, 1, -1 - SEA.floor, 1, vary(WET_SAND, rng)); // down to the seabed
         } else if (d > edge - 4) {
           sand.add(cx, -0.5, cz, vary(SAND, rng));
         } else {

@@ -14,6 +14,8 @@ export const ACTIONS = [
   { id: 'bow', label: 'Shoot bow', keys: ['KeyK'] },
   { id: 'eat', label: 'Eat food', keys: ['KeyF'] },
   { id: 'interact', label: 'Talk / open / chop / mine', keys: ['KeyT'] },
+  { id: 'dash', label: 'Dash (dream ability)', keys: ['KeyL'] },
+  { id: 'invisible', label: 'Turn invisible (dream ability)', keys: ['KeyI'] },
   { id: 'camLeft', label: 'Turn camera left', keys: ['KeyQ'] },
   { id: 'camRight', label: 'Turn camera right', keys: ['KeyE'] },
   { id: 'tiltUp', label: 'Tilt camera up', keys: ['KeyR'] },
@@ -21,10 +23,11 @@ export const ACTIONS = [
   { id: 'camBehind', label: 'Camera behind you', keys: ['KeyC'] },
   { id: 'zoomIn', label: 'Zoom in', keys: ['Equal', 'NumpadAdd'] },
   { id: 'zoomOut', label: 'Zoom out', keys: ['Minus', 'NumpadSubtract'] },
+  { id: 'suggest', label: 'Suggest a change', keys: ['Slash'] },
 ];
 
 // Keys the game itself uses for menus; they can't be given to anything else.
-export const RESERVED = new Set(['MetaLeft', 'MetaRight', 'AltLeft', 'AltRight', 'Escape']);
+export const RESERVED = new Set(['MetaLeft', 'MetaRight', 'AltLeft', 'AltRight', 'Escape', 'Backquote']); // ` = debug menu
 
 const NAMES = {
   Space: 'Space',

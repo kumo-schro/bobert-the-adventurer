@@ -5,10 +5,10 @@ import * as THREE from 'three';
 export const SEED = 1337;
 
 export const WORLD = {
-  islandRadius: 76, // radius of the grassy island, in voxels
-  treeCount: 70,
+  islandRadius: 100, // radius of the grassy island, in voxels
+  treeCount: 115,
   treeSpacing: 9, // minimum distance between trees
-  flowerCount: 1400,
+  flowerCount: 2400,
   butterflyCount: 16,
 };
 
@@ -40,9 +40,10 @@ export const CAMERA = {
 export const VILLAGE = {
   houseCount: 6,
   ringRadius: 18, // distance from the plaza center to each house
+  outerRingRadius: 33, // a second ring of houses further out
   plazaRadius: 7,
   roofColors: ['#d9493f', '#3f7fd9', '#e08a2e', '#7a4fd1', '#2fa36b', '#d94f9a'],
-  wanderRadius: 14, // how far villagers stroll from the plaza
+  wanderRadius: 22, // how far villagers stroll from the plaza
 };
 
 export const PLAYER = {
@@ -56,15 +57,12 @@ export const SWORDS = [
   { name: "Knight's Sword", damage: 2, reach: 1.5 },
 ];
 
-// What the blacksmith's forge sells. Upgrades also need wood and stone.
+// What the blacksmith's forge sells. Like Hana's oven, you help build a bigger forge (with wood
+// and stone) to unlock all the upgraded things.
 export const FORGE = {
   prices: { shield: 25, bow: 40, arrows: 20, axe: 10, pickaxe: 10 },
-  upgrades: {
-    sword: { coins: 40, wood: 6, stone: 6 },
-    powerBow: { coins: 50, wood: 8, stone: 4 },
-    ironShield: { coins: 40, wood: 2, stone: 10 },
-    armor: { coins: 60, wood: 4, stone: 12 },
-  },
+  biggerForge: { coins: 40, wood: 20, stone: 20 },
+  upgrades: { sword: 60, powerBow: 70, ironShield: 60, armor: 90, steelAxe: 30, steelPickaxe: 30 },
   arrowsPerBundle: 10, // how many arrows you get for prices.arrows
   armorHearts: 2, // extra max hearts from the armor
 };
@@ -88,9 +86,10 @@ export const FOOD = {
 
 // Wood and stone: chop trees with an axe and mine boulders with a pickaxe (press T next to them).
 export const GATHER = {
-  perNode: 3, // how much one tree or boulder gives before it needs a rest
+  perNode: 3, // how many chops (or swings of the pickaxe) one tree or boulder takes before it needs a rest
+  steelBonus: 2, // a steel axe / pickaxe gets this much per chop instead of 1
   regrowSeconds: 60,
-  boulderCount: 16,
+  boulderCount: 26,
 };
 
 export const BOW = {
@@ -108,35 +107,38 @@ export const BOW = {
 export const SEA = {
   level: -0.4, // water surface height
   radius: 260, // how far out you can swim
+  swimDepth: 3.4, // swimming is underwater: your feet are this far below the surface
+  monsterDepth: 2.4, // sea monsters swim this far down too
+  floor: -12, // the sandy seabed
   // Sharks are common, eels are rare (two live by the tower island).
   sharks: [
-    { x: 104, z: 4 },
-    { x: 110, z: 40 },
-    { x: 96, z: -30 },
-    { x: 40, z: 120 },
-    { x: -110, z: 50 },
-    { x: -90, z: -120 },
-    { x: 60, z: -120 },
-    { x: 160, z: -10 },
+    { x: 135, z: 2 },
+    { x: 140, z: 55 },
+    { x: 130, z: -45 },
+    { x: 50, z: 145 },
+    { x: -140, z: 60 },
+    { x: -100, z: -130 },
+    { x: 70, z: -140 },
+    { x: 200, z: -40 },
     { x: 20, z: 175 },
-    { x: -60, z: 140 },
-    { x: -170, z: -40 },
+    { x: -65, z: 150 },
+    { x: -175, z: -40 },
     { x: -40, z: -170 },
-    { x: 130, z: -130 },
-    { x: 210, z: 40 },
+    { x: 140, z: -140 },
+    { x: 215, z: 45 },
     { x: 150, z: 160 },
     { x: -200, z: 100 },
-    { x: 100, z: 90 },
+    { x: 120, z: 110 },
     { x: -130, z: -180 },
   ],
   // Little islands to rest on. `chest` puts a treasure chest on it.
   islands: [
-    { x: 75, z: 135, radius: 8, chest: 20 },
-    { x: -125, z: 95, radius: 9 },
-    { x: -140, z: -110, radius: 7, chest: 25 },
-    { x: 10, z: -145, radius: 8 },
-    { x: 180, z: -60, radius: 7 },
-    { x: 190, z: 110, radius: 6, chest: 30 },
+    { x: 85, z: 150, radius: 8, chest: 20 },
+    { x: -135, z: 105, radius: 9 },
+    { x: -150, z: -115, radius: 7, chest: 25 },
+    { x: 10, z: -160, radius: 8 },
+    { x: 190, z: -80, radius: 7 },
+    { x: 195, z: 115, radius: 6, chest: 30 },
   ],
 };
 
@@ -146,22 +148,51 @@ export const PLACES = {
   stoneCircle: { x: -44, z: -20 }, // the rainbow stones puzzle
   slimeMeadow: { x: -36, z: 38 }, // where the farmer's slime problem is
   dockZ: 6, // the dock sticks out of the east beach at this z
-  towerIsland: { x: 138, z: 22, radius: 18 }, // island with the big tower and the mystery crystal
-  kraken: { x: 95, z: -170 },
-  seaSerpent: { x: -190, z: 10 },
-  charibdisCave: { x: -30, z: 195 }, // rocky sea cave, locked with the key
+  towerIsland: { x: 170, z: 22, radius: 18 }, // island with the big tower and the mystery crystal
+  kraken: { x: 100, z: -185 },
+  seaSerpent: { x: -200, z: 10 },
+  charibdisCave: { x: -30, z: 205 }, // rocky sea cave, locked with the key
   jungle: { x: 0, z: -1000, radius: 55 }, // the jungle island, far across the sea (Finn takes you)
-  cellar: { x: 900, z: 0 }, // Old Man Keegan's cellar, under the trapdoor (built far away, out of sight)
+  cellar: { x: 900, z: 0 },
+  dream: { x: -1000, z: 0, y: 140 }, // the dream dimension, floating high in the sky far away // Old Man Keegan's cellar, under the trapdoor (built far away, out of sight)
+};
+
+// Dream abilities, bought at the dream shrine with dream points.
+export const DREAM = {
+  dashCost: 4,
+  invisibleCost: 4,
+  dashSpeed: 24,
+  dashTime: 0.22, // seconds of dashing
+  dashCooldown: 1.2,
+  invisibleTime: 6, // seconds you stay invisible...
+  invisibleCooldown: 18, // ...and how long before you can do it again
+};
+
+// The sailboat: unlocked once you've been to the jungle, built at the dock.
+export const BOAT = {
+  wood: 40,
+  speed: 9,
+  fastSpeed: 14,
 };
 
 export const CHARIBDIS = {
-  health: 15,
+  health: 30,
   damage: 5, // to anyone in the whirlpool...
-  tickSeconds: 3, // ...every this many seconds
+  tickSeconds: 2, // ...every this many seconds
   whirlpoolRadius: 6,
   onSeconds: 10, // whirlpool spins this long...
-  offSeconds: 30, // ...then stops this long, then summons helpers and starts again
+  offSeconds: 10, // ...then stops this long, then summons helpers and starts again
   maxHelpers: 6,
+  // Extra ways it fights back (so it isn't too easy):
+  pull: 2.2, // how hard the whirlpool drags you in
+  shieldedWhileSpinning: true, // the spinning water protects it: attacks only work while it's stopped
+  biteDamage: 3, // when the whirlpool is stopped, it lunges and bites anyone close...
+  biteRange: 4.8,
+  biteWindup: 0.9, // ...after opening its mouth wide for this long
+  biteCooldown: 2.2,
+  spitDamage: 1, // while the whirlpool spins, it spits water balls at you if you stay outside it
+  spitEvery: 2,
+  spitRange: 22,
 };
 
 export const QUEST = {

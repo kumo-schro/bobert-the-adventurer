@@ -16,8 +16,9 @@ import { QUEST_LOCKED, COME_BACK_LATER } from '../story.js';
  *          (villagers give you more quests over time this way)
  */
 export class Quest {
-  constructor(game, { id, title, text, reward = 0, seekDistance = 0, requires = null, after = null, delay = 0 }) {
+  constructor(game, { id, title, text, reward = 0, dreamPoints = 0, seekDistance = 0, requires = null, after = null, delay = 0 }) {
     this.game = game;
+    this.dreamPoints = dreamPoints; // a reward in dream points (dream dimension quests)
     this.requires = requires;
     this.after = after;
     this.delay = delay;
@@ -104,6 +105,10 @@ export class Quest {
         size: 0.2,
         life: 1.4,
       });
+    }
+    if (this.dreamPoints) {
+      game.player.dreamPoints += this.dreamPoints;
+      game.questLog.toast(`Quest complete! +${this.dreamPoints} dream points ✨`);
     }
     game.questLog.complete(this.id);
     this.onFinish();

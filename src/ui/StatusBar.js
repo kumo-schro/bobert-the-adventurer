@@ -1,5 +1,6 @@
 import { Entity } from '../core/Entity.js';
 import { FOOD } from '../config.js';
+import { keyName } from '../controls.js';
 
 /**
  * Hearts (health, plus golden extra hearts), HP number, coins, wood and stone, arrows and
@@ -17,6 +18,7 @@ export class StatusBar extends Entity {
       <div class="status-coins"><span class="coin"></span><span class="coin-count">0</span></div>
       <div class="status-materials hidden"></div>
       <div class="status-arrows hidden"></div>
+      <div class="status-dream hidden"></div>
       <div class="status-food hidden"></div>`;
     this.heartsEl = this.el.querySelector('.hearts');
     this.hpEl = this.el.querySelector('.hp');
@@ -24,6 +26,7 @@ export class StatusBar extends Entity {
     this.foodEl = this.el.querySelector('.status-food');
     this.arrowsEl = this.el.querySelector('.status-arrows');
     this.materialsEl = this.el.querySelector('.status-materials');
+    this.dreamEl = this.el.querySelector('.status-dream');
 
     this.chargeEl = document.createElement('div');
     this.chargeEl.className = 'charge hidden';
@@ -111,6 +114,15 @@ export class StatusBar extends Entity {
       this.arrowsEl.classList.toggle('hidden', arrows < 0);
       this.arrowsEl.classList.toggle('empty', arrows === 0);
     }
-    this.shown = { health, maxHealth, coins, food, arrows, tempHealth, materials, charge: charging ? game.player.arrowDamage : null };
+    // Dream points and dream powers (dimmed while they recharge).
+    const p = game.player;
+    const dream = `${p.dreamPoints},${p.hasDash && p.dashCooldown === 0},${p.hasInvisibility && p.invisibleCooldown === 0},${p.hasDash},${p.hasInvisibility}`;
+    if (dream !== this.shown.dream) {
+      const key = (action) => keyName(game.input.bindings[action][0] ?? '?');
+      const power = (has, ready, action, icon) => (has ? `<span class="${ready ? '' : 'cooling'}"><kbd>${key(action)}</kbd>${icon}</span>` : '');
+      this.dreamEl.innerHTML = `✨ ${p.dreamPoints} ${power(p.hasDash, p.dashCooldown === 0, 'dash', '💨')} ${power(p.hasInvisibility, p.invisibleCooldown === 0, 'invisible', '👻')}`;
+      this.dreamEl.classList.toggle('hidden', !p.dreamPoints && !p.hasDash && !p.hasInvisibility && !game.dream?.contains(p.object3d.position.x, p.object3d.position.y, p.object3d.position.z));
+    }
+    this.shown = { health, maxHealth, coins, food, arrows, tempHealth, materials, dream, charge: charging ? game.player.arrowDamage : null };
   }
 }

@@ -5,7 +5,7 @@ import { stoneTexture, texturedVoxelMaterial } from '../core/textures.js';
 import { createRng, createNoise2D } from '../utils/random.js';
 import { vary } from '../utils/color.js';
 import { part } from '../models/character.js';
-import { SEED, PLACES } from '../config.js';
+import { SEED, PLACES, SEA } from '../config.js';
 
 const POOL = 14; // radius of the flooded chamber inside
 const OUTER = 21; // outside radius of the rock
@@ -28,6 +28,7 @@ export class CharibdisCave extends Entity {
   constructor({ x, z } = PLACES.charibdisCave) {
     super();
     this.center = { x, z };
+    this.inside = false; // only change the camera when we go in or come out
     this.lairSpot = { x, z: z + 1 };
     this.solid = new Set();
     this.rng = createRng(SEED + 71);
@@ -84,7 +85,7 @@ export class CharibdisCave extends Entity {
         }
         this.solid.add(`${ix},${iz}`);
         const h = Math.max(1, Math.min(top, WALL));
-        walls.box(x, (h - 3) / 2, z, 1, h + 3, 1, vary(rng.pick(ROCK), rng, 0.05));
+        walls.box(x, (h + SEA.floor) / 2, z, 1, h - SEA.floor, 1, vary(rng.pick(ROCK), rng, 0.05)); // rock all the way down
         if (top > WALL) roof.box(x, (WALL + top) / 2, z, 1, top - WALL, 1, vary(rng.pick(ROCK), rng, 0.05));
         else walls.box(x, h + 0.1, z, 1, 0.2, 1, vary(rng.pick(MOSS), rng, 0.06)); // mossy top
       }

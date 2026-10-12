@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { Entity } from '../core/Entity.js';
 import { Monster } from './Monster.js';
 import { Shark } from './Shark.js';
 import { Eel } from './Eel.js';
@@ -10,12 +11,48 @@ const TEAL = '#1f6f78';
 const DARK = '#164f56';
 const swirlMaterial = new THREE.MeshLambertMaterial({ color: '#e8fbff', transparent: true, opacity: 0.7, emissive: '#bfe6ff', emissiveIntensity: 0.3 });
 
+const ballMaterial = new THREE.MeshLambertMaterial({ color: '#bfe6ff', emissive: '#3cc6ea', emissiveIntensity: 0.5, transparent: true, opacity: 0.85 });
+const ballGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+
+/** A ball of water Charibdis spits at you. Splashes on whatever it hits. */
+class WaterBall extends Entity {
+  constructor(from, to, damage) {
+    super();
+    this.damage = damage;
+    this.object3d.add(new THREE.Mesh(ballGeometry, ballMaterial));
+    this.object3d.position.copy(from);
+    // Underwater, so it shoots straight at you (no falling).
+    this.velocity = to.clone().sub(from).normalize().multiplyScalar(11);
+    this.life = from.distanceTo(to) / 11 + 0.6;
+  }
+
+  update(dt, game) {
+    if (game.isUiOpen()) return;
+    const pos = this.object3d.position;
+    pos.addScaledVector(this.velocity, dt);
+    this.object3d.rotation.x += dt * 8;
+    const player = game.player;
+    const p = player.object3d.position;
+    const hitPlayer = !player.dead && Math.hypot(p.x - pos.x, p.z - pos.z) < 0.9 && Math.abs(p.y + 1 - pos.y) < 1.6;
+    if (hitPlayer) player.takeDamage(game, this.damage, pos.x - this.velocity.x, pos.z - this.velocity.z);
+    if (hitPlayer || (this.life -= dt) <= 0) {
+      game.particles?.burst(pos.clone(), { count: 12, colors: ['#ffffff', '#bfe6ff', '#3cc6ea'], speed: 4, size: 0.14, life: 0.6 });
+      game.remove(this);
+    }
+  }
+}
+
 /**
  * Charibdis: a giant fish with a huge mouth, covered in eyes, living in the flooded sea cave.
- * It doesn't move or bite. Instead it spins a whirlpool around itself: anyone swimming in it
- * gets pulled round and takes 5 hearts of damage every 3 seconds. The whirlpool runs for
- * 10 seconds, then stops for 30 (your chance to attack!), then Charibdis calls for help
- * (3 sharks or an eel) and starts it again. 15 hits to defeat.
+ * It spins a whirlpool around itself: anyone swimming in it gets dragged round and takes
+ * 5 hearts of damage every 3 seconds. The whirlpool runs for 10 seconds, then stops for 30,
+ * then Charibdis calls for help (3 sharks or an eel) and starts it again. 15 hits to defeat.
+ *
+ * It's tough:
+ *  - While the whirlpool spins, the water shields it: your sword and arrows bounce off.
+ *  - While it spins, it spits water balls at you if you hang around outside the whirlpool.
+ *  - When the whirlpool stops it's open to attack, but it opens its mouth wide and bites
+ *    (3 hearts) anyone who comes close. Hit it, then back off before it bites!
  */
 export class Charibdis extends Monster {
   constructor({ x, z }) {
@@ -36,6 +73,10 @@ export class Charibdis extends Monster {
     this.phaseTimer = 0;
     this.tickTimer = CHARIBDIS.tickSeconds;
     this.helpers = [];
+    this.biteWindup = 0; // > 0 while the mouth is wide open, about to bite
+    this.biteCooldown = 1;
+    this.spitTimer = CHARIBDIS.spitEvery;
+    this.shieldToastAt = -99;
     this.buildModel();
     this.buildWhirlpool();
   }
@@ -117,30 +158,80 @@ export class Charibdis extends Monster {
     const dist = Math.hypot(p.x - pos.x, p.z - pos.z);
 
     if (!this.awake) {
-      if (dist < WAKE_RANGE && !player.dead) this.startWhirlpool(game, false);
+      if (dist < WAKE_RANGE && !player.dead) {
+        this.summonHelpers(game); // it doesn't fight alone
+        this.startWhirlpool(game, false);
+      }
       return;
     }
 
     this.phaseTimer -= dt;
     if (this.whirling) {
       if (this.phaseTimer <= 0) this.stopWhirlpool();
-      // Pull swimmers round and in, and hurt them every few seconds.
+      // Drag swimmers round and in, and hurt them every few seconds.
       const inside = player.swimming && !player.dead && dist < CHARIBDIS.whirlpoolRadius;
       if (inside) {
         const ix = (pos.x - p.x) / (dist || 1);
         const iz = (pos.z - p.z) / (dist || 1);
-        p.x += (ix * 0.8 - iz * 2) * dt;
-        p.z += (iz * 0.8 + ix * 2) * dt;
+        p.x += (ix * CHARIBDIS.pull - iz * 3) * dt;
+        p.z += (iz * CHARIBDIS.pull + ix * 3) * dt;
       }
       this.tickTimer -= dt;
       if (this.tickTimer <= 0) {
         this.tickTimer = CHARIBDIS.tickSeconds;
         if (inside) player.takeDamage(game, this.power, pos.x, pos.z);
       }
-    } else if (this.phaseTimer <= 0) {
-      this.summonHelpers(game);
-      this.startWhirlpool(game, true);
+      // Spit water at anyone keeping their distance.
+      this.spitTimer -= dt;
+      if (this.spitTimer <= 0) {
+        this.spitTimer = CHARIBDIS.spitEvery;
+        if (!inside && !player.dead && dist < CHARIBDIS.spitRange) this.spit(game);
+      }
+    } else {
+      this.updateBite(dt, game, dist);
+      if (this.phaseTimer <= 0) {
+        this.biteWindup = 0;
+        this.summonHelpers(game);
+        this.startWhirlpool(game, true);
+      }
     }
+  }
+
+  /** While the whirlpool is stopped: open wide when you come close, then CHOMP. */
+  updateBite(dt, game, dist) {
+    const player = game.player;
+    this.biteCooldown -= dt;
+    if (this.biteWindup > 0) {
+      this.biteWindup -= dt;
+      if (this.biteWindup <= 0) {
+        this.biteCooldown = CHARIBDIS.biteCooldown;
+        const pos = this.object3d.position;
+        game.particles?.burst(pos.clone().setY(pos.y + 1), { count: 25, colors: ['#ffffff', '#bfe6ff'], speed: 6, size: 0.18 });
+        if (!player.dead && dist < CHARIBDIS.biteRange) player.takeDamage(game, CHARIBDIS.biteDamage + (this.power - this.damage), pos.x, pos.z);
+      }
+    } else if (this.biteCooldown <= 0 && !player.dead && dist < CHARIBDIS.biteRange) {
+      this.biteWindup = CHARIBDIS.biteWindup;
+    }
+  }
+
+  spit(game) {
+    const from = this.object3d.position.clone().add(new THREE.Vector3(Math.sin(this.fish.rotation.y) * 2, 1.2, Math.cos(this.fish.rotation.y) * 2));
+    const p = game.player.object3d.position;
+    game.add(new WaterBall(from, new THREE.Vector3(p.x, p.y + 1, p.z), CHARIBDIS.spitDamage));
+  }
+
+  /** The spinning whirlpool shields it: hits only count while it's stopped. */
+  hit(game, toPlayer, damage) {
+    if (this.whirling && CHARIBDIS.shieldedWhileSpinning) {
+      const pos = this.object3d.position;
+      game.particles?.burst(pos.clone().setY(pos.y + 1.5), { count: 12, colors: ['#ffffff', '#bfe6ff'], speed: 5, size: 0.14, life: 0.5 });
+      if (game.elapsed - this.shieldToastAt > 4) {
+        this.shieldToastAt = game.elapsed;
+        game.questLog?.toast('The spinning water protects Charibdis! Wait for the whirlpool to stop.');
+      }
+      return;
+    }
+    super.hit(game, toPlayer, damage);
   }
 
   startWhirlpool(game, announce) {
@@ -169,7 +260,7 @@ export class Charibdis extends Monster {
       const spot = { x: pos.x + Math.cos(a) * 7, z: pos.z + Math.sin(a) * 7 };
       const helper = game.add(sharks ? new Shark(spot) : new Eel(spot));
       this.helpers.push(helper);
-      game.particles?.burst(new THREE.Vector3(spot.x, SEA.level + 0.3, spot.z), { count: 20, colors: ['#ffffff', '#3cc6ea'], speed: 5 });
+      game.particles?.burst(new THREE.Vector3(spot.x, pos.y + 0.5, spot.z), { count: 20, colors: ['#ffffff', '#3cc6ea'], speed: 5 });
     }
     if (count > 0) game.questLog?.toast(sharks ? 'Charibdis called its sharks!' : 'Charibdis called an eel!');
   }
@@ -178,7 +269,7 @@ export class Charibdis extends Monster {
     // Its helpers swim off when it's beaten.
     for (const h of this.helpers) {
       if (!game.monsters.includes(h)) continue;
-      game.particles?.burst(h.object3d.position.clone().setY(SEA.level + 0.5), { count: 15, colors: ['#ffffff', '#3cc6ea'], speed: 4 });
+      game.particles?.burst(h.object3d.position.clone().setY(h.object3d.position.y + 0.5), { count: 15, colors: ['#ffffff', '#3cc6ea'], speed: 4 });
       game.remove(h);
     }
     super.defeat(game);
@@ -193,6 +284,11 @@ export class Charibdis extends Monster {
     this.tail.rotation.y = Math.sin(game.elapsed * 3) * 0.4;
     // Eyes look around (twitchy!)
     this.pupils.forEach((pupil, i) => (pupil.visible = Math.sin(game.elapsed * 0.7 + i * 2.3) > -0.95)); // blink
+    // About to bite: rear up and shake (all its eyes go wide).
+    const winding = this.biteWindup > 0;
+    this.fish.rotation.x = winding ? -0.35 : this.fish.rotation.x * 0.9;
+    if (winding) this.fish.position.x = Math.sin(game.elapsed * 40) * 0.08;
+    else this.fish.position.x = 0;
     if (this.whirlpool.visible) {
       this.rings.forEach((ring, i) => (ring.rotation.y -= dt * (2.6 - i * 0.4)));
     }

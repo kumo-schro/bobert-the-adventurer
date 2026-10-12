@@ -49,7 +49,7 @@ export class Monster extends Entity {
     this.aquatic = aquatic;
     this.flying = flying;
     this.touchDamage = touchDamage;
-    this.home = new THREE.Vector3(x, aquatic ? SEA.level : y, z);
+    this.home = new THREE.Vector3(x, aquatic ? SEA.level - SEA.monsterDepth : y, z);
     this.object3d.position.copy(this.home);
     this.maxHealth = health;
     this.health = health;
@@ -118,7 +118,7 @@ export class Monster extends Entity {
    * going until they get GIVE_UP_DISTANCE away (or are knocked out / somewhere we can't follow).
    */
   chasing(toPlayer, noticeRange, canReach = true) {
-    if (toPlayer.playerDown || !canReach) this.aggro = false;
+    if (toPlayer.playerDown || !canReach || this.game?.player.invisible) this.aggro = false;
     else if (toPlayer.dist < noticeRange) this.aggro = true;
     else if (toPlayer.dist > GIVE_UP_DISTANCE) this.aggro = false;
     return this.aggro;
@@ -168,7 +168,7 @@ export class Monster extends Entity {
     if (this.flying) reachable = Math.abs(pos.y - (p.y + 1)) < this.radius + 1;
     else if (this.aquatic) reachable = player.swimming;
     else reachable = !player.swimming && pos.y < 1 && p.y < 1.5;
-    if (this.touchDamage && !player.dead && reachable && dist < this.radius + 0.6 && this.contactCooldown <= 0) {
+    if (this.touchDamage && !player.dead && !player.invisible && reachable && dist < this.radius + 0.6 && this.contactCooldown <= 0) {
       const result = player.takeDamage(game, this.power, pos.x, pos.z);
       this.contactCooldown = CONTACT_COOLDOWN;
       if (result === 'blocked' && player.shieldTier >= 1) this.bounce(toPlayer); // the Iron Shield pushes back
@@ -213,7 +213,7 @@ export class Monster extends Entity {
     const nz = pos.z + this.velocity.z * dt * this.speedScale;
     if (this.canSwimAt(game, nx, pos.z)) pos.x = nx;
     if (this.canSwimAt(game, pos.x, nz)) pos.z = nz;
-    pos.y = SEA.level;
+    pos.y = SEA.level - SEA.monsterDepth; // down under the water with you
     this.velocity.y = 0;
   }
 

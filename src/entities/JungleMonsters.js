@@ -198,3 +198,278 @@ export class Gorilla extends Monster {
     }
   }
 }
+
+/** A poison dart frog: hops after you like a little slime and nips for 1 heart. Two hits. */
+export class Frog extends Monster {
+  constructor({ x, z }) {
+    super({ x, z, health: 2, damage: 1, coins: 2, radius: 0.45, barHeight: 1, colors: ['#3fd0ff', '#1d1d1d', '#ffd23f'] });
+    this.hopTimer = Math.random();
+    const color = ['#3fd0ff', '#ff3b8d', '#ffd23f'][Math.floor(Math.random() * 3)];
+    part(this.body, [0.6, 0.35, 0.7], color, [0, 0.25, 0]);
+    part(this.body, [0.5, 0.06, 0.5], '#1d1d1d', [0, 0.44, -0.05]); // spots
+    for (const s of [-1, 1]) {
+      part(this.body, [0.16, 0.16, 0.16], '#ffffff', [s * 0.2, 0.48, 0.25]); // big eyes
+      part(this.body, [0.08, 0.08, 0.06], '#1d1d1d', [s * 0.2, 0.5, 0.33]);
+      part(this.body, [0.18, 0.12, 0.4], color, [s * 0.35, 0.1, -0.1]); // legs
+    }
+  }
+
+  think(dt, game, toPlayer) {
+    this.hopTimer -= dt;
+    if (!this.onGround || this.hopTimer > 0) return;
+    const chasing = this.chasing(toPlayer, 8, !game.player.swimming);
+    const a = Math.random() * Math.PI * 2;
+    const dirX = chasing ? toPlayer.x : Math.cos(a) * 0.4;
+    const dirZ = chasing ? toPlayer.z : Math.sin(a) * 0.4;
+    this.velocity.set(dirX * 3.2, 6, dirZ * 3.2);
+    this.onGround = false;
+    this.hopTimer = chasing ? 0.9 : 2.2;
+  }
+
+  animate(dt) {
+    if (Math.hypot(this.velocity.x, this.velocity.z) > 0.2) {
+      const turn = Math.atan2(this.velocity.x, this.velocity.z) - this.body.rotation.y;
+      this.body.rotation.y += Math.atan2(Math.sin(turn), Math.cos(turn)) * (1 - Math.exp(-10 * dt));
+    }
+    const sy = this.onGround ? 1 : 1.2;
+    this.body.scale.set(1 / Math.sqrt(sy), sy, 1 / Math.sqrt(sy));
+  }
+}
+
+/** A sleek black panther: prowls fast and swipes for 2 hearts. Three hits. */
+export class Panther extends Monster {
+  constructor({ x, z }) {
+    super({ x, z, health: 3, damage: 2, coins: 6, radius: 0.7, barHeight: 1.6, colors: ['#1d1d1d', '#3b3b3b', '#ffd23f'] });
+    this.walkPhase = 0;
+    const black = '#202028';
+    part(this.body, [0.6, 0.6, 1.5], black, [0, 0.75, 0]); // body
+    part(this.body, [0.5, 0.45, 0.5], black, [0, 0.95, 0.9]); // head
+    for (const s of [-1, 1]) {
+      part(this.body, [0.1, 0.06, 0.04], '#ffd23f', [s * 0.12, 1.02, 1.16], { emissive: '#ffd23f' }); // glowing eyes
+      part(this.body, [0.12, 0.14, 0.08], black, [s * 0.16, 1.24, 0.85]); // ears
+    }
+    part(this.body, [0.12, 0.12, 0.9], black, [0, 0.95, -1.1]).rotation.x = -0.5; // tail
+    this.legs = [];
+    for (const [x, z] of [[-0.22, 0.55], [0.22, 0.55], [-0.22, -0.55], [0.22, -0.55]]) {
+      const leg = new THREE.Group();
+      leg.position.set(x, 0.55, z);
+      this.body.add(leg);
+      part(leg, [0.18, 0.55, 0.2], black, [0, -0.27, 0]);
+      this.legs.push(leg);
+    }
+  }
+
+  think(dt, game, toPlayer) {
+    const chasing = this.chasing(toPlayer, 11, !game.player.swimming);
+    const speed = chasing ? 3.4 : 0;
+    this.velocity.x = chasing ? toPlayer.x * speed : 0;
+    this.velocity.z = chasing ? toPlayer.z * speed : 0;
+    this.moving = speed;
+  }
+
+  animate(dt) {
+    if (this.moving) {
+      const turn = Math.atan2(this.velocity.x, this.velocity.z) - this.body.rotation.y;
+      this.body.rotation.y += Math.atan2(Math.sin(turn), Math.cos(turn)) * (1 - Math.exp(-8 * dt));
+    }
+    this.walkPhase += dt * (this.moving ? 9 : 0);
+    this.legs.forEach((leg, i) => (leg.rotation.x = Math.sin(this.walkPhase + (i % 2 ? Math.PI : 0) + (i > 1 ? 0.5 : 0)) * 0.6));
+  }
+}
+
+const VINE_GREEN = '#2e7d32';
+const VINE_DARK = '#1b5e20';
+const vineWarning = new THREE.MeshBasicMaterial({ color: '#ff3b3b', transparent: true, opacity: 0.4, depthWrite: false });
+
+/** One of the Vine's huge arms: a chain of thorny segments. */
+function vineArm(parent, length) {
+  const root = new THREE.Group();
+  parent.add(root);
+  const joints = [];
+  let at = root;
+  for (let i = 0; i < length; i++) {
+    const joint = new THREE.Group();
+    joint.position.y = i === 0 ? 0 : 0.9;
+    at.add(joint);
+    const t = 0.7 * (1 - (i / length) * 0.6);
+    part(joint, [t, 1, t], i % 2 ? VINE_GREEN : VINE_DARK, [0, 0.45, 0]);
+    part(joint, [0.1, 0.25, 0.1], '#e8e0c0', [t / 2 + 0.05, 0.5, 0]).rotation.z = -0.6; // thorns
+    part(joint, [0.1, 0.25, 0.1], '#e8e0c0', [-t / 2 - 0.05, 0.3, 0]).rotation.z = 0.6;
+    joints.push(joint);
+    at = joint;
+  }
+  return { root, joints };
+}
+
+/**
+ * The Vine: the boss of the jungle. A giant carnivorous plant rooted to the spot. Its huge thorny
+ * arms rise up and SLAM down where you are (a red circle shows where), for 5 hearts. 50 hits.
+ */
+export class Vine extends Monster {
+  constructor({ x, z }) {
+    super({
+      x,
+      z,
+      health: 50,
+      damage: 5,
+      coins: 80,
+      radius: 2.6,
+      barHeight: 7.5,
+      colors: [VINE_GREEN, '#ff3b8d', '#ffd23f'],
+      touchDamage: false,
+    });
+    this.isVine = true;
+    this.slams = [];
+    this.slamTimer = 2;
+    this.buildModel();
+  }
+
+  buildModel() {
+    part(this.body, [2.4, 4, 2.4], VINE_DARK, [0, 2, 0]); // thick trunk
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      part(this.body, [1.2, 0.4, 2.4], VINE_GREEN, [Math.sin(a) * 1.8, 0.2, Math.cos(a) * 1.8]).rotation.y = a; // roots
+    }
+    // A huge flower head with a toothy mouth and angry eyes
+    this.head = new THREE.Group();
+    this.head.position.y = 5;
+    this.body.add(this.head);
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      const petal = part(this.head, [1.2, 0.3, 1.8], i % 2 ? '#ff3b8d' : '#ff6bb5', [Math.sin(a) * 1.5, 0, Math.cos(a) * 1.5]);
+      petal.rotation.y = a;
+      petal.rotation.x = 0.4;
+    }
+    part(this.head, [2.2, 1.6, 2.2], '#ffd23f', [0, 0.4, 0]); // middle
+    part(this.head, [1.6, 0.6, 0.3], '#3b0d16', [0, 0.2, 1.15]); // mouth
+    for (let i = 0; i < 5; i++) part(this.head, [0.15, 0.25, 0.1], '#ffffff', [-0.6 + i * 0.3, 0.4, 1.3]); // teeth
+    for (const s of [-1, 1]) {
+      part(this.head, [0.4, 0.4, 0.1], '#ffffff', [s * 0.5, 0.95, 1.12]);
+      part(this.head, [0.2, 0.2, 0.06], '#d9293f', [s * 0.5, 0.95, 1.18], { emissive: '#d9293f' });
+      part(this.head, [0.5, 0.12, 0.08], VINE_DARK, [s * 0.5, 1.25, 1.14]).rotation.z = s * -0.35;
+    }
+    // Idle arms waving round the trunk
+    this.idleArms = [];
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2 + 0.4;
+      const arm = vineArm(this.body, 4);
+      arm.root.position.set(Math.sin(a) * 1.6, 1, Math.cos(a) * 1.6);
+      arm.root.rotation.y = a;
+      arm.phase = i * 1.7;
+      this.idleArms.push(arm);
+    }
+  }
+
+  think(dt, game, toPlayer) {
+    this.velocity.x = this.velocity.z = 0; // rooted
+    const awake = this.chasing(toPlayer, 20, !game.player.swimming);
+    this.slamTimer -= dt;
+    if (awake && this.slamTimer <= 0 && this.slams.length < 2 && toPlayer.dist < 22) {
+      this.slamTimer = 1.6;
+      const p = game.player.object3d.position;
+      const arm = vineArm(this.object3d, 8);
+      const warning = new THREE.Mesh(new THREE.CircleGeometry(2.4, 24), vineWarning);
+      warning.rotation.x = -Math.PI / 2;
+      this.object3d.add(warning);
+      this.slams.push({ x: p.x + (Math.random() - 0.5), z: p.z + (Math.random() - 0.5), timer: 1.3, arm, warning });
+    }
+  }
+
+  update(dt, game) {
+    super.update(dt, game);
+    if (this.health <= 0 || game.isUiOpen()) return;
+    const pos = this.object3d.position;
+    const player = game.player;
+    for (const s of [...this.slams]) {
+      s.timer -= dt;
+      const lx = s.x - pos.x;
+      const lz = s.z - pos.z;
+      s.warning.position.set(lx, 0.05, lz);
+      const side = Math.atan2(lx, lz);
+      s.arm.root.position.set(lx - Math.sin(side) * 2.5, 0, lz - Math.cos(side) * 2.5);
+      s.arm.root.rotation.y = side;
+      const up = s.timer > 0;
+      s.arm.joints.forEach((j, i) => (j.rotation.x = i === 0 ? (up ? -0.2 : 1.25) : up ? -0.05 : 0.12));
+      if (!up && !s.landed) {
+        s.landed = true;
+        game.particles?.burst(new THREE.Vector3(s.x, 0.3, s.z), { count: 30, colors: ['#5a4632', '#2e7d32', '#ffffff'], speed: 6, size: 0.2 });
+        const p = player.object3d.position;
+        if (!player.dead && !player.swimming && Math.hypot(p.x - s.x, p.z - s.z) < 2.4) player.takeDamage(game, this.power, pos.x, pos.z);
+      }
+      if (s.timer < -0.5) {
+        this.object3d.remove(s.arm.root, s.warning);
+        this.slams.splice(this.slams.indexOf(s), 1);
+      }
+    }
+  }
+
+  animate(dt, game) {
+    const p = game.player.object3d.position;
+    const pos = this.object3d.position;
+    const turn = Math.atan2(p.x - pos.x, p.z - pos.z) - this.head.rotation.y;
+    this.head.rotation.y += Math.atan2(Math.sin(turn), Math.cos(turn)) * (1 - Math.exp(-2 * dt));
+    for (const arm of this.idleArms) {
+      arm.joints.forEach((j, i) => (j.rotation.x = 0.35 + Math.sin(game.elapsed * 1.8 + arm.phase + i * 0.7) * 0.25));
+    }
+  }
+}
+
+/**
+ * Master Oak in battle: very strong (10 hearts a hit!) but slow, and only 5 hit points.
+ * He raises his staff (it glows) for a long moment before he swings. Watch, dodge, strike!
+ * When beaten he doesn't vanish: he bows, and the duel is over.
+ */
+export class OakFighter extends Monster {
+  constructor({ x, z }, model) {
+    super({ x, z, health: 5, damage: 10, coins: 0, radius: 0.6, barHeight: 2.6, colors: ['#3fae3a', '#8a5a35', '#ffd23f'], touchDamage: false });
+    this.model = model;
+    this.body.add(model.root);
+    this.windup = 0;
+    this.cooldown = 1.5;
+    this.walkPhase = 0;
+  }
+
+  think(dt, game, toPlayer) {
+    this.cooldown -= dt;
+    const close = toPlayer.dist < 2.8;
+    if (this.windup > 0) {
+      this.velocity.x = this.velocity.z = 0;
+      this.windup -= dt;
+      if (this.windup <= 0) {
+        this.cooldown = 2;
+        const player = game.player;
+        game.particles?.burst(this.object3d.position.clone().setY(1.5), { count: 16, colors: ['#3fae3a', '#ffd23f'], speed: 5, size: 0.14 });
+        if (!player.dead && toPlayer.dist < 3) player.takeDamage(game, this.power, this.object3d.position.x, this.object3d.position.z);
+      }
+      return;
+    }
+    if (close && this.cooldown <= 0 && !toPlayer.playerDown) {
+      this.windup = 1.6; // slooow
+      return;
+    }
+    const speed = toPlayer.playerDown || close ? 0 : 1.6;
+    this.velocity.x = toPlayer.x * speed;
+    this.velocity.z = toPlayer.z * speed;
+    this.moving = speed;
+  }
+
+  /** He bows instead of bursting. */
+  defeat(game) {
+    const where = this.object3d.position.clone();
+    game.particles?.burst(where.clone().setY(1.5), { count: 40, colors: ['#3fae3a', '#ffd23f', '#ffffff'], speed: 5, size: 0.16 });
+    game.remove(this);
+    this.onDefeated?.(where);
+  }
+
+  animate(dt, game) {
+    const { root, armR, legL, legR } = this.model;
+    const p = game.player.object3d.position;
+    const pos = this.object3d.position;
+    root.rotation.y = Math.atan2(p.x - pos.x, p.z - pos.z);
+    this.walkPhase += dt * (this.moving ? 5 : 0);
+    legL.rotation.x = Math.sin(this.walkPhase) * 0.5;
+    legR.rotation.x = -Math.sin(this.walkPhase) * 0.5;
+    armR.rotation.x = this.windup > 0 ? -2.9 : this.cooldown > 1.6 ? 0.4 : -0.3; // staff up high, then down
+    this.model.staffGlow.material.emissiveIntensity = this.windup > 0 ? 1.2 : 0.2;
+  }
+}

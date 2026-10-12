@@ -98,4 +98,91 @@ export const LOOKS = {
       part(root, [0.08, 1.4, 0.08], '#8a5a35', [-0.5, 0.7, 0.25]); // walking stick
     },
   },
+
+  gardener: {
+    colors: { skin: '#f0c8a0', shirt: '#ffd23f', pants: '#2fa36b', shoes: '#4a2f1a', hair: '#c0392b' },
+    decorate({ head, root }) {
+      part(head, [0.9, 0.06, 0.9], '#f2d16b', [0, 0.68, 0]); // sun hat
+      part(head, [0.12, 0.12, 0.12], '#ff4d6d', [0.3, 0.74, 0.2]); // flower on the hat
+      part(root, [0.6, 0.55, 0.05], '#7ddc55', [0, 1.0, 0.2]); // gardening apron
+    },
+  },
+
+  fisher: {
+    colors: { skin: '#c68642', shirt: '#2f6fd6', pants: '#f2c14e', shoes: '#2b2b2b', hair: '#1d1d1d' },
+    decorate({ head, root }) {
+      part(head, [0.7, 0.16, 0.7], '#ffd23f', [0, 0.66, 0]); // rain hat
+      part(head, [0.8, 0.06, 0.8], '#ffd23f', [0, 0.58, -0.05]);
+      part(root, [0.06, 1.6, 0.06], '#8a5a35', [0.45, 1.3, -0.2]).rotation.z = -0.3; // fishing rod
+    },
+  },
+
+  grandma: {
+    colors: { skin: '#ffd5b0', shirt: '#7a4fd1', pants: '#3b2a5a', shoes: '#3b2a5a', hair: '#e6e6e6' },
+    decorate({ head, root }) {
+      part(head, [0.66, 0.26, 0.66], '#e6e6e6', [0, 0.62, 0]); // curly white hair
+      part(head, [0.16, 0.06, 0.02], '#ffc93c', [-0.13, 0.33, 0.31]); // gold glasses
+      part(head, [0.16, 0.06, 0.02], '#ffc93c', [0.13, 0.33, 0.31]);
+      part(root, [0.72, 0.4, 0.42], '#ff8fab', [0, 0.6, 0]); // skirt
+    },
+  },
+
+  guard: {
+    colors: { skin: '#e0ac69', shirt: '#d9293f', pants: '#2b3a55', shoes: '#2b2b2b', hair: '#5a3a1a' },
+    decorate({ head, root }) {
+      part(head, [0.66, 0.22, 0.66], '#b9c2cc', [0, 0.66, 0]); // helmet
+      part(head, [0.1, 0.24, 0.1], '#d9293f', [0, 0.86, 0]); // plume
+      part(root, [0.08, 2.0, 0.08], '#8a5a35', [-0.45, 1.0, 0.2]); // spear
+      part(root, [0.16, 0.3, 0.06], '#b9c2cc', [-0.45, 2.1, 0.2]);
+    },
+  },
+
+  painter: {
+    colors: { skin: '#8d5524', shirt: '#ffffff', pants: '#5a4632', shoes: '#2b2b2b', hair: '#ff8a3d' },
+    decorate({ head, root }) {
+      part(head, [0.66, 0.12, 0.66], '#d9293f', [0, 0.66, 0]); // beret
+      part(head, [0.2, 0.08, 0.2], '#d9293f', [0.1, 0.74, 0]);
+      for (const [x, y, c] of [[-0.15, 1.2, '#3f8cff'], [0.12, 1.0, '#ffd23f'], [0.0, 0.9, '#ff4d6d']]) part(root, [0.12, 0.12, 0.04], c, [x, y, 0.2]); // paint splats
+    },
+  },
+
+  oak: {
+    colors: { skin: '#c99a6b', shirt: '#5a7a32', pants: '#4a3a28', shoes: '#3b2a1a', hair: '#3fae3a' },
+    decorate(model) {
+      const { head, root, handR } = model;
+      part(head, [0.56, 0.45, 0.1], '#3fae3a', [0, 0.02, 0.33]); // leafy beard
+      part(head, [0.36, 0.3, 0.1], '#2e8b3a', [0, -0.3, 0.33]);
+      for (const x of [-0.3, 0, 0.3]) part(head, [0.16, 0.2, 0.16], '#ffd23f', [x, 0.72, 0.1]); // crown of little flowers
+      part(root, [0.72, 1.1, 0.42], '#4a6a2a', [0, 0.95, 0]); // mossy robe
+      part(handR, [0.1, 2, 0.1], '#6b4a2b', [0, 0.3, 0.1]); // wooden staff
+      model.staffGlow = part(handR, [0.26, 0.26, 0.26], '#7dff6b', [0, 1.35, 0.1], { emissive: '#7dff6b' });
+    },
+  },
+
+  dreamKeeper: {
+    colors: { skin: '#e8dcff', shirt: '#5b3f9e', pants: '#3b2a6e', shoes: '#2a1a4a', hair: '#ffffff' },
+    decorate({ head, root }) {
+      part(root, [0.74, 1.3, 0.44], '#6b4fc0', [0, 0.85, 0]); // long starry robe
+      for (const [x, y] of [[-0.2, 1.2], [0.15, 0.7], [0.25, 1.4], [-0.1, 0.4]]) {
+        part(root, [0.08, 0.08, 0.04], '#ffe66b', [x, y, 0.23], { emissive: '#ffe66b' }); // stars on the robe
+      }
+      part(head, [0.7, 0.12, 0.7], '#5b3f9e', [0, 0.64, 0]); // wizard hat
+      part(head, [0.5, 0.4, 0.5], '#5b3f9e', [0, 0.9, 0]);
+      part(head, [0.28, 0.4, 0.28], '#5b3f9e', [0, 1.25, 0]);
+      part(head, [0.14, 0.14, 0.14], '#ffe66b', [0, 1.5, 0], { emissive: '#ffe66b' });
+    },
+  },
+
+  sprite: {
+    colors: { skin: '#fff3c8', shirt: '#ffe66b', pants: '#ffb3e6', shoes: '#ffffff', hair: '#ff8fe0' },
+    decorate({ head, root }) {
+      for (const s of [-1, 1]) {
+        const wing = part(root, [0.06, 0.8, 0.6], '#e8fbff', [s * 0.35, 1.3, -0.3]); // fairy wings
+        wing.rotation.y = s * 0.6;
+        wing.material.transparent = true;
+        wing.material.opacity = 0.7;
+      }
+      part(head, [0.14, 0.14, 0.14], '#ffffff', [0, 0.8, 0], { emissive: '#ffffff' }); // glowing tuft
+    },
+  },
 };

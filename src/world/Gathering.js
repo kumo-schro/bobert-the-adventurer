@@ -63,8 +63,10 @@ export class Gathering extends Entity {
     const player = game.player;
     const wood = node.kind === 'wood';
     player.useTool(wood ? 'axe' : 'pickaxe');
-    if (wood) player.wood++;
-    else player.stone++;
+    const steel = (wood ? player.axeTier : player.pickaxeTier) >= 1;
+    const amount = steel ? GATHER.steelBonus : 1;
+    if (wood) player.wood += amount;
+    else player.stone += amount;
     node.left--;
     const at = new THREE.Vector3(node.x, 1.2, node.z);
     game.particles?.burst(at, {

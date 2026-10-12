@@ -1,6 +1,9 @@
 import { Quest } from './Quest.js';
 import { Collectible } from '../entities/Collectible.js';
 import { Slime } from '../entities/Slime.js';
+import { OakFighter, Vine } from '../entities/JungleMonsters.js';
+import { createCharacter } from '../models/character.js';
+import { LOOKS } from '../models/people.js';
 import { createMysteryCrystal, createKey } from '../models/gear.js';
 import { RAINBOW } from '../world/StoneCircle.js';
 import { createRng } from '../utils/random.js';
@@ -341,5 +344,147 @@ export class JungleQuest extends Quest {
     this.setObjective(`Defeat the giant Venus fly traps (${this.traps.length} left)`, () =>
       [...this.traps].sort((a, b) => a.object3d.position.distanceTo(p) - b.object3d.position.distanceTo(p))[0] ?? null,
     );
+  }
+}
+
+/**
+ * Master Oak will only teach the spin attack to someone who beats him in battle. When the duel
+ * starts he steps out as an OakFighter; if you're knocked out, the duel is off (try again).
+ */
+export class OakDuelQuest extends Quest {
+  constructor(game, rest = {}) {
+    super(game, { id: 'oak', title: SIDE_QUESTS.oak.title, text: SIDE_QUESTS.oak.text, reward: 0, ...rest });
+  }
+
+  onStart() {
+    const { game } = this;
+    const oak = this.giver;
+    const model = createCharacter(LOOKS.oak.colors);
+    LOOKS.oak.decorate(model);
+    this.fighter = game.add(new OakFighter(oak.object3d.position, model));
+    oak.object3d.visible = false;
+    oak.collider.x = oak.collider.z = 1e6;
+    oak.hidden = true;
+    this.fighter.onDefeated = () => {
+      this.endDuel();
+      this.readyToTurnIn('You beat Master Oak! Talk to him.');
+    };
+    this.setObjective('Defeat Master Oak in battle! (Dodge when his staff glows.)', this.fighter);
+    game.questLog.toast('Master Oak raises his staff. The duel begins!');
+  }
+
+  endDuel() {
+    const oak = this.giver;
+    oak.hidden = false;
+    oak.object3d.visible = true;
+    if (this.fighter) oak.object3d.position.copy(this.fighter.object3d.position);
+  }
+
+  /** Knocked out by Oak? The duel's off; talk to him again to try again. */
+  update() {
+    const { game } = this;
+    if (this.stage !== 'active' || !game.player.dead || !this.fighter) return;
+    game.remove(this.fighter);
+    this.endDuel();
+    this.fighter = null;
+    this.stage = 'offer';
+    game.questLog.remove(this.id);
+  }
+
+  onFinish() {
+    this.game.player.knowsSpin = true;
+    this.game.questLog.toast('You learned the SPIN ATTACK! Hold the swing button, then let go.', 5);
+  }
+}
+
+/** The Vine, boss of the jungle. Beating it opens the way to the dream dimension. */
+export class VineQuest extends Quest {
+  constructor(game, { jungle, ...rest }) {
+    super(game, { id: 'vine', title: SIDE_QUESTS.vine.title, text: SIDE_QUESTS.vine.text, reward: 150, ...rest });
+    this.jungle = jungle;
+  }
+
+  onStart() {
+    const { game } = this;
+    this.vine = game.add(new Vine(this.jungle.vineSpot));
+    this.vine.onDefeated = () => this.readyToTurnIn('You defeated the Vine!');
+    this.setObjective('Defeat the Vine, boss of the jungle (watch for the red circles!)', this.vine);
+  }
+
+  onFinish() {
+    this.game.dreamPortal?.open(this.game);
+  }
+}
+
+// ---- Dream dimension quests (the Dream Keeper). They give dream points instead of coins. ----
+
+/** Catch the fallen stars scattered around the dream islands. */
+export class DreamStarsQuest extends Quest {
+  constructor(game, { dream, ...rest }) {
+    super(game, { id: 'stars', title: SIDE_QUESTS.stars.title, text: SIDE_QUESTS.stars.text, dreamPoints: 3, ...rest });
+    this.dream = dream;
+    this.stars = [];
+  }
+
+  onStart() {
+    const { game } = this;
+    for (const spot of this.dream.starSpots) {
+      const star = game.add(new Collectible(spot, { color: '#ffe66b' }));
+      star.onCollect = () => {
+        this.stars = this.stars.filter((s) => s !== star);
+        if (this.stars.length === 0) this.readyToTurnIn('You caught all the fallen stars!');
+        else this.updateObjective();
+      };
+      this.stars.push(star);
+    }
+    this.total = this.stars.length;
+    this.updateObjective();
+  }
+
+  updateObjective() {
+    const p = this.game.player.object3d.position;
+    this.setObjective(`Catch the fallen stars (${this.total - this.stars.length}/${this.total})`, () =>
+      [...this.stars].sort((a, b) => a.object3d.position.distanceTo(p) - b.object3d.position.distanceTo(p))[0] ?? null,
+    );
+  }
+}
+
+/** Chase away the nightmare wisps. */
+export class DreamWispsQuest extends Quest {
+  constructor(game, { dream, makeWisp, ...rest }) {
+    super(game, { id: 'wisps', title: SIDE_QUESTS.wisps.title, text: SIDE_QUESTS.wisps.text, dreamPoints: 3, ...rest });
+    this.dream = dream;
+    this.makeWisp = makeWisp;
+  }
+
+  onStart() {
+    this.wisps = this.dream.wispSpots.map((spot) => {
+      const wisp = this.game.add(this.makeWisp(spot));
+      wisp.onDefeated = () => {
+        this.wisps = this.wisps.filter((w) => w !== wisp);
+        if (this.wisps.length === 0) this.readyToTurnIn('The nightmares are gone!');
+        else this.updateObjective();
+      };
+      return wisp;
+    });
+    this.updateObjective();
+  }
+
+  updateObjective() {
+    this.setObjective(`Chase away the nightmare wisps (${this.wisps.length} left)`, () => this.wisps[0] ?? null);
+  }
+}
+
+/** Jump up the cloud stones to the summit and catch the dream star there. */
+export class CloudHopQuest extends Quest {
+  constructor(game, { dream, ...rest }) {
+    super(game, { id: 'hop', title: SIDE_QUESTS.hop.title, text: SIDE_QUESTS.hop.text, dreamPoints: 2, ...rest });
+    this.dream = dream;
+  }
+
+  onStart() {
+    const star = this.game.add(new Collectible(this.dream.summitSpot, { color: '#ff8fe0' }));
+    star.onCollect = () => this.readyToTurnIn('You reached the top of the clouds!');
+    this.setObjective('Jump up the cloud stones to the summit (press Space to jump)', star);
   }
 }

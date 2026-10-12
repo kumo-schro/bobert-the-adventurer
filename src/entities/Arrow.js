@@ -44,7 +44,7 @@ export class Arrow extends Entity {
       }
     }
 
-    const ground = game.isWalkable(pos.x, pos.z) ? game.heightAt(pos.x, pos.z) : SEA.level;
+    const ground = game.isWalkable(pos.x, pos.z) ? game.heightAt(pos.x, pos.z) : SEA.floor;
     const blocked = colliderAt(pos.x, pos.z, game.colliders, (c) => c === game.player.collider || c.isMonster);
     if (pos.y <= ground || blocked) {
       this.stuck = 1.5; // thunk!

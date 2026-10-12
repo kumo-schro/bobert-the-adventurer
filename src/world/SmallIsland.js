@@ -4,7 +4,7 @@ import { grassMaterial, sandMaterial, blockMaterial } from '../core/textures.js'
 import { createRng } from '../utils/random.js';
 import { vary } from '../utils/color.js';
 import { Chest } from '../entities/Chest.js';
-import { SEED } from '../config.js';
+import { SEED, SEA } from '../config.js';
 
 const SAND = '#f5dfa0';
 const WET_SAND = '#e3c47f';
@@ -19,7 +19,7 @@ export function islandGround({ grass, sand }, rng, X, Z, r) {
       const z = iz + 0.5;
       const d = Math.hypot(x - X, z - Z);
       if (d > r) continue;
-      if (d > r - 1.5) sand.add(x, -1.5, z, vary(WET_SAND, rng));
+      if (d > r - 1.5) sand.box(x, (SEA.floor - 1) / 2, z, 1, -1 - SEA.floor, 1, vary(WET_SAND, rng)); // down to the seabed
       else if (d > r - 4) sand.add(x, -0.5, z, vary(SAND, rng));
       else grass.add(x, -0.5, z, vary(rng.pick(GRASS), rng, 0.06));
     }

@@ -65,6 +65,7 @@ export class Cave extends Entity {
   constructor({ x, z } = PLACES.cave) {
     super();
     this.center = { x, z };
+    this.inside = false; // only change the camera when we go in or come out
     this.cells = new Map(); // "ix,iz" -> { open, ceiling, height }
     this.solid = new Set();
     this.spawns = { chests: [], spiders: [], torches: [] };

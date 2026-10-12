@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
-import { CAMERA } from '../config.js';
+import { CAMERA, SEA } from '../config.js';
 
 const _dir = new THREE.Vector3();
 
 const CONVERSATION_DISTANCE = 7;
+const UNDERWATER_DISTANCE = 8;
 // Inside caves (and Keegan's cellar) the camera looks down from above (the roof is cut away).
 const MODES = {
   cave: { minPitch: 1.05, maxDistance: 11 },
@@ -72,6 +73,12 @@ export class CameraRig extends Entity {
     if (mode) {
       wantedZoom = Math.min(wantedZoom, mode.maxDistance);
       wantedTilt = Math.max(wantedTilt, mode.minPitch);
+    }
+    // Swimming is underwater: keep the camera under the surface too, a bit closer in.
+    if (this.target.swimming) {
+      wantedZoom = Math.min(wantedZoom, UNDERWATER_DISTANCE);
+      const room = (SEA.level - 0.6 - (t.y + 1.4)) / wantedZoom;
+      wantedTilt = Math.min(wantedTilt, Math.asin(THREE.MathUtils.clamp(room, -0.6, 0.9)));
     }
 
     const speaker = game.dialog?.isOpen ? game.dialog.focus : null;

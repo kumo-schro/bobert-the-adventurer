@@ -3,7 +3,7 @@ import { VoxelBuilder } from '../core/VoxelBuilder.js';
 import { plankMaterial } from '../core/textures.js';
 import { createRng } from '../utils/random.js';
 import { vary } from '../utils/color.js';
-import { SEED, PLACES } from '../config.js';
+import { SEED, PLACES, SEA } from '../config.js';
 
 const PLANK = ['#b07a45', '#a06c3b', '#bb8550', '#9a6535'];
 const POST = '#5e3b22';
@@ -62,7 +62,7 @@ export class Dock extends Entity {
       b.box((start + end) / 2, DECK - 0.24, z + side * (HALF_WIDTH - 0.2), end - start, 0.16, 0.2, POST);
       for (let x = start + 1; x <= end; x += 3) {
         const px = Math.min(x, end - 0.25);
-        b.box(px, -0.8, z + side * (HALF_WIDTH + 0.05), 0.3, 2.6, 0.3, POST);
+        b.box(px, (0.5 + SEA.floor) / 2, z + side * (HALF_WIDTH + 0.05), 0.3, 0.5 - SEA.floor, 0.3, POST); // posts down to the seabed
         // Rope railing between posts, out over the water.
         if (px > start + 6 && px + 3 <= end) b.box(px + 1.5, 0.75, z + side * (HALF_WIDTH + 0.05), 3, 0.06, 0.06, '#e8d7a8');
       }

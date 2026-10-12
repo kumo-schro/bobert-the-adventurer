@@ -63,6 +63,15 @@ export class QuestLog extends Entity {
     if (this.tracked === id) this.tracked = [...this.entries.keys()].find((k) => !this.entries.get(k).done) ?? null;
   }
 
+  /** Take a quest off the list without calling it complete (like when you give up). */
+  remove(id) {
+    const entry = this.entries.get(id);
+    if (!entry) return;
+    entry.el.remove();
+    this.entries.delete(id);
+    if (this.tracked === id) this.tracked = [...this.entries.keys()].find((k) => !this.entries.get(k).done) ?? null;
+  }
+
   track(id) {
     this.tracked = id;
     this.panel.classList.remove('hidden');

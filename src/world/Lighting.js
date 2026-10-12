@@ -45,10 +45,12 @@ export class Lighting extends Entity {
     const step = 16;
     const x = Math.hypot(p.x, p.z) < 40 ? 0 : Math.round(p.x / step) * step;
     const z = Math.hypot(p.x, p.z) < 40 ? 0 : Math.round(p.z / step) * step;
-    if (x === this.cx && z === this.cz) return;
+    const y = p.y > 50 ? Math.round(p.y) : 0; // up in the dream dimension, the shadows come with you
+    if (x === this.cx && z === this.cz && y === this.cy) return;
     this.cx = x;
     this.cz = z;
-    this.sun.target.position.set(x, 0, z);
+    this.cy = y;
+    this.sun.target.position.set(x, y, z);
     this.sun.position.copy(SKY.sunDirection).multiplyScalar(150).add(this.sun.target.position);
   }
 }

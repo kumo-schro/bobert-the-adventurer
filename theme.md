@@ -80,3 +80,17 @@ Make trees taller
 Add more sharks in the ocean 
 Have monsters follow you until you get kind of far away from them
 Make monsters stronger at night
+Once you talk to Captain Finn, you can start swimming from any beach
+Make the forge more like the food vendor Where you Build a bigger forge with wood and stone to get all the upgraded things
+Make island bigger
+Add more houses and villagers
+make it so when you swim you go underwater this means all monsters will be underwater too
+Add boat which costs 40 wood so you can go to the jungle or explore the ocean. This is unlocked once you get to the jungle.
+Have a boss called the vine that has 50 health and has arms that slam onto you like the Kraken. They will do five damage.
+And monsters in the jungle like snakes or other things
+In the upgraded forge add upgraded pickaxe and axe to get you more wood and stone
+Make it so once you defeat, the boss of the jungle, the vine you unlock a dream dimension that gives you  special quests
+Once you do the special quest in the dream dimension, you'll get things called dream points with enough dream points you'll be able to unlock abilities like being able to dash or become invisible
+In the jungle somewhere, add a NPC named master Oak, who teaches you how to do a spin attack what you do by holding down the sword swinging button
+Make it so to get taught the spin attack you must defeat Oak in battle
+It will be very strong and do 10 damage if he hits you, however he has only five health and does attack slowly

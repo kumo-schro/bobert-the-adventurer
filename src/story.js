@@ -195,6 +195,85 @@ Object.assign(SIDE_QUESTS, {
   },
 });
 
+// The jungle and the dream dimension.
+Object.assign(SIDE_QUESTS, {
+  oak: {
+    giver: 'Master Oak',
+    title: 'The Spin Attack',
+    text: {
+      offer: [
+        'Hmm. A young adventurer, deep in my jungle. I am Master Oak.',
+        'I know a secret sword move: the SPIN ATTACK. But I only teach those who can beat me in battle.',
+        'Be warned: my staff hits very hard (10 hearts!). But I am old and slow. Watch my staff: when it glows, get out of the way. Then strike!',
+        'Are you ready? Then let us begin!',
+      ],
+      active: ['Defeat Master Oak in battle!'],
+      turnIn: [
+        'Ha! You have beaten me, fair and square. Now, the spin attack:',
+        'Hold down your sword button after a swing until your sword sparkles. Then let go, and spin round to hit everything near you!',
+      ],
+      complete: ['Practice your spin, young one. It will serve you well against the Vine.'],
+    },
+  },
+  vine: {
+    giver: 'Master Oak',
+    title: 'The Vine',
+    text: {
+      offer: [
+        'Now hear me. To the east grows the Vine, the boss of this jungle. A giant plant with arms like a kraken.',
+        'Its arms SLAM down where you stand: 5 hearts! When you see a red circle under your feet, run!',
+        'Defeat the Vine and the jungle will be free. It takes many, many hits. Use everything you have learned.',
+      ],
+      active: ['The Vine grows to the east. Watch for the red circles, and keep hitting it!'],
+      turnIn: [
+        'You did it! The Vine is gone, and look... where it grew, a portal has opened!',
+        'They say it leads to the dream dimension, where the Dream Keeper gives out dream points. With enough of them, you can learn amazing powers.',
+      ],
+      complete: ['The dream portal is to the east, where the Vine used to grow.'],
+    },
+  },
+  stars: {
+    giver: 'Dream Keeper',
+    title: 'Fallen Stars',
+    text: {
+      offer: [
+        'Welcome, dreamer. I am the Dream Keeper. This is where dreams are made.',
+        'Some of my stars have fallen onto the dream islands. Catch them all and I will give you dream points.',
+        'Spend dream points at the shrine, where Luma will teach you dream powers!',
+      ],
+      active: ['The fallen stars are on the floating islands. Cross the rainbow bridges to find them.'],
+      turnIn: ['My stars! They shine so brightly again. Here are 3 dream points.'],
+      complete: ['Every star you saved is a happy dream for someone.'],
+    },
+  },
+  wisps: {
+    giver: 'Dream Keeper',
+    title: 'Nightmare Wisps',
+    text: {
+      offer: [
+        'Oh dear. Nightmare wisps are floating around the islands, giving everyone bad dreams.',
+        'Chase them away! They sting a little, but two good hits will pop them.',
+      ],
+      active: ['Chase away the nightmare wisps on the floating islands.'],
+      turnIn: ['Sweet dreams have returned! Thank you. Here are 3 more dream points.'],
+      complete: ['No more nightmares. Well... not today.'],
+    },
+  },
+  hop: {
+    giver: 'Dream Keeper',
+    title: 'Above the Clouds',
+    text: {
+      offer: [
+        'One last thing. A staircase of clouds climbs to the very top of the dream.',
+        'Jump from cloud to cloud (each one is higher than the last) and catch the star at the summit.',
+      ],
+      active: ['Jump up the cloud stones (press Space) to reach the summit.'],
+      turnIn: ['You reached the top of the dream! You are a true dreamer. Here are 2 dream points.'],
+      complete: ['Come back whenever you like, dreamer. The dream is always here.'],
+    },
+  },
+});
+
 // What side-quest givers say before you've helped the merchant.
 export const QUEST_LOCKED = [
   'Oh, hello there! I could really use some help...',
@@ -205,6 +284,26 @@ export const QUEST_LOCKED = [
 export const COME_BACK_LATER = ['Come back a little later. I might need your help again!'];
 
 export const VILLAGER_CHATTER = {
+  Rosa: [
+    'Hello! I grow all the flowers you see around the island.',
+    'My secret? Talk to them every morning. And keep the slimes away!',
+  ],
+  Milo: [
+    'I am going to be a famous fisherman one day!',
+    'Have you seen the sharks out there? Captain Finn says the water is safe if you keep swimming. I am not so sure.',
+  ],
+  Greta: [
+    'Back in my day we did not have fancy iron shields. We had a stick! And we liked it!',
+    'If you are hungry, Hana bakes the best berry pie on the island.',
+  ],
+  Juno: [
+    'I keep watch over the village, day and night. Well... mostly day.',
+    'Be careful after dark. Monsters get stronger at night.',
+  ],
+  Wren: [
+    'I am painting the sea tower! It is so tall I need a very long brush.',
+    'Have you been all the way to the top? I hear there are gargoyles.',
+  ],
   Tomas: [
     'Lovely day for a walk! If you want to look around, drag with the mouse, or press Q and E to turn the camera.',
     'Press C to put the camera right behind you. Handy when you get turned around!',

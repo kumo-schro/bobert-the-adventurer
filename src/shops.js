@@ -1,104 +1,141 @@
 // What each shop sells. Each function gets the player and returns the items for the Shop menu
 // (see ui/Shop.js for the fields). Add a new item by adding an entry to a list.
 
-import { SWORDS, FORGE, FOOD, BOW } from './config.js';
+import { SWORDS, FORGE, FOOD, BOW, GATHER, DREAM } from './config.js';
 import { BLACKSMITH, BAKER } from './story.js';
 
 const U = FORGE.upgrades;
 
+/** The blacksmith's forge. Build a bigger forge (wood + stone) to unlock the upgrades. */
 export const FORGE_SHOP = {
   title: `${BLACKSMITH.name}'s Forge`,
   greeting: BLACKSMITH.greeting,
-  items: (player) => [
-    {
-      name: 'Shield',
-      icon: '🛡️',
-      description: 'Hold J to block attacks. (You can’t swing your sword while blocking.)',
-      price: FORGE.prices.shield,
-      owned: player.hasShield,
-      buy: () => player.giveShield(),
-    },
-    {
-      name: 'Bow',
-      icon: '🏹',
-      description: `Press K to draw and shoot (takes 1 second). Aims at the closest monster in front of you. Comes with ${BOW.startArrows} arrows.`,
-      price: FORGE.prices.bow,
-      owned: player.hasBow,
-      buy: () => player.giveBow(),
-    },
-    {
-      name: `${FORGE.arrowsPerBundle} Arrows`,
-      article: '',
-      icon: '➶',
-      description: `You have ${player.arrows}/${BOW.maxArrows} arrows. When you run out, you can't shoot until you buy more.`,
-      price: FORGE.prices.arrows,
-      locked: !player.hasBow ? 'Buy the Bow first' : player.arrows >= BOW.maxArrows ? 'Quiver full' : null,
-      lockedMessage: !player.hasBow ? 'Arrows are no good without a bow! Buy the Bow first.' : `Your quiver is full! It holds ${BOW.maxArrows} arrows.`,
-      buy: () => player.addArrows(FORGE.arrowsPerBundle),
-      bought: 'Here you go. Make every arrow count!',
-    },
-    {
-      name: 'Axe',
-      icon: '🪓',
-      description: 'Chop trees for wood: press T next to a tree. Wood is for upgrades.',
-      price: FORGE.prices.axe,
-      owned: player.hasAxe,
-      buy: () => player.giveTool('axe'),
-    },
-    {
-      name: 'Pickaxe',
-      icon: '⛏️',
-      description: 'Mine boulders for stone: press T next to a big rock. Stone is for upgrades.',
-      price: FORGE.prices.pickaxe,
-      owned: player.hasPickaxe,
-      buy: () => player.giveTool('pickaxe'),
-    },
-    {
-      section: 'Upgrades (need wood and stone)',
-      name: SWORDS[1].name,
-      icon: '⚔️',
-      description: 'Upgrade your sword: hits twice as hard and reaches farther.',
-      price: U.sword.coins,
-      wood: U.sword.wood,
-      stone: U.sword.stone,
-      owned: player.swordTier >= 1,
-      buy: () => player.upgradeSword(),
-    },
-    {
-      name: 'Power Bow',
-      icon: '🎯',
-      description: `Upgrade your bow: hold K to charge. +1 damage for every ${BOW.secondsPerDamage} seconds you hold it, up to ${BOW.maxDamage}.`,
-      price: U.powerBow.coins,
-      wood: U.powerBow.wood,
-      stone: U.powerBow.stone,
-      owned: player.bowTier >= 1,
-      locked: player.hasBow ? null : 'Buy the Bow first',
-      lockedMessage: 'I can only upgrade a bow you already have. Buy the Bow first!',
-      buy: () => player.upgradeBow(),
-    },
-    {
-      name: 'Iron Shield',
-      icon: '🔰',
-      description: 'Upgrade your shield: walk at full speed while blocking, and monsters bounce off it.',
-      price: U.ironShield.coins,
-      wood: U.ironShield.wood,
-      stone: U.ironShield.stone,
-      owned: player.shieldTier >= 1,
-      locked: player.hasShield ? null : 'Buy the Shield first',
-      lockedMessage: 'I can only make your shield stronger once you have one. Buy the Shield first!',
-      buy: () => player.upgradeShield(),
-    },
-    {
-      name: 'Knight Armor',
-      icon: '🦺',
-      description: `Sturdy steel armor: +${FORGE.armorHearts} max hearts.`,
-      price: U.armor.coins,
-      wood: U.armor.wood,
-      stone: U.armor.stone,
-      owned: player.armor,
-      buy: () => player.giveArmor(),
-    },
-  ],
+  forgeBuilt: false,
+  onBuilt: null, // set by main.js: makes the forge bigger in the village
+  items(player) {
+    const list = [
+      {
+        name: 'Shield',
+        icon: '🛡️',
+        description: 'Hold J to block attacks. (You can’t swing your sword while blocking.)',
+        price: FORGE.prices.shield,
+        owned: player.hasShield,
+        buy: () => player.giveShield(),
+      },
+      {
+        name: 'Bow',
+        icon: '🏹',
+        description: `Press K to draw and shoot (takes 1 second). Aims at the closest monster in front of you. Comes with ${BOW.startArrows} arrows.`,
+        price: FORGE.prices.bow,
+        owned: player.hasBow,
+        buy: () => player.giveBow(),
+      },
+      {
+        name: `${FORGE.arrowsPerBundle} Arrows`,
+        article: '',
+        icon: '➶',
+        description: `You have ${player.arrows}/${BOW.maxArrows} arrows. When you run out, you can't shoot until you buy more.`,
+        price: FORGE.prices.arrows,
+        locked: !player.hasBow ? 'Buy the Bow first' : player.arrows >= BOW.maxArrows ? 'Quiver full' : null,
+        lockedMessage: !player.hasBow ? 'Arrows are no good without a bow! Buy the Bow first.' : `Your quiver is full! It holds ${BOW.maxArrows} arrows.`,
+        buy: () => player.addArrows(FORGE.arrowsPerBundle),
+        bought: 'Here you go. Make every arrow count!',
+      },
+      {
+        name: 'Axe',
+        icon: '🪓',
+        description: 'Chop trees for wood: press T next to a tree.',
+        price: FORGE.prices.axe,
+        owned: player.hasAxe,
+        buy: () => player.giveTool('axe'),
+      },
+      {
+        name: 'Pickaxe',
+        icon: '⛏️',
+        description: 'Mine boulders for stone: press T next to a big rock.',
+        price: FORGE.prices.pickaxe,
+        owned: player.hasPickaxe,
+        buy: () => player.giveTool('pickaxe'),
+      },
+    ];
+    if (!this.forgeBuilt) {
+      const b = FORGE.biggerForge;
+      list.push({
+        section: 'Upgrade',
+        name: 'Bigger Forge',
+        icon: '🔥',
+        description: 'Help the blacksmith build a bigger forge, and they can make upgraded gear: the Knight Sword, Power Bow, Iron Shield, Knight Armor and steel tools!',
+        price: b.coins,
+        wood: b.wood,
+        stone: b.stone,
+        buy: () => {
+          this.forgeBuilt = true;
+          this.onBuilt?.();
+        },
+        bought: 'Look at this beauty! With a forge this big, I can make anything. Have a look at the upgrades!',
+      });
+      return list;
+    }
+    const upgrade = (item) => ({ bought: 'Fresh from the big forge. Use it well!', ...item });
+    list.push(
+      upgrade({
+        section: 'Upgraded gear (from the big forge)',
+        name: SWORDS[1].name,
+        icon: '⚔️',
+        description: 'Hits twice as hard and reaches farther.',
+        price: U.sword,
+        owned: player.swordTier >= 1,
+        buy: () => player.upgradeSword(),
+      }),
+      upgrade({
+        name: 'Power Bow',
+        icon: '🎯',
+        description: `Hold K to charge: +1 damage for every ${BOW.secondsPerDamage} seconds you hold it, up to ${BOW.maxDamage}.`,
+        price: U.powerBow,
+        owned: player.bowTier >= 1,
+        locked: player.hasBow ? null : 'Buy the Bow first',
+        lockedMessage: 'I can only upgrade a bow you already have. Buy the Bow first!',
+        buy: () => player.upgradeBow(),
+      }),
+      upgrade({
+        name: 'Iron Shield',
+        icon: '🔰',
+        description: 'Walk at full speed while blocking, and monsters bounce off it.',
+        price: U.ironShield,
+        owned: player.shieldTier >= 1,
+        locked: player.hasShield ? null : 'Buy the Shield first',
+        lockedMessage: 'I can only make your shield stronger once you have one. Buy the Shield first!',
+        buy: () => player.upgradeShield(),
+      }),
+      upgrade({
+        name: 'Knight Armor',
+        icon: '🦺',
+        description: `Sturdy steel armor: +${FORGE.armorHearts} max hearts.`,
+        price: U.armor,
+        owned: player.armor,
+        buy: () => player.giveArmor(),
+      }),
+      upgrade({
+        name: 'Steel Axe',
+        icon: '🪓',
+        description: `Chops ${GATHER.steelBonus} wood at a time instead of 1.`,
+        price: U.steelAxe,
+        owned: player.axeTier >= 1,
+        locked: player.hasAxe ? null : 'Buy the Axe first',
+        buy: () => player.upgradeTool('axe'),
+      }),
+      upgrade({
+        name: 'Steel Pickaxe',
+        icon: '⛏️',
+        description: `Mines ${GATHER.steelBonus} stone at a time instead of 1.`,
+        price: U.steelPickaxe,
+        owned: player.pickaxeTier >= 1,
+        locked: player.hasPickaxe ? null : 'Buy the Pickaxe first',
+        buy: () => player.upgradeTool('pickaxe'),
+      }),
+    );
+    return list;
+  },
 };
 
 /** Hana's bakery. After you upgrade her oven (wood + stone) she bakes special food with golden hearts. */
@@ -138,4 +175,91 @@ export const BAKERY_SHOP = {
     }
     return list;
   },
+};
+
+/** The boat map: where to sail. (Not a shop really: every choice is free.) */
+export const BOAT_MENU = {
+  title: '⛵ Boat map',
+  greeting: 'Where to, captain?',
+  items() {
+    const game = this.game;
+    const boat = game.boat;
+    const inJungleSea = Math.hypot(boat.object3d.position.x, boat.object3d.position.z) > 400;
+    const jungle = game.jungle;
+    const list = [];
+    if (!inJungleSea) {
+      list.push({
+        action: true,
+        name: 'Sail to the jungle',
+        icon: '🌴',
+        description: 'Follow the sea currents all the way to the jungle island.',
+        price: 0,
+        buttonLabel: 'Set sail',
+        buy: () => {
+          boat.sailTo(game, jungle.center.x, jungle.center.z + jungle.edgeRadius(0, 1) + 8, Math.PI);
+          game.questLog.toast('You sailed to the jungle island!');
+        },
+      });
+    }
+    list.push({
+      action: true,
+      name: inJungleSea ? 'Sail home' : 'Sail back to the dock',
+      icon: '⚓',
+      description: 'Back to Captain Finn\'s dock on the home island.',
+      price: 0,
+      buttonLabel: 'Set sail',
+      buy: () => {
+        boat.sailTo(game, boat.mooring.x, boat.mooring.z, -Math.PI / 2);
+        game.questLog.toast('Home to the dock!');
+      },
+    });
+    list.push({
+      action: true,
+      name: 'Hop out and swim',
+      icon: '🌊',
+      description: 'Jump over the side. (Your boat waits right here.)',
+      price: 0,
+      buttonLabel: 'Splash!',
+      buy: () => boat.hopOut(game),
+    });
+    list.push({
+      action: true,
+      name: 'Keep exploring',
+      icon: '🧭',
+      description: 'Steer with the move keys. Hold Shift to go faster.',
+      price: 0,
+      buttonLabel: 'OK',
+      buy: () => {},
+    });
+    return list;
+  },
+};
+
+/** The dream shrine: spend dream points on special abilities. */
+export const DREAM_SHRINE = {
+  title: '✨ Dream Shrine',
+  greeting: 'Dream points become dream powers. Choose wisely, dreamer.',
+  showDreamPoints: true,
+  items: (player) => [
+    {
+      name: 'Dash',
+      icon: '💨',
+      description: `Press L to dash forward in a flash (you can't be hurt mid-dash).`,
+      price: DREAM.dashCost,
+      currency: 'dreamPoints',
+      owned: player.hasDash,
+      buy: () => (player.hasDash = true),
+      bought: 'The wind is yours now. Press L to dash!',
+    },
+    {
+      name: 'Invisibility',
+      icon: '👻',
+      description: `Press I to turn invisible for ${DREAM.invisibleTime} seconds: monsters can't see you or hurt you.`,
+      price: DREAM.invisibleCost,
+      currency: 'dreamPoints',
+      owned: player.hasInvisibility,
+      buy: () => (player.hasInvisibility = true),
+      bought: 'Now you see yourself... now you don\'t! Press I to turn invisible.',
+    },
+  ],
 };
