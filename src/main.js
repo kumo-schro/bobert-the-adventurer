@@ -60,6 +60,9 @@ import { LOOKS } from './models/people.js';
 import { SIDE_QUESTS, BLACKSMITH, BAKER, VILLAGER_CHATTER } from './story.js';
 import { FORGE_SHOP, BAKERY_SHOP, BOAT_MENU, DREAM_SHRINE } from './shops.js';
 import { VILLAGE, SEA, PLACES, DREAM } from './config.js';
+import { loadModels } from './style/models.js';
+
+await loadModels(); // the Blender models (trees, flowers, rocks) the world is built from
 
 const game = new Game(document.getElementById('app'));
 

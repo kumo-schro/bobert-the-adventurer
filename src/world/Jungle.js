@@ -1,18 +1,17 @@
 import { Entity } from '../core/Entity.js';
 import { VoxelBuilder } from '../core/VoxelBuilder.js';
-import { barkTexture, leafTexture, stoneTexture, texturedVoxelMaterial, grassMaterial, sandMaterial } from '../core/textures.js';
+import { stoneTexture, texturedVoxelMaterial } from '../core/textures.js';
+import { IslandSurface } from '../style/IslandSurface.js';
+import { instances } from '../style/models.js';
 import { createRng, createNoise2D } from '../utils/random.js';
-import { vary } from '../utils/color.js';
 import { Chest } from '../entities/Chest.js';
 import { FlyTrap, Snake, Gorilla, Frog, Panther } from '../entities/JungleMonsters.js';
-import { SEED, PLACES, SEA } from '../config.js';
+import { SEED, PLACES } from '../config.js';
 
-const GRASS = ['#2f9e3a', '#38a83f', '#278a33', '#44b04a'];
-const SAND = '#ecd38f';
-const WET_SAND = '#d9bb72';
-const barkMaterial = texturedVoxelMaterial(barkTexture);
-const leafMaterial = texturedVoxelMaterial(leafTexture);
-const stoneMaterial = texturedVoxelMaterial(stoneTexture);
+const CANOPY = ['#21c46b', '#18c9a0', '#2fd27a', '#4be3a0', '#7dff3a', '#18a9a0', '#ff5ec8'];
+const FERNS = ['#1fae5a', '#18a9a0', '#2fd27a', '#5ad84a'];
+const BLOOMS = ['#ff3b8d', '#ff8a3d', '#b07cff', '#ffe14d', '#36e6ff'];
+const stoneMaterial = texturedVoxelMaterial(stoneTexture, { bevel: 0.14 });
 
 /**
  * The jungle island, far across the sea. Captain Finn brings you here after Charibdis is
@@ -79,42 +78,35 @@ export class Jungle extends Entity {
 
   buildGround() {
     const { rng } = this;
-    const grass = new VoxelBuilder();
-    const sand = new VoxelBuilder();
-    const plants = new VoxelBuilder();
     const { x: X, z: Z } = this.center;
-    const reach = this.radius + 10;
-    for (let ix = Math.floor(X - reach); ix < X + reach; ix++) {
-      for (let iz = Math.floor(Z - reach); iz < Z + reach; iz++) {
-        const x = ix + 0.5;
-        const z = iz + 0.5;
-        const dx = x - X;
-        const dz = z - Z;
-        const d = Math.hypot(dx, dz);
-        const edge = this.edgeRadius(dx, dz);
-        if (d > edge) continue;
-        if (d > edge - 1.5) sand.box(x, (SEA.floor - 1) / 2, z, 1, -1 - SEA.floor, 1, vary(WET_SAND, rng));
-        else if (d > edge - 4) sand.add(x, -0.5, z, vary(SAND, rng));
-        else {
-          grass.add(x, -0.5, z, vary(rng.pick(GRASS), rng, 0.06));
-          // Ferns and big jungle flowers
-          if (rng.chance(0.05)) {
-            const c = vary('#2a8a35', rng, 0.08);
-            plants.box(x, 0.25, z, 0.9, 0.12, 0.25, c);
-            plants.box(x, 0.25, z, 0.25, 0.12, 0.9, c);
-            plants.box(x, 0.4, z, 0.5, 0.12, 0.5, c);
-          } else if (rng.chance(0.012)) {
-            plants.box(x, 0.3, z, 0.12, 0.6, 0.12, '#2a8a35');
-            plants.box(x, 0.65, z, 0.5, 0.12, 0.5, rng.pick(['#ff3b8d', '#ff9a1f', '#b46bff', '#ffd23f']));
-            plants.box(x, 0.72, z, 0.16, 0.06, 0.16, '#ffe08a');
-          }
-        }
-      }
+    // One smooth island surface: deep green jungle grass and a sandy beach.
+    const surface = new IslandSurface({
+      center: this.center,
+      edge: (a) => this.edgeRadius(Math.cos(a), Math.sin(a)),
+      maxRadius: this.radius + 12,
+      segments: 160,
+      rings: 44,
+      swirl: 0.6,
+      grassTint: '#a8e6a0',
+    });
+    this.object3d.add(surface.mesh);
+
+    // Ferns and big jungle flowers.
+    const ferns = [];
+    const blooms = [];
+    for (let i = 0; i < 260; i++) {
+      const x = X + rng.range(-this.radius, this.radius);
+      const z = Z + rng.range(-this.radius, this.radius);
+      const dx = x - X;
+      const dz = z - Z;
+      if (Math.hypot(dx, dz) > this.edgeRadius(dx, dz) - 5) continue;
+      const spot = { x, z, rotation: rng.range(0, Math.PI * 2), tiltX: rng.range(-0.1, 0.1), tiltZ: rng.range(-0.1, 0.1) };
+      if (rng.chance(0.75)) ferns.push({ ...spot, scale: rng.range(0.55, 1.0), scaleY: rng.range(0.45, 0.7), color: rng.pick(FERNS) });
+      else blooms.push({ ...spot, scale: rng.range(0.8, 1.2), color: rng.pick(BLOOMS) });
     }
     this.object3d.add(
-      grass.build({ castShadow: false, material: grassMaterial }),
-      sand.build({ castShadow: false, material: sandMaterial }),
-      plants.build({ castShadow: false }),
+      instances('bush', ferns, { castShadow: false, cellSize: 80 }),
+      instances('tulip', blooms, { castShadow: false, cellSize: 80 }),
     );
   }
 
@@ -123,22 +115,24 @@ export class Jungle extends Entity {
     const { rng } = this;
     const b = new VoxelBuilder();
     const { x: X, z: Z } = this.templeSpot;
-    const stone = ['#8d8f96', '#9a9ca3', '#7d8088'];
-    const moss = ['#3f8f4a', '#4fa35a'];
-    // Stepped base
+    const stone = ['#b9b3d6', '#c6c0e0', '#aaa4c8'];
+    const moss = '#9fd8a8';
+    // Stepped base: three big solid tiers.
     for (let level = 0; level < 3; level++) {
-      const half = 7 - level * 1.5;
-      for (let ix = -half; ix < half; ix++) {
-        for (let iz = -half; iz < half; iz++) {
-          const edge = ix === -half || iz === -half || ix === half - 1 || iz === half - 1;
-          if (!edge && level < 2) continue;
-          b.add(X + ix + 0.5, level + 0.5, Z + iz + 0.5, vary(rng.chance(0.25) ? rng.pick(moss) : rng.pick(stone), rng, 0.05));
-        }
+      const size = 14 - level * 3;
+      b.box(X, level + 0.5, Z, size, 1, size, rng.pick(stone));
+      // Mossy patches creeping over the edges.
+      for (let i = 0; i < 6; i++) {
+        const along = rng.range(-size / 2 + 1, size / 2 - 1);
+        const side = rng.chance(0.5) ? -1 : 1;
+        const [mx, mz] = rng.chance(0.5) ? [along, side * (size / 2)] : [side * (size / 2), along];
+        b.box(X + mx, level + 0.9, Z + mz, rng.range(1, 2.4), 0.3, rng.range(1, 2.4), moss);
       }
     }
-    // Pillars at the corners
-    for (const [px, pz] of [[-6, -6], [5, -6], [-6, 5], [5, 5]]) {
-      for (let y = 3; y < 6; y++) b.add(X + px + 0.5, y + 0.5, Z + pz + 0.5, vary(rng.pick(stone), rng, 0.05));
+    // Pillars at the corners, with caps.
+    for (const [px, pz] of [[-5.5, -5.5], [5.5, -5.5], [-5.5, 5.5], [5.5, 5.5]]) {
+      b.box(X + px, 4.5, Z + pz, 1, 3, 1, rng.pick(stone));
+      b.box(X + px, 6.15, Z + pz, 1.4, 0.3, 1.4, moss);
     }
     this.object3d.add(b.build({ material: stoneMaterial }));
     // The temple is a solid block you can't walk through; the treasure sits out front.
@@ -149,8 +143,7 @@ export class Jungle extends Entity {
 
   buildTrees(game) {
     const { rng } = this;
-    const trunks = new VoxelBuilder();
-    const leaves = new VoxelBuilder();
+    const list = [];
     const { x: X, z: Z } = this.center;
     for (let attempt = 0; attempt < 2000 && this.trees.length < 70; attempt++) {
       const x = Math.floor(X + rng.range(-this.radius, this.radius)) + 0.5;
@@ -161,28 +154,14 @@ export class Jungle extends Entity {
       if (this.clearings.some((c) => Math.hypot(c.x - x, c.z - z) < c.r + 3)) continue;
       if (this.trees.some((t) => Math.hypot(t.x - x, t.z - z) < 6.5)) continue;
 
-      // A tall jungle tree: long trunk, flat layered canopy, and vines hanging down.
-      const h = rng.int(9, 13);
-      for (let y = 0; y < h; y++) trunks.add(x, y + 0.5, z, vary('#6b4a2b', rng, 0.05));
-      const palette = ['#1f8a3a', '#2a9e45', '#17752f'];
-      for (const [dy, r] of [[0, 3.5], [1, 2.6], [2, 1.5]]) {
-        for (let dx = -Math.ceil(r); dx <= Math.ceil(r); dx++) {
-          for (let dz = -Math.ceil(r); dz <= Math.ceil(r); dz++) {
-            if (dx * dx + dz * dz > r * r + rng.range(-1, 1)) continue;
-            leaves.add(x + dx, h + dy + 0.5, z + dz, vary(rng.pick(palette), rng, 0.05));
-            if (dy === 0 && dx * dx + dz * dz > (r - 1) ** 2 && rng.chance(0.18)) {
-              const len = rng.int(2, 5);
-              for (let v = 1; v <= len; v++) leaves.box(x + dx, h - v + 0.5, z + dz, 0.25, 1, 0.25, '#2e7d32'); // vine
-            }
-          }
-        }
-      }
+      // A tall jungle tree: bendy trunk, big drooping leaf pads, and vines hanging down.
+      list.push({ x, z, rotation: rng.range(0, Math.PI * 2), scale: rng.range(0.9, 1.15), color: rng.pick(CANOPY) });
       const tree = { x, z, radius: 0.8 };
       this.trees.push(tree);
       game.colliders.push(tree);
       game.gathering?.addNode({ kind: 'wood', x, z, radius: 0.8 });
     }
-    this.object3d.add(trunks.build({ material: barkMaterial }), leaves.build({ material: leafMaterial }));
+    this.object3d.add(instances('jungle_tree', list, { cellSize: 80 }));
   }
 
   spawnMonsters(game) {

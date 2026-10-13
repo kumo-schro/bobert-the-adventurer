@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { part } from './character.js';
+import { part, bakeParts } from './character.js';
 
 const GOLD = '#ffc93c';
 
@@ -150,6 +150,7 @@ export function createChest() {
   // Treasure glow inside, only visible once the lid opens.
   const loot = part(root, [0.86, 0.06, 0.56], '#ffe08a', [0, 0.53, 0], { emissive: GOLD });
   loot.material.emissiveIntensity = 0.9;
+  bakeParts(root);
 
   return { root, lid };
 }

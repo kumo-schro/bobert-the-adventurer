@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
 import { pushOut } from '../core/collision.js';
-import { createCharacter, poseWalk, turnToward } from '../models/character.js';
+import { createCharacter, bakeParts, poseWalk, turnToward } from '../models/character.js';
 import { createSword, createShield, createBow, addArmor, createAxe, createPickaxe } from '../models/gear.js';
 import { Arrow } from './Arrow.js';
 import { SwordTrail } from './SwordTrail.js';
@@ -49,6 +49,7 @@ export class Player extends Entity {
     super();
     this.spawn = new THREE.Vector3(x, 0, z);
     this.model = createCharacter();
+    bakeParts(this.model.root);
     this.model.armR.rotation.order = 'YXZ'; // so the sword arm can sweep sideways (rotation.y)
     this.model.root.rotation.order = 'YXZ'; // so lying flat to swim works whichever way we face
     // A pivot between the root (which way we face) and the body, for twisting and leaning into

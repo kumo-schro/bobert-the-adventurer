@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Monster } from './Monster.js';
-import { part } from '../models/character.js';
+import { part, bakeParts } from '../models/character.js';
 
 const PATROL_SPEED = 1.8;
 const CHASE_SPEED = 2.9; // slower than you swim, so you can get away
@@ -47,6 +47,7 @@ export class Shark extends Monster {
     this.body.add(this.tail);
     part(this.tail, [0.36, 0.4, 0.6], grey, [0, 0, -0.3]);
     part(this.tail, [0.1, 0.95, 0.32], dark, [0, 0.1, -0.68]); // tail fin
+    bakeParts(this.body);
   }
 
   think(dt, game, toPlayer) {

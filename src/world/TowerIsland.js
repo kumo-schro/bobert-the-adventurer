@@ -1,15 +1,17 @@
 import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { VoxelBuilder } from '../core/VoxelBuilder.js';
-import { stoneTexture, texturedVoxelMaterial, grassMaterial, sandMaterial } from '../core/textures.js';
+import { stoneTexture, texturedVoxelMaterial } from '../core/textures.js';
+import { gardenMaterial } from '../style/garden.js';
 import { createRng } from '../utils/random.js';
 import { vary } from '../utils/color.js';
 import { Eel } from '../entities/Eel.js';
 import { Gargoyle } from '../entities/Gargoyle.js';
-import { islandGround, bushOrRock } from './SmallIsland.js';
+import { islandGround, bushOrRock, buildProps } from './SmallIsland.js';
 import { SEED, PLACES, SEA } from '../config.js';
 
-const CELL = 0.5; // the tower and stairs are built from half-size voxels
+const CELL = 0.5; // heights (stairs, parapet) are worked out on a half-size grid
 const TOWER_RADIUS = 5.5;
 const STAIR_WIDTH = 2;
 const STEPS = 52;
@@ -18,9 +20,15 @@ const TOP = STEPS * STEP_HEIGHT; // height of the tower's roof (the last step is
 const SWEEP = THREE.MathUtils.degToRad(340); // the stairs wrap almost all the way round
 const STAIR_START = Math.PI; // the first step faces west, toward the dock
 
-const STONE = ['#c9c2b5', '#b8b1a4', '#d3ccbf', '#aaa497'];
+const STONE = ['#d9ccff', '#cfc4f2', '#e2d8ff', '#c4bae6'];
+const SIDES = 14; // the tower is a chunky 14-sided prism
 
-const stoneMaterial = texturedVoxelMaterial(stoneTexture);
+const stoneMaterial = texturedVoxelMaterial(stoneTexture, { bevel: 0.1 });
+const towerMaterial = gardenMaterial({ map: 'stone', tint: 0.45, color: '#d9ccff', rim: 0.3 });
+towerMaterial.flatShading = true;
+const _q = new THREE.Quaternion();
+const Y_AXIS = new THREE.Vector3(0, 1, 0);
+const turned = (angle) => _q.clone().setFromAxisAngle(Y_AXIS, -angle); // local +X points along `angle`
 
 const snap = (v) => (Math.floor(v / CELL) + 0.5) * CELL;
 
@@ -44,7 +52,7 @@ export class TowerIsland extends Entity {
 
   onAdd(game) {
     game.lands.push(this);
-    game.cameraBlockers.push(this.towerMesh);
+    game.cameraBlockers.push(...this.towerMeshes);
     for (const spot of this.eelSpots) game.add(new Eel(spot));
     for (const spot of this.gargoyleSpots) game.add(new Gargoyle(spot)).perchFacing = spot.facing;
   }
@@ -87,17 +95,15 @@ export class TowerIsland extends Entity {
 
   build() {
     const { rng } = this;
-    const ground = new VoxelBuilder(); // bushes and rocks
-    const land = { grass: new VoxelBuilder(), sand: new VoxelBuilder() };
-    const tower = new VoxelBuilder();
+    const props = { bushes: [], rocks: [] };
+    const tower = new VoxelBuilder(); // stairs, parapet, windows, ledges, rocks
     const { x: X, z: Z } = this.center;
     const r = this.radius;
 
-    islandGround(land, rng, X, Z, r);
     for (let i = 0; i < 9; i++) {
       const a = rng.range(0, Math.PI * 2);
       const d = rng.range(TOWER_RADIUS + STAIR_WIDTH + 1.5, r - 4);
-      bushOrRock(ground, rng, X + Math.cos(a) * d, Z + Math.sin(a) * d);
+      bushOrRock(props, rng, X + Math.cos(a) * d, Z + Math.sin(a) * d);
     }
 
     // Rocky spots in the water around the island: that's where the eels live.
@@ -111,53 +117,53 @@ export class TowerIsland extends Entity {
         const rz = z + rng.range(-1.5, 1.5);
         const h = rng.range(0.6, 1.6);
         const top = SEA.level + h - 1;
-        tower.box(rx, (top + SEA.floor) / 2, rz, rng.range(0.8, 1.6), top - SEA.floor, rng.range(0.8, 1.6), vary(rng.pick(STONE), rng, 0.08));
+        tower.box(rx, (top + SEA.floor) / 2, rz, rng.range(0.8, 1.6), top - SEA.floor, rng.range(0.8, 1.6), vary(rng.pick(STONE), rng, 0.08), turned(rng.range(0, 6)));
       }
       if (i === 0 || i === 2) this.eelSpots.push({ x: X + Math.cos(a) * (d - 0.5), z: Z + Math.sin(a) * (d - 0.5) });
     }
 
-    // The tower and stairs, column by column on the half-size grid.
-    const reach = TOWER_RADIUS + STAIR_WIDTH;
-    for (let cx = -reach; cx <= reach; cx += CELL) {
-      for (let cz = -reach; cz <= reach; cz += CELL) {
-        const x = snap(X + cx);
-        const z = snap(Z + cz);
-        const lx = x - X;
-        const lz = z - Z;
-        const d = Math.hypot(lx, lz);
-        if (d >= reach) continue;
-        const h = this.heightAt(x, z);
-        if (h === null) continue;
+    // The tower: a faceted stone prism with three carved bands around it.
+    const body = new THREE.CylinderGeometry(TOWER_RADIUS - 0.1, TOWER_RADIUS + 0.2, TOP, SIDES).translate(0, TOP / 2, 0);
+    const bands = [5.25, 9.75, TOP - 0.75].map((y) => new THREE.CylinderGeometry(TOWER_RADIUS + 0.22, TOWER_RADIUS + 0.22, 0.5, SIDES).translate(0, y, 0));
+    const towerMesh = new THREE.Mesh(mergeGeometries([body, ...bands]), towerMaterial);
+    towerMesh.position.set(X, 0, Z);
+    towerMesh.castShadow = towerMesh.receiveShadow = true;
+    // Wooden roof boards and the crystal's pedestal.
+    tower.box(X, TOP + 0.03, Z, (TOWER_RADIUS - 0.6) * 1.45, 0.1, (TOWER_RADIUS - 0.6) * 1.45, '#d9a066');
+    tower.box(X, TOP + 0.25, Z, 1, 0.5, 1, '#c4bae6');
 
-        if (d < TOWER_RADIUS) {
-          const shell = d > TOWER_RADIUS - CELL * 1.5;
-          if (d < 0.6) {
-            tower.box(x, (TOP + 0.5) / 2, z, CELL, TOP + 0.5, CELL, '#9d968a'); // pedestal
-            continue;
-          }
-          if (!shell) {
-            tower.box(x, TOP / 2, z, CELL, TOP, CELL, '#9d968a'); // solid inside
-            tower.box(x, TOP - 0.05, z, CELL, 0.1, CELL, vary('#a06c3b', rng, 0.05)); // wooden roof boards
-            continue;
-          }
-          // Outer wall, brick by brick, with dark window slits and a door.
-          const angle = Math.atan2(lz, lx);
-          for (let y = 0; y < h; y += CELL) {
-            let color = vary(rng.pick(STONE), rng, 0.05);
-            const facing = (k) => Math.abs(Math.atan2(Math.sin(angle - k), Math.cos(angle - k))) < 0.18;
-            if (y >= 3 && y < 4 && (facing(0.4) || facing(2.5))) color = '#2b3a55'; // windows
-            if (y >= 6.5 && y < 7.5 && facing(-1.7)) color = '#2b3a55';
-            if (y >= 10 && y < 11 && (facing(1.2) || facing(-0.6))) color = '#2b3a55';
-            if (y < 1.5 && facing(STAIR_START - 0.17)) color = y < 1 ? '#7a4a24' : '#5e3b22'; // door
-            if (Math.abs(y - 5) < 0.01 || Math.abs(y - 9.5) < 0.01 || Math.abs(y - (TOP - 1)) < 0.01) color = '#9d968a'; // stone bands
-            tower.box(x, y + CELL / 2, z, CELL, CELL, CELL, color);
-          }
-          continue;
-        }
-        // A stair: stone column with a wooden tread on top.
-        tower.box(x, (h - 0.1) / 2, z, CELL, h - 0.1, CELL, vary(rng.pick(STONE), rng, 0.04));
-        tower.box(x, h - 0.05, z, CELL, 0.1, CELL, vary('#b07a45', rng, 0.05));
-      }
+    // Parapet round the roof, with an opening where the stairs arrive, and crenels on top.
+    const arriveAt = STAIR_START + SWEEP - SWEEP / STEPS / 2;
+    const blocks = 30;
+    for (let i = 0; i < blocks; i++) {
+      const a = (i / blocks) * Math.PI * 2;
+      if (Math.abs(Math.atan2(Math.sin(a - arriveAt), Math.cos(a - arriveAt))) < 0.5) continue;
+      const pr = TOWER_RADIUS - 0.25;
+      const q = turned(a + Math.PI / 2);
+      tower.box(X + Math.cos(a) * pr, TOP + 0.5, Z + Math.sin(a) * pr, 1.2, 1, 0.55, rng.pick(STONE), q);
+      if (i % 2) tower.box(X + Math.cos(a) * pr, TOP + 1.2, Z + Math.sin(a) * pr, 0.8, 0.4, 0.55, rng.pick(STONE), q);
+    }
+
+    // Dark window slits and the door, set into the wall.
+    const windows = [[0.4, 3.5], [2.5, 3.5], [-1.7, 7], [1.2, 10.5], [-0.6, 10.5]];
+    for (const [a, y] of windows) {
+      const wr = TOWER_RADIUS + 0.05;
+      tower.box(X + Math.cos(a) * wr, y, Z + Math.sin(a) * wr, 0.3, 1.1, 0.7, '#3a1450', turned(a));
+      tower.box(X + Math.cos(a) * (wr + 0.05), y + 0.65, Z + Math.sin(a) * (wr + 0.05), 0.3, 0.22, 1.0, '#c4bae6', turned(a));
+    }
+    const doorA = STAIR_START - 0.17;
+    tower.box(X + Math.cos(doorA) * (TOWER_RADIUS + 0.1), 0.8, Z + Math.sin(doorA) * (TOWER_RADIUS + 0.1), 0.3, 1.6, 1.2, '#8a5530', turned(doorA));
+
+    // The stairs: one chunky stone block per step with a wooden tread, spiralling up the outside.
+    const mid = TOWER_RADIUS + STAIR_WIDTH / 2;
+    const stepWidth = (SWEEP / STEPS) * (TOWER_RADIUS + STAIR_WIDTH) + 0.1;
+    for (let i = 0; i < STEPS; i++) {
+      const a = STAIR_START + (i + 0.5) * (SWEEP / STEPS);
+      const h = (i + 1) * STEP_HEIGHT;
+      const x = X + Math.cos(a) * mid;
+      const z = Z + Math.sin(a) * mid;
+      tower.box(x, (h - 0.1) / 2, z, STAIR_WIDTH + 0.3, h - 0.1, stepWidth, vary(rng.pick(STONE), rng, 0.04), turned(a));
+      tower.box(x, h - 0.05, z, STAIR_WIDTH + 0.35, 0.12, stepWidth + 0.02, vary('#d9a066', rng, 0.05), turned(a));
     }
 
     // Gargoyle perches: on the parapet, and on stone ledges sticking out of the wall above the stairs.
@@ -169,21 +175,17 @@ export class TowerIsland extends Entity {
     for (const frac of [0.25, 0.5, 0.75]) {
       const a = STAIR_START + SWEEP * frac;
       const y = (Math.floor((STEPS * frac)) + 1) * STEP_HEIGHT + 2.6;
-      const r = TOWER_RADIUS + 0.4;
-      tower.box(X + Math.cos(a) * r, y - 0.15, Z + Math.sin(a) * r, 0.9, 0.3, 0.9, '#9d968a'); // ledge
-      this.gargoyleSpots.push({ x: X + Math.cos(a) * (r + 0.1), y, z: Z + Math.sin(a) * (r + 0.1), facing: Math.atan2(Math.cos(a), Math.sin(a)) });
+      const lr = TOWER_RADIUS + 0.4;
+      tower.box(X + Math.cos(a) * lr, y - 0.15, Z + Math.sin(a) * lr, 1.0, 0.3, 0.9, '#c4bae6', turned(a)); // ledge
+      this.gargoyleSpots.push({ x: X + Math.cos(a) * (lr + 0.1), y, z: Z + Math.sin(a) * (lr + 0.1), facing: Math.atan2(Math.cos(a), Math.sin(a)) });
     }
 
     // Flag on the roof.
     tower.box(X - 1.6, TOP + 1.5, Z - 1.6, 0.15, 3, 0.15, '#5e3b22');
-    tower.box(X - 1.6 + 0.6, TOP + 2.6, Z - 1.6, 1.1, 0.7, 0.06, '#7b3fd1');
+    tower.box(X - 1.6 + 0.6, TOP + 2.6, Z - 1.6, 1.1, 0.7, 0.06, '#b07cff');
 
-    this.object3d.add(
-      ground.build(),
-      land.grass.build({ castShadow: false, material: grassMaterial }),
-      land.sand.build({ castShadow: false, material: sandMaterial }),
-    );
-    this.towerMesh = tower.build({ material: stoneMaterial });
-    this.object3d.add(this.towerMesh);
+    const details = tower.build({ material: stoneMaterial });
+    this.towerMeshes = [towerMesh, details];
+    this.object3d.add(islandGround(X, Z, r), ...buildProps(props), towerMesh, details);
   }
 }

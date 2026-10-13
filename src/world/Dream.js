@@ -1,14 +1,28 @@
 import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { VoxelBuilder } from '../core/VoxelBuilder.js';
+import { gardenMaterial } from '../style/garden.js';
+import { instances } from '../style/models.js';
 import { createRng } from '../utils/random.js';
-import { vary } from '../utils/color.js';
-import { glowMaterial } from './Village.js';
 import { SEED, PLACES } from '../config.js';
 
-const GRASS = ['#b8f2d8', '#f7c6e8', '#d6c8ff', '#c8f0ff'];
-const ROCK = ['#6b4fa8', '#5a3f94', '#7d5fc0'];
+// Concentric pastel rings across each island's top, middle outward.
+const RINGS = ['#7dffd8', '#b49cff', '#ff9ad8', '#ffc08a', '#8ad8ff', '#c8ff8a'];
+const ROCK_TOP = new THREE.Color('#8a6cd8');
+const ROCK_TIP = new THREE.Color('#3a1f78');
 const RAINBOW = ['#ff6b6b', '#ffb36b', '#ffe66b', '#7dff8a', '#6bc6ff', '#b47dff'];
+const CRYSTALS = ['#b47dff', '#6bc6ff', '#ff8fe0'];
+const CAPS = ['#ff8fe0', '#7dff8a', '#ffe66b'];
+
+const islandMaterial = gardenMaterial({ rim: 0.15, glow: 0.18 }); // softly luminous in the dream's night
+islandMaterial.vertexColors = true;
+const rockMaterial = gardenMaterial({ rim: 0.5, rimColor: '#c8a8ff' });
+rockMaterial.vertexColors = true;
+rockMaterial.flatShading = true;
+const glowingMaterial = gardenMaterial({ glow: 0.75, rim: 0.4 }); // glows in each instance's own color
+const cloudStoneMaterial = gardenMaterial({ color: '#f8f2ff', glow: 0.35, rim: 0.7, rimColor: '#ffd6f6' });
+cloudStoneMaterial.flatShading = true;
 
 /**
  * The dream dimension: pastel floating islands high in a starry purple sky, joined by rainbow
@@ -96,28 +110,18 @@ export class DreamWorld extends Entity {
 
   build() {
     const { rng } = this;
-    const ground = new VoxelBuilder();
-    const glow = new VoxelBuilder();
+    const crystals = [];
+    const mushrooms = [];
+    const stems = new VoxelBuilder();
+    const stones = [];
     for (const c of this.circles) {
-      const r = c.r;
-      for (let ix = Math.floor(c.x - r); ix < c.x + r; ix++) {
-        for (let iz = Math.floor(c.z - r); iz < c.z + r; iz++) {
-          const x = ix + 0.5;
-          const z = iz + 0.5;
-          const d = Math.hypot(x - c.x, z - c.z);
-          if (d > r) continue;
-          if (c.stone) {
-            glow.box(x, c.h - 0.4, z, 1, 0.8, 1, '#f4f0ff'); // fluffy cloud stone
-            continue;
-          }
-          ground.box(x, c.h - 0.25, z, 1, 0.5, 1, vary(rng.pick(GRASS), rng, 0.05));
-          // A rocky underside that tapers to a point.
-          const depth = (1 - d / r) * r * 1.1 + 1;
-          ground.box(x, c.h - 0.5 - depth / 2, z, 1, depth, 1, vary(rng.pick(ROCK), rng, 0.06));
-        }
+      if (c.stone) {
+        stones.push(this.cloudStone(c));
+        continue;
       }
-      if (!c.stone && c.r > 5) {
-        // Crystal trees and glowing mushrooms
+      this.object3d.add(this.floatingIsland(c));
+      if (c.r > 5) {
+        // Crystal trees and glowing toadstools
         for (let i = 0; i < Math.round(c.r / 2.5); i++) {
           const a = rng.range(0, Math.PI * 2);
           const d = rng.range(2, c.r - 2);
@@ -125,30 +129,18 @@ export class DreamWorld extends Entity {
           const z = c.z + Math.sin(a) * d;
           if (Math.hypot(x - this.keeperSpot.x, z - this.keeperSpot.z) < 3 || Math.hypot(x - this.shrineSpot.x, z - this.shrineSpot.z) < 3) continue;
           if (rng.chance(0.5)) {
-            ground.box(x, c.h + 1, z, 0.3, 2, 0.3, '#e8e0ff');
-            glow.box(x, c.h + 2.4, z, 1.2, 1.2, 1.2, rng.pick(['#b47dff', '#6bc6ff', '#ff8fe0']));
+            stems.box(x, c.h + 1, z, 0.3, 2, 0.3, '#e8e0ff');
+            crystals.push({ x, y: c.h + 2.5, z, rotation: rng.range(0, Math.PI), color: rng.pick(CRYSTALS) });
           } else {
-            ground.box(x, c.h + 0.3, z, 0.2, 0.6, 0.2, '#ffffff');
-            glow.box(x, c.h + 0.7, z, 0.7, 0.25, 0.7, rng.pick(['#ff8fe0', '#7dff8a', '#ffe66b']));
+            mushrooms.push({ x, y: c.h, z, rotation: rng.range(0, Math.PI * 2), scale: rng.range(0.5, 0.8), color: rng.pick(CAPS) });
           }
         }
       }
     }
-    // Rainbow bridges
-    for (const b of this.bridges) {
-      const len = Math.hypot(b.bx - b.ax, b.bz - b.az);
-      for (let t = 0; t <= len; t += 0.5) {
-        const x = b.ax + ((b.bx - b.ax) * t) / len;
-        const z = b.az + ((b.bz - b.az) * t) / len;
-        RAINBOW.forEach((color, i) => {
-          const off = (i - 2.5) * 0.5;
-          const px = x - ((b.bz - b.az) / len) * off;
-          const pz = z + ((b.bx - b.ax) / len) * off;
-          glow.box(px, b.h - 0.15, pz, 0.55, 0.3, 0.55, color);
-        });
-      }
-    }
-    this.object3d.add(ground.build(), glow.build({ material: glowMaterial, castShadow: false }));
+    this.object3d.add(new THREE.Mesh(mergeGeometries(stones), cloudStoneMaterial));
+    this.object3d.add(stems.build({ castShadow: false }), this.crystalMesh(crystals));
+    this.object3d.add(instances('mushroom', mushrooms, { castShadow: false, materials: { cap: glowingMaterial } }));
+    this.object3d.add(this.rainbowBridges());
 
     // The way home: a glowing doorway on the hub.
     this.wakePortal = createPortalModel('#ffe66b');
@@ -166,6 +158,113 @@ export class DreamWorld extends Entity {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     this.object3d.add(new THREE.Points(geometry, new THREE.PointsMaterial({ color: '#ffffff', size: 2.5, sizeAttenuation: false, fog: false })));
+  }
+
+  /** A floating island: a gently domed top in pastel rings, over a faceted crystal-rock underside. */
+  floatingIsland(c) {
+    const { rng } = this;
+    const segments = 40;
+    const rings = RINGS.length * 2;
+    const top = [];
+    const topColors = [];
+    const color = new THREE.Color();
+    // Top: rings of vertices from the middle out to the rim.
+    for (let r = 0; r <= rings; r++) {
+      const d = (r / rings) * c.r;
+      for (let s = 0; s < segments; s++) {
+        const a = (s / segments) * Math.PI * 2;
+        const y = 0.12 * (1 - (d / c.r) ** 2);
+        top.push(c.x + Math.cos(a) * d, c.h + y, c.z + Math.sin(a) * d);
+        color.set(RINGS[Math.floor(r / 2) % RINGS.length]);
+        topColors.push(color.r, color.g, color.b);
+      }
+    }
+    const index = [];
+    for (let r = 0; r < rings; r++) {
+      for (let s = 0; s < segments; s++) {
+        const a = r * segments + s;
+        const b = r * segments + ((s + 1) % segments);
+        index.push(a, b, a + segments, b, b + segments, a + segments);
+      }
+    }
+    const topGeometry = new THREE.BufferGeometry();
+    topGeometry.setAttribute('position', new THREE.Float32BufferAttribute(top, 3));
+    topGeometry.setAttribute('color', new THREE.Float32BufferAttribute(topColors, 3));
+    topGeometry.setIndex(index);
+    topGeometry.computeVertexNormals();
+
+    // Underside: a jagged cone of crystal rock hanging down to a point.
+    const depth = c.r * 1.1 + 1;
+    const profile = [];
+    const steps = 6;
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const w = i === steps ? 0.01 : c.r * (1 - t) ** 0.8 * (i === 0 ? 1 : rng.range(0.85, 1.05));
+      profile.push(new THREE.Vector2(w, -t * depth));
+    }
+    const under = new THREE.LatheGeometry(profile, Math.max(9, Math.round(c.r * 1.4))).translate(c.x, c.h, c.z);
+    const pos = under.attributes.position;
+    const colors = [];
+    for (let i = 0; i < pos.count; i++) {
+      color.copy(ROCK_TOP).lerp(ROCK_TIP, (c.h - pos.getY(i)) / depth);
+      colors.push(color.r, color.g, color.b);
+    }
+    under.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    under.computeVertexNormals();
+
+    const group = new THREE.Group();
+    const surface = new THREE.Mesh(topGeometry, islandMaterial);
+    surface.receiveShadow = true;
+    const rock = new THREE.Mesh(under, rockMaterial);
+    group.add(surface, rock);
+    return group;
+  }
+
+  /** A puffy faceted cloud to jump on (a few squashed lumps). */
+  cloudStone(c) {
+    const { rng } = this;
+    const lumps = [[0, 0, 1], [0.6, 0.15, 0.6], [-0.55, 0.1, 0.65]].map(([dx, dy, s]) => {
+      const a = rng.range(0, Math.PI * 2);
+      return new THREE.IcosahedronGeometry(c.r * s, 1)
+        .scale(1, 0.45, 1)
+        .translate(c.x + Math.cos(a) * dx, c.h - 0.4 + dy, c.z + Math.sin(a) * dx);
+    });
+    return mergeGeometries(lumps);
+  }
+
+  /** Long glowing crystals on top of the crystal trees. */
+  crystalMesh(list) {
+    const geometry = new THREE.OctahedronGeometry(0.7, 0).scale(0.8, 1.6, 0.8);
+    const mesh = new THREE.InstancedMesh(geometry, glowingMaterial, list.length);
+    const m = new THREE.Matrix4();
+    const q = new THREE.Quaternion();
+    const one = new THREE.Vector3(1, 1, 1);
+    list.forEach((it, i) => {
+      mesh.setMatrixAt(i, m.compose(new THREE.Vector3(it.x, it.y, it.z), q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), it.rotation), one));
+      mesh.setColorAt(i, new THREE.Color(it.color));
+    });
+    mesh.computeBoundingSphere();
+    return mesh;
+  }
+
+  /** Each bridge is six glowing stripes, one per color of the rainbow. */
+  rainbowBridges() {
+    const b = new VoxelBuilder();
+    const q = new THREE.Quaternion();
+    const up = new THREE.Vector3(0, 1, 0);
+    for (const br of this.bridges) {
+      const dx = br.bx - br.ax;
+      const dz = br.bz - br.az;
+      const len = Math.hypot(dx, dz);
+      const angle = Math.atan2(dz, dx);
+      RAINBOW.forEach((color, i) => {
+        const off = (i - 2.5) * 0.5;
+        const x = (br.ax + br.bx) / 2 - (dz / len) * off;
+        const z = (br.az + br.bz) / 2 + (dx / len) * off;
+        b.box(x, br.h - 0.15, z, len + 0.6, 0.3, 0.52, color, q.clone().setFromAxisAngle(up, -angle));
+      });
+    }
+    return b.build({ material: glowingMaterial, castShadow: false });
   }
 
   onAdd(game) {

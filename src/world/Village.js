@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
 import { VoxelBuilder } from '../core/VoxelBuilder.js';
-import { blockMaterial, dirtMaterial } from '../core/textures.js';
+import { blockMaterial, texturedVoxelMaterial, plankMaterial } from '../core/textures.js';
 import { createRng } from '../utils/random.js';
 import { vary } from '../utils/color.js';
 import { stoneHouse, marketStall, bakeryStall, well, forge, forgeWing } from '../models/buildings.js';
@@ -15,9 +15,44 @@ const ROOF_NAMES = {
   '#2fa36b': 'green',
   '#d94f9a': 'pink',
 };
-const COBBLE = ['#b9b4aa', '#a8a39a', '#c7c2b8', '#9d9a94'];
-const DIRT = ['#c9a46b', '#bf9a60', '#d1ad75'];
 export const glowMaterial = new THREE.MeshLambertMaterial({ emissive: '#ffb300', emissiveIntensity: 0.6 });
+const stoneMaterial = texturedVoxelMaterial('stone', { bevel: 0.12 });
+const roofMaterial = texturedVoxelMaterial('rooftiles', { bevel: 0.1, rim: 0.45 });
+
+// The kinds of block a building recipe can draw with: put() for plain painted blocks, and
+// put.stone / put.roof / put.wood / put.glow for textured and glowing ones.
+const LAYERS = { block: blockMaterial, stone: stoneMaterial, roof: roofMaterial, wood: plankMaterial, glow: glowMaterial };
+const _qy = new THREE.Quaternion();
+const _qx = new THREE.Quaternion();
+const X_AXIS = new THREE.Vector3(1, 0, 0);
+const Y_AXIS = new THREE.Vector3(0, 1, 0);
+
+/**
+ * A put(x, y, z, color, sx, sy, sz, tilt) function that draws a recipe's local boxes into
+ * `builders` (one VoxelBuilder per layer), turned k quarter turns and moved to (cx, cz).
+ * `tilt` leans a box around its local X axis (roof slopes).
+ */
+function makePut(builders, cx, cz, k) {
+  const into = (builder) => (x, y, z, color, sx = 1, sy = 1, sz = 1, tilt = 0) => {
+    const [rx, rz] = rotate(x, z, k);
+    _qy.setFromAxisAngle(Y_AXIS, (k & 3) * (Math.PI / 2));
+    const q = _qy.clone().multiply(_qx.setFromAxisAngle(X_AXIS, tilt));
+    builder.box(cx + rx, y, cz + rz, sx, sy, sz, color, q);
+  };
+  const put = into(builders.block);
+  for (const layer of Object.keys(LAYERS)) if (layer !== 'block') put[layer] = into(builders[layer]);
+  return put;
+}
+
+function makeBuilders() {
+  return Object.fromEntries(Object.keys(LAYERS).map((layer) => [layer, new VoxelBuilder()]));
+}
+
+function buildLayers(builders) {
+  return Object.entries(builders)
+    .filter(([, b]) => b.count)
+    .map(([layer, b]) => b.build({ material: LAYERS[layer], castShadow: layer !== 'glow' }));
+}
 
 // Rotate a local (x, z) by k quarter turns. k = 0 keeps the front facing +Z.
 function rotate(x, z, k) {
@@ -50,9 +85,8 @@ function facing(dx, dz) {
 export class Village extends Entity {
   constructor() {
     super();
-    this.builder = new VoxelBuilder();
-    this.floor = new VoxelBuilder(); // flat paving, doesn't cast shadows
-    this.glow = new VoxelBuilder(); // lanterns and oven fires
+    this.builders = makeBuilders(); // plain, stone, roof, wood and glowing blocks
+    this.floorTiles = []; // spots to paint as path onto the ground
     this.chimneys = []; // where smoke comes out
     this.houses = []; // { door, front } for each house, so villagers can go home to sleep
     this.ringAngles = []; // angle of every building around the ring (for finding gaps between them)
@@ -132,9 +166,7 @@ export class Village extends Entity {
 
     this.buildOuterRing(bakeryAngle);
 
-    this.object3d.add(this.builder.build({ material: blockMaterial }));
-    this.object3d.add(this.floor.build({ castShadow: false, material: dirtMaterial }));
-    this.object3d.add(this.glow.build({ material: glowMaterial, castShadow: false }));
+    this.object3d.add(...buildLayers(this.builders));
     this.smokeTimer = 0;
   }
 
@@ -146,13 +178,7 @@ export class Village extends Entity {
     const cx = Math.floor(Math.cos(angle) * radius) + 0.5;
     const cz = Math.floor(Math.sin(angle) * radius) + 0.5;
     const k = facing(-cx, -cz);
-    const into = (builder) => (x, y, z, color, sx = 1, sy = 1, sz = 1) => {
-      const [rx, rz] = rotate(x, z, k);
-      const [w, d] = k % 2 ? [sz, sx] : [sx, sz];
-      builder.box(cx + rx, y, cz + rz, w, sy, d, color);
-    };
-    const put = into(this.builder);
-    put.glow = into(this.glow); // glowing parts (lanterns, fires)
+    const put = makePut(this.builders, cx, cz, k);
     const { halfX, halfZ, smoke } = recipe(put, this.rng, options);
     if (smoke) {
       const [sx, sz] = rotate(smoke[0], smoke[2], k);
@@ -176,7 +202,7 @@ export class Village extends Entity {
         if (d > r) continue;
         // Ragged edge: drop some outer stones.
         if (d > r - 1 && this.rng.chance(0.35)) continue;
-        this.tile(cx, cz, COBBLE);
+        this.tile(cx, cz);
       }
     }
     this.reserved.push({ x: 0, z: 0, radius: r + 1 });
@@ -197,7 +223,7 @@ export class Village extends Entity {
         const key = `${tx},${tz}`;
         if (done.has(key) || Math.hypot(tx, tz) < VILLAGE.plazaRadius - 0.5) continue;
         done.add(key);
-        this.tile(tx, tz, DIRT);
+        this.tile(tx, tz);
       }
       this.reserved.push({ x: px, z: pz, radius: 1.5 });
     }
@@ -246,17 +272,9 @@ export class Village extends Entity {
     if (this.forgeUpgraded) return;
     this.forgeUpgraded = true;
     const { center, k } = this.smithy;
-    const builder = new VoxelBuilder();
-    const glow = new VoxelBuilder();
-    const into = (b) => (x, y, z, color, sx = 1, sy = 1, sz = 1) => {
-      const [rx, rz] = rotate(x, z, k);
-      const [w, d] = k % 2 ? [sz, sx] : [sx, sz];
-      b.box(center.x + rx, y, center.z + rz, w, sy, d, color);
-    };
-    const put = into(builder);
-    put.glow = into(glow);
-    const wing = forgeWing(put, this.rng);
-    this.object3d.add(builder.build({ material: blockMaterial }), glow.build({ material: glowMaterial, castShadow: false }));
+    const builders = makeBuilders();
+    const wing = forgeWing(makePut(builders, center.x, center.z, k), this.rng);
+    this.object3d.add(...buildLayers(builders));
     const [wx, wz] = rotate(wing.center[0], wing.center[1], k);
     const [hx, hz] = k % 2 ? [wing.halfZ, wing.halfX] : [wing.halfX, wing.halfZ];
     game.colliders.push({ x: center.x + wx, z: center.z + wz, halfX: hx, halfZ: hz });
@@ -290,14 +308,16 @@ export class Village extends Entity {
     return best.mid;
   }
 
-  tile(x, z, palette) {
-    this.floor.box(x, 0.03, z, 1, 0.06, 1, vary(this.rng.pick(palette), this.rng, 0.04));
+  tile(x, z) {
+    this.floorTiles.push({ x, z }); // painted onto the ground in onAdd
   }
 
   onAdd(game) {
+    for (const t of this.floorTiles) game.terrain.paintPath(t.x, t.z, 1.0);
+    game.terrain.commitPaths();
     game.colliders.push(...this.colliders);
     game.reservedAreas.push(...this.reserved);
-    game.cameraBlockers.push(this.object3d.children[0]);
+    game.cameraBlockers.push(...this.object3d.children.filter((m) => m.material !== glowMaterial));
   }
 
   update(dt, game) {

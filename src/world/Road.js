@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
 import { VoxelBuilder } from '../core/VoxelBuilder.js';
-import { dirtMaterial, blockMaterial } from '../core/textures.js';
+import { blockMaterial } from '../core/textures.js';
 import { createRng } from '../utils/random.js';
 import { vary } from '../utils/color.js';
 import { glowMaterial } from './Village.js';
@@ -23,7 +23,6 @@ export class Road extends Entity {
   onAdd(game) {
     const { village, dock } = this;
     const rng = createRng(SEED + 81);
-    const tiles = new VoxelBuilder();
     const props = new VoxelBuilder();
     const lamps = new VoxelBuilder();
 
@@ -56,7 +55,7 @@ export class Road extends Entity {
         const key = `${tx},${tz}`;
         if (done.has(key) || Math.hypot(tx, tz) < VILLAGE.plazaRadius - 0.5) continue;
         done.add(key);
-        tiles.box(tx, 0.03, tz, 1, 0.06, 1, vary(rng.pick(DIRT), rng, 0.04));
+        game.terrain.paintPath(tx, tz, 1.0);
       }
       if (i % 3 === 0) game.reservedAreas.push({ x: p.x, z: p.y, radius: 2.4 });
     });
@@ -68,9 +67,11 @@ export class Road extends Entity {
       const tangent = points[i + 1].clone().sub(points[i - 1]).normalize();
       const x = p.x - tangent.y * 2.4 * lampSide;
       const z = p.y + tangent.x * 2.4 * lampSide;
-      props.box(x, 1.2, z, 0.2, 2.4, 0.2, '#3b3b3b');
-      props.box(x, 2.45, z, 0.5, 0.1, 0.5, '#3b3b3b');
-      lamps.box(x, 2.2, z, 0.34, 0.4, 0.34, '#ffd23f');
+      props.box(x, 1.2, z, 0.22, 2.4, 0.22, '#5a3a8a');
+      props.box(x, 0.15, z, 0.5, 0.3, 0.5, '#5a3a8a');
+      props.box(x, 2.5, z, 0.62, 0.14, 0.62, '#ff5ec8');
+      props.box(x, 2.62, z, 0.3, 0.12, 0.3, '#ff5ec8');
+      lamps.box(x, 2.2, z, 0.4, 0.46, 0.4, '#ffd23f');
       game.colliders.push({ x, z, radius: 0.25 });
       lampSide = -lampSide;
     }
@@ -86,6 +87,7 @@ export class Road extends Entity {
     props.box(sp.x + dir.y * 2, 0.9, sp.y - dir.x * 2, 0.15, 1.8, 0.15, '#5e3b22');
     props.box(sp.x + dir.y * 2, 1.55, sp.y - dir.x * 2, 0.8, 0.35, 0.1, '#c58b52');
 
-    this.object3d.add(tiles.build({ castShadow: false, material: dirtMaterial }), props.build({ material: blockMaterial }), lamps.build({ material: glowMaterial, castShadow: false }));
+    game.terrain.commitPaths();
+    this.object3d.add(props.build({ material: blockMaterial }), lamps.build({ material: glowMaterial, castShadow: false }));
   }
 }

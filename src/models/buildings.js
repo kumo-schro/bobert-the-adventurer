@@ -1,89 +1,77 @@
+import * as THREE from 'three';
 import { vary } from '../utils/color.js';
 
-// Building recipes. Each one draws in LOCAL coordinates through `put(x, y, z, color, sx, sy, sz)`
-// (a box centered at x,y,z), with its front facing +Z, and returns its collider half-size.
+// Building recipes. Each one draws in LOCAL coordinates through `put(x, y, z, color, sx, sy, sz, tilt)`
+// (a soft beveled box centered at x,y,z, leaned `tilt` radians around X), with its front facing
+// +Z, and returns its collider half-size. put.stone / put.roof / put.wood draw painted stone,
+// roof tiles and planks (tinted by the color); put.glow draws glowing parts.
 // The Village rotates and places them, so recipes never worry about where they end up.
 
-const STONE = ['#8e8e8e', '#9d9d9d', '#7f7f7f', '#a9a49a', '#8a8f96'];
 const DARK_STONE = '#666a70';
 const WOOD = '#8a5a35';
 const DARK_WOOD = '#5e3b22';
 const GLASS = '#9fdcff';
 const DOOR = '#7a4a24';
 
-// Each house gets its own wall stone and shutter color so the village doesn't look copy-pasted.
-const WALL_STYLES = [
-  ['#8e8e8e', '#9d9d9d', '#7f7f7f', '#a9a49a', '#8a8f96'], // grey cobble
-  ['#d8c7a3', '#cdb994', '#e1d1b0', '#c4b08a'], // sandstone
-  ['#e9e4da', '#dcd6ca', '#f2eee6', '#d2cbbf'], // whitewashed
-  ['#a8988a', '#9b8b7e', '#b3a597', '#8f8073'], // brown fieldstone
-];
+// Each house gets its own pastel stone and shutter color so the village doesn't look copy-pasted.
+const WALL_STYLES = ['#d9ccff', '#ffd9b0', '#fff0f6', '#c4f2e2', '#ffe9a8', '#cfe4ff'];
 const SHUTTERS = ['#2f6fd6', '#2fa36b', '#d9493f', '#7a4fd1', '#e08a2e', '#2fb5a8'];
 const FLOWERS = ['#ff4d6d', '#ffd23f', '#ff8fab', '#c77dff', '#ffffff'];
+const SLOPE = Math.PI / 4;
 
 /**
- * A cobblestone cottage: gabled roof, framed windows with shutters and sills, a front door
- * with a lantern, flower boxes, ivy, a chimney (returns where its smoke comes out), and a
- * yard with a woodpile, barrel and crates on one side and a little vegetable garden on the other.
+ * A pitched roof over a (2*hw+1) x (2*hd+1) box whose walls stop at `height`: two tiled slabs
+ * meeting at a ridge along X, timber gables underneath, and a ridge cap. Returns the ridge height.
+ */
+export function gableRoof(put, { hw, hd, height, roof, gable = '#e0a56a' }) {
+  const W = hw * 2 + 1;
+  const eave = hd + 1.2; // how far out the roof reaches (past the walls)
+  const base = height - 0.2; // height of the roof's top surface at the eave
+  const t = 0.4; // slab thickness
+  const len = eave * Math.SQRT2 + 0.35;
+  const inward = t / 2 / Math.SQRT2;
+  for (const side of [1, -1]) {
+    put.roof(0, base + eave / 2 - inward, side * (eave / 2 - inward), roof, W + 1.3, t, len, side * SLOPE);
+  }
+  // Gable ends: a long diamond tucked under the slabs (only its top half shows).
+  const apex = base + eave - t * Math.SQRT2;
+  const half = apex - base;
+  put.wood(0, base, 0, gable, W - 0.3, half * Math.SQRT2, half * Math.SQRT2, SLOPE);
+  const ridge = base + eave;
+  put.roof(0, ridge, 0, new THREE.Color(roof).offsetHSL(0, 0, -0.12), W + 1.5, 0.32, 0.55);
+  return ridge;
+}
+
+/**
+ * A cottage of painted pastel stone: a pitched tiled roof with timber gables, corner posts,
+ * framed windows with shutters and sills, a front door with a lantern, flower boxes, ivy, a
+ * chimney (returns where its smoke comes out), and a yard with a woodpile, barrel and crates on
+ * one side and a little vegetable garden on the other.
  */
 export function stoneHouse(put, rng, { hw = 4, hd = 3, height = 4, roof = '#d9493f', style = 0 } = {}) {
-  const stone = WALL_STYLES[style % WALL_STYLES.length];
+  const wall = WALL_STYLES[style % WALL_STYLES.length];
   const shutter = rng.pick(SHUTTERS);
-  // Collect unit voxels in a map first so later parts (chimney) cleanly replace earlier ones.
-  const cells = new Map();
-  const set = (x, y, z, color) => cells.set(`${x},${y},${z}`, { x, y, z, color });
-  const frontWindow = (x, z) => Math.abs(z) === hd && Math.abs(x) === 2 && hw >= 3;
-  const sideWindow = (x, z) => Math.abs(x) === hw && z === 0;
-  const isWindow = (x, y, z) => (y === 1 || y === 2) && (frontWindow(x, z) || sideWindow(x, z));
+  const W = hw * 2 + 1;
+  const D = hd * 2 + 1;
 
-  // Walls (hollow shell)
-  for (let y = 0; y < height; y++) {
-    for (let x = -hw; x <= hw; x++) {
-      for (let z = -hd; z <= hd; z++) {
-        const edgeX = Math.abs(x) === hw;
-        const edgeZ = Math.abs(z) === hd;
-        if (!edgeX && !edgeZ) continue;
-
-        let color = vary(rng.pick(stone), rng, 0.05);
-        if (y === 0) color = vary(DARK_STONE, rng, 0.05); // foundation
-        if (edgeX && edgeZ) color = vary(DARK_STONE, rng, 0.03); // corner stones
-        else if (z === hd && x === 0 && y < 2) color = DOOR;
-        else if (z === hd && x === 0 && y === 2) color = DARK_WOOD; // lintel
-        else if (y === height - 1) color = vary(DARK_WOOD, rng, 0.03); // timber band
-        else if (isWindow(x, y, z)) color = GLASS;
-        set(x, y, z, color);
-      }
-    }
+  // Plinth, walls, a timber band under the eaves, and chunky corner posts.
+  put.stone(0, 0.3, 0, new THREE.Color(wall).offsetHSL(0.02, -0.1, -0.18), W + 0.35, 0.6, D + 0.35);
+  put.stone(0, height / 2 + 0.2, 0, wall, W, height - 0.4, D);
+  put.wood(0, height - 0.25, 0, '#c98a55', W + 0.2, 0.45, D + 0.3);
+  for (const sx of [-1, 1]) {
+    for (const sz of [-1, 1]) put.wood(sx * (hw + 0.4), height / 2, sz * (hd + 0.4), '#b5713f', 0.55, height, 0.55);
   }
-
-  // Gabled roof with the ridge running along X, overhanging the walls by one block.
-  const roofDark = vary(roof, rng, 0).offsetHSL(0, 0, -0.12);
-  for (let i = 0; i <= hd + 1; i++) {
-    const z = hd + 1 - i;
-    const y = height + i;
-    for (let x = -hw - 1; x <= hw + 1; x++) {
-      // Every other row a touch darker, like rows of roof tiles.
-      const color = i === hd + 1 ? roofDark : vary(roof, rng, 0.04).offsetHSL(0, 0, i % 2 ? -0.04 : 0);
-      set(x, y, z, color);
-      set(x, y, -z, color);
-    }
-    for (let gz = -z + 1; gz <= z - 1; gz++) {
-      set(-hw, y, gz, vary(WOOD, rng, 0.04));
-      set(hw, y, gz, vary(WOOD, rng, 0.04));
-    }
-  }
-  // Round attic window in each gable.
-  if (hd >= 2) {
-    set(-hw, height + 1, 0, GLASS);
-    set(hw, height + 1, 0, GLASS);
+  gableRoof(put, { hw, hd, height, roof });
+  // Round-ish attic window in each gable.
+  for (const side of [-1, 1]) {
+    put(side * (hw + 0.36), height + 0.75, 0, GLASS, 0.08, 0.7, 0.7);
+    put(side * (hw + 0.34), height + 0.75, 0, DARK_WOOD, 0.06, 0.9, 0.9);
   }
 
   // Chimney poking out of the back slope, with a cap.
   const chimneyTop = height + hd + 2;
-  for (let y = height; y <= chimneyTop; y++) set(hw - 1, y, -1, vary(DARK_STONE, rng, 0.04));
-
-  for (const c of cells.values()) put(c.x, c.y + 0.5, c.z, c.color);
-  put(hw - 1, chimneyTop + 1.1, -1, '#4a4f55', 1.3, 0.2, 1.3);
+  put.stone(hw - 1, (height + chimneyTop) / 2, -1, new THREE.Color(wall).offsetHSL(0, 0, -0.1), 1, chimneyTop - height, 1);
+  put(hw - 1, chimneyTop + 0.1, -1, '#4a4f55', 1.3, 0.2, 1.3);
 
   // Window frames, sills and shutters (front windows, plus one on each side wall).
   const front = hd + 0.5;
@@ -92,6 +80,7 @@ export function stoneHouse(put, rng, { hw = 4, hd = 3, height = 4, roof = '#d949
   windows.push([hw + 0.5, 0, 0], [-hw - 0.5, 0, 0]);
   for (const [wx, wz, facingFront] of windows) {
     if (facingFront) {
+      put(wx, 2, wz + 0.01, GLASS, 1, 2, 0.06); // glass
       put(wx, 2.5, wz + 0.04, '#f4ecd8', 0.08, 2, 0.06); // cross-shaped window frame
       put(wx, 2, wz + 0.04, '#f4ecd8', 1, 0.08, 0.06);
       put(wx, 3.05, wz + 0.06, DARK_WOOD, 1.2, 0.12, 0.14); // top frame
@@ -99,6 +88,7 @@ export function stoneHouse(put, rng, { hw = 4, hd = 3, height = 4, roof = '#d949
       put(wx + 0.62, 2, wz + 0.08, shutter, 0.22, 1.9, 0.08);
     } else {
       const side = Math.sign(wx);
+      put(wx + side * 0.01, 2, 0, GLASS, 0.06, 2, 1); // glass
       put(wx + side * 0.04, 2.5, 0, '#f4ecd8', 0.06, 2, 0.08);
       put(wx + side * 0.04, 2, 0, '#f4ecd8', 0.06, 0.08, 1);
       put(wx + side * 0.08, 2, -0.62, shutter, 0.08, 1.9, 0.22);
@@ -171,7 +161,7 @@ export function stoneHouse(put, rng, { hw = 4, hd = 3, height = 4, roof = '#d949
   return {
     halfX: hw + 2,
     halfZ: hd + 0.5,
-    smoke: [hw - 1, chimneyTop + 1.4, -1],
+    smoke: [hw - 1, chimneyTop + 0.4, -1],
   };
 }
 
@@ -249,18 +239,16 @@ export function marketStall(put, rng) {
 
 /** A stone well with a little roof and a bucket. */
 export function well(put, rng, { roof = '#3f7fd9' } = {}) {
-  for (let x = -1; x <= 1; x++) {
-    for (let z = -1; z <= 1; z++) {
-      if (x === 0 && z === 0) put(0, 0.4, 0, '#3cc6ea', 1, 0.2, 1);
-      else put(x, 0.5, z, vary(rng.pick(STONE), rng, 0.05));
-    }
-  }
-  for (const x of [-1, 1]) put(x, 1.75, 0, DARK_WOOD, 0.25, 1.5, 0.25);
+  const stone = '#d9ccff';
+  for (const z of [-1, 1]) put.stone(0, 0.5, z, stone, 3, 1, 1);
+  for (const x of [-1, 1]) put.stone(x, 0.5, 0, stone, 1, 1, 1.02);
+  put(0, 0.85, 0, '#3ff0e6', 1, 0.1, 1); // water
+  for (const x of [-1, 1]) put.wood(x, 1.75, 0, '#a8693a', 0.25, 1.5, 0.25);
   put(0, 2.2, 0, DARK_WOOD, 2, 0.12, 0.12); // crank bar
   put(0, 1.95, 0, '#d8c39a', 0.04, 0.4, 0.04); // rope
   put(0, 1.65, 0, WOOD, 0.3, 0.3, 0.3); // bucket
-  put(0, 2.6, 0, roof, 2.8, 0.2, 1.9);
-  put(0, 2.8, 0, vary(roof, rng, 0).offsetHSL(0, 0, -0.12), 2.2, 0.2, 1.0);
+  for (const side of [1, -1]) put.roof(0, 2.75, side * 0.55, roof, 2.6, 0.18, 1.45, side * 0.6);
+  put.roof(0, 3.08, 0, new THREE.Color(roof).offsetHSL(0, 0, -0.12), 2.75, 0.2, 0.35);
   return { halfX: 1.5, halfZ: 1.5 };
 }
 
@@ -269,29 +257,21 @@ export function forge(put, rng, { roof = '#4a4f5a' } = {}) {
   const hw = 3;
   const hd = 2;
   const height = 4;
-  // Back and side walls (front is open)
-  for (let y = 0; y < height; y++) {
-    for (let x = -hw; x <= hw; x++) {
-      for (let z = -hd; z <= hd; z++) {
-        const back = z === -hd;
-        const side = Math.abs(x) === hw;
-        if (!back && !side) continue;
-        if (side && z === hd && y < height - 1) continue; // posts handle the front corners
-        put(x, y + 0.5, z, side && z === hd ? DARK_WOOD : vary(rng.pick(STONE), rng, 0.05));
-      }
-    }
-  }
-  for (const x of [-hw, hw]) put(x, 1.5, hd, DARK_WOOD, 0.5, 3, 0.5); // front posts
-  // Sloped slate roof
-  for (let i = 0; i < 3; i++) {
-    put(0, height + 0.25 + i * 0.5, hd + 0.5 - i * 1.6, vary(roof, rng, 0.04), hw * 2 + 2, 0.5, 1.8);
-  }
-  put(0, height + 1.4, -hd - 0.2, vary(roof, rng, 0.04), hw * 2 + 2, 0.5, 1.4);
+  const stone = '#c9bfe6';
+  // Back and side walls (the front is open), front posts and a beam across the top.
+  put.stone(0, height / 2, -hd, stone, hw * 2 + 1, height, 1);
+  for (const x of [-hw, hw]) put.stone(x, height / 2, -0.5, stone, 1, height, hd * 2);
+  for (const x of [-hw, hw]) put.wood(x, 1.5, hd, '#8a5a35', 0.55, 3, 0.55); // front posts
+  put.wood(0, height - 0.5, hd, '#a8693a', hw * 2 + 1.2, 1, 0.55);
+  // A slate roof sloping down toward the front.
+  const rise = 1.6;
+  const run = hd * 2 + 2.2;
+  put.roof(0, height + 0.25 + rise / 2, 0.2, roof, hw * 2 + 2, 0.45, Math.hypot(rise, run), Math.atan2(rise, run));
   // Furnace with glowing coals
-  put(-1.5, 1, -1.1, DARK_STONE, 2, 2, 1.4);
+  put.stone(-1.5, 1, -1.1, '#9a8fc0', 2, 2, 1.4);
   put(-1.5, 0.75, -0.42, '#ff7a1a', 1.2, 0.7, 0.06);
   put(-1.5, 0.6, -0.4, '#ffd23f', 0.7, 0.3, 0.06);
-  put(-1.5, 3, -1.2, DARK_STONE, 0.7, 2, 0.7); // chimney
+  put.stone(-1.5, 3, -1.2, '#9a8fc0', 0.7, 2, 0.7); // chimney
   // Anvil
   put(1.4, 0.3, 1.2, '#3b3b3b', 0.6, 0.6, 0.5);
   put(1.4, 0.75, 1.2, '#55595f', 1.1, 0.3, 0.5);
@@ -314,18 +294,17 @@ export function forge(put, rng, { roof = '#4a4f5a' } = {}) {
  */
 export function forgeWing(put, rng, { roof = '#4a4f5a' } = {}) {
   const x0 = 4.2;
-  // Back and outer side walls
-  for (let y = 0; y < 4; y++) {
-    for (let x = 0; x <= 4; x++) put(x0 + x, y + 0.5, -2, vary(rng.pick(STONE), rng, 0.05));
-    for (let z = -2; z <= 2; z++) put(x0 + 4, y + 0.5, z, vary(rng.pick(STONE), rng, 0.05));
-  }
-  put(x0 + 2, 4.25, 0, vary(roof, rng, 0.04), 6, 0.5, 5); // roof
-  put(x0 + 0.2, 1.5, 2, DARK_WOOD, 0.5, 3, 0.5); // front post
+  // Back and outer side walls, roof and a front post.
+  const stone = '#c9bfe6';
+  put.stone(x0 + 2, 2, -2, stone, 5, 4, 1);
+  put.stone(x0 + 4, 2, 0.5, stone, 1, 4, 4);
+  put.roof(x0 + 2, 4.25, 0, roof, 6, 0.5, 5);
+  put.wood(x0 + 0.2, 1.5, 2, '#8a5a35', 0.5, 3, 0.5);
   // Huge furnace
-  put(x0 + 2, 1.4, -1.1, DARK_STONE, 2.8, 2.8, 1.6);
+  put.stone(x0 + 2, 1.4, -1.1, '#9a8fc0', 2.8, 2.8, 1.6);
   put.glow(x0 + 2, 1, -0.28, '#ff7a1a', 1.8, 1, 0.06);
   put.glow(x0 + 2, 0.8, -0.26, '#ffd23f', 1, 0.4, 0.06);
-  put(x0 + 2, 5, -1.3, DARK_STONE, 1, 4, 1); // tall chimney
+  put.stone(x0 + 2, 5, -1.3, '#9a8fc0', 1, 4, 1); // tall chimney
   put(x0 + 2, 7.1, -1.3, '#3b3b3b', 1.3, 0.25, 1.3);
   // Big anvil, water trough, grindstone
   put(x0 + 1.2, 0.35, 1.2, '#3b3b3b', 0.7, 0.7, 0.6);

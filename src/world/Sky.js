@@ -3,7 +3,8 @@ import { Entity } from '../core/Entity.js';
 import { SKY, FOG } from '../config.js';
 
 /**
- * Gradient sky dome with a chunky square "voxel" sun (it turns into a pale moon at night) and
+ * Gradient sky dome with color swirls and a round glowing sun with a rainbow ring (it turns into a
+ * pale moon at night) and
  * stars that come out after dark. Also sets up scene fog. Lives at game.sky; DayNight changes
  * its colors through `uniforms` and `stars`.
  */
@@ -45,19 +46,21 @@ export class Sky extends Entity {
           // Below the horizon just keep the horizon color (hidden by water anyway).
           col = mix(horizonColor, col, step(0.0, h));
 
-          // Square sun: project onto a plane facing the sun and use the max-norm.
-          vec3 sd = normalize(sunDirection);
-          vec3 right = normalize(cross(sd, vec3(0.0, 1.0, 0.0)));
-          vec3 up = cross(right, sd);
-          float facing = dot(dir, sd);
-          vec2 p = vec2(dot(dir, right), dot(dir, up)) / max(facing, 0.0001);
-          float box = max(abs(p.x), abs(p.y));
-          float sun = step(0.0, facing) * (1.0 - step(0.06, box));
-          float halo = step(0.0, facing) * (1.0 - step(0.09, box)) * 0.35;
-          float glow = pow(max(facing, 0.0), 12.0) * 0.35;
+          // Dreamy swirls of color drifting across the upper sky.
+          float swirl = sin(atan(dir.z, dir.x) * 5.0 + h * 9.0) * 0.5 + 0.5;
+          col = mix(col, col * vec3(1.12, 0.9, 1.15), swirl * smoothstep(0.1, 0.6, h) * 0.35);
 
+          // Round sun with a soft glow and a faint rainbow ring around it.
+          vec3 sd = normalize(sunDirection);
+          float facing = dot(dir, sd);
+          float angle = acos(clamp(facing, -1.0, 1.0));
+          float sun = 1.0 - smoothstep(0.045, 0.052, angle);
+          float glow = pow(max(facing, 0.0), 10.0) * 0.45 + pow(max(facing, 0.0), 120.0) * 0.6;
+          float ring = smoothstep(0.03, 0.0, abs(angle - 0.22));
+          vec3 rainbow = 0.5 + 0.5 * cos(6.2831 * ((angle - 0.22) * 18.0 + vec3(0.0, 0.33, 0.67)));
+          col += rainbow * ring * 0.18 * step(0.0, facing);
           col += sunColor * glow;
-          col = mix(col, sunColor, max(sun, halo));
+          col = mix(col, sunColor * 1.15, sun);
 
           gl_FragColor = vec4(col, 1.0);
           #include <tonemapping_fragment>

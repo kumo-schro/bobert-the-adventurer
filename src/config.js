@@ -13,10 +13,10 @@ export const WORLD = {
 };
 
 export const SKY = {
-  top: '#2f7fe0',
-  middle: '#8fd0ff',
-  horizon: '#ffe6cf', // also used as the fog color so distant things melt into the sky
-  sun: '#fff6c9',
+  top: '#6a3df0',
+  middle: '#ff9ad6',
+  horizon: '#ffd9a8', // also used as the fog color so distant things melt into the sky
+  sun: '#fff4d6',
   sunDirection: new THREE.Vector3(0.5, 0.6, 0.4).normalize(),
 };
 

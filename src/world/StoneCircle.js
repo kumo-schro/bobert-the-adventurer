@@ -17,9 +17,9 @@ export const RAINBOW = [
   { name: 'purple', color: '#a45cff' },
 ];
 
-const STONE = ['#9a9ca3', '#8d8f96', '#a6a8ae'];
+const STONE = ['#d9ccff', '#c4bae6', '#cfe4ff'];
 const PLATE_HALF = 0.75;
-const stoneMaterial = texturedVoxelMaterial(stoneTexture);
+const stoneMaterial = texturedVoxelMaterial(stoneTexture, { bevel: 0.16 });
 
 /**
  * An old ring of standing stones with colored pressure plates inside. Step on the plates in
@@ -55,8 +55,10 @@ export class StoneCircle extends Entity {
       const sx = x + Math.cos(a) * 6;
       const sz = z + Math.sin(a) * 6;
       const h = this.rng.range(2.2, 3.4);
-      b.box(sx, h / 2, sz, 1.1, h, 0.8, vary(this.rng.pick(STONE), this.rng, 0.04));
-      b.box(sx, h + 0.1, sz, 1.0, 0.2, 0.7, vary('#6fbf4a', this.rng, 0.05)); // moss
+      // Standing stones lean a little and face the middle of the ring.
+      const lean = new THREE.Quaternion().setFromEuler(new THREE.Euler(this.rng.range(-0.06, 0.06), -a, this.rng.range(-0.06, 0.06)));
+      b.box(sx, h / 2, sz, 0.8, h, 1.15, vary(this.rng.pick(STONE), this.rng, 0.04), lean);
+      b.box(sx, h + 0.08, sz, 0.75, 0.2, 1.05, vary('#7ddc5a', this.rng, 0.05), lean); // moss
       this.colliders.push({ x: sx, z: sz, radius: 0.65 });
     }
     // Hint stone at the edge of the ring: the colors in order, left to right.

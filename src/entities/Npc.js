@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
 import { pushOut } from '../core/collision.js';
 import { VoxelBuilder } from '../core/VoxelBuilder.js';
-import { createCharacter, poseWalk, turnToward } from '../models/character.js';
+import { createCharacter, bakeParts, poseWalk, turnToward } from '../models/character.js';
 
 const WALK_SPEED = 2.4;
 const HURRY_SPEED = 3.4; // when walking over to give a quest
@@ -77,6 +77,7 @@ export class Npc extends Entity {
 
     this.model = createCharacter(look.colors);
     look.decorate?.(this.model);
+    bakeParts(this.model.root);
     this.object3d.add(this.model.root);
     this.model.root.rotation.y = facing;
     // People who stand in one place (shopkeepers) walk back to it in the morning.

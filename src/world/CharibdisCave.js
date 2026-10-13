@@ -1,9 +1,8 @@
 import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
-import { VoxelBuilder } from '../core/VoxelBuilder.js';
-import { stoneTexture, texturedVoxelMaterial } from '../core/textures.js';
+import { gardenMaterial } from '../style/garden.js';
+import { heightfieldGeometry, heightRamp } from '../style/heightfield.js';
 import { createRng, createNoise2D } from '../utils/random.js';
-import { vary } from '../utils/color.js';
 import { part } from '../models/character.js';
 import { SEED, PLACES, SEA } from '../config.js';
 
@@ -12,11 +11,16 @@ const OUTER = 21; // outside radius of the rock
 const WALL = 6; // height of the rock walls (the roof goes on top)
 const TUNNEL_HALF = 2; // the way in is 4 wide, on the side facing the main island (-z)
 
-const ROCK = ['#6f7480', '#5f646e', '#7b808a', '#676157'];
-const MOSS = ['#3f8f4a', '#4fa35a', '#367a40'];
-
-const wallMaterial = texturedVoxelMaterial(stoneTexture);
-const roofMaterial = texturedVoxelMaterial(stoneTexture);
+// Sea rock by height: deep blue-violet under the water, lavender cliffs, mossy green tops.
+const ROCK_COLORS = heightRamp([[SEA.floor, '#1f2a5a'], [-1, '#3a3f8a'], [1, '#5a5cc0'], [4.5, '#7a6cd8'], [5.6, '#4fc890'], [8, '#8fe08a'], [11, '#d0f5a0']]);
+function rockMaterial() {
+  const m = gardenMaterial({ rim: 0.25, rimColor: '#c8f0ff' });
+  m.vertexColors = true;
+  m.flatShading = true;
+  return m;
+}
+const wallMaterial = rockMaterial();
+const roofMaterial = rockMaterial();
 
 /**
  * Charibdis's cave: a rocky island far out at sea with a flooded cave inside. The way in is
@@ -57,42 +61,54 @@ export class CharibdisCave extends Entity {
   }
 
   build() {
-    const { rng } = this;
-    const walls = new VoxelBuilder();
-    const roof = new VoxelBuilder();
     const { x: X, z: Z } = this.center;
     this.gateCells = new Set();
+    const tops = new Map(); // "ix,iz" -> height of the rock's top
+    const open = new Set(); // the flooded chamber and the tunnel (roofed over)
+    const key = (ix, iz) => `${ix},${iz}`;
+    const bounds = { minX: Math.floor(X - OUTER - 1), maxX: Math.ceil(X + OUTER + 1), minZ: Math.floor(Z - OUTER - 1), maxZ: Math.ceil(Z + OUTER + 1) };
 
-    for (let ix = Math.floor(X - OUTER - 1); ix <= X + OUTER + 1; ix++) {
-      for (let iz = Math.floor(Z - OUTER - 1); iz <= Z + OUTER + 1; iz++) {
-        const x = ix + 0.5;
-        const z = iz + 0.5;
-        const lx = x - X;
-        const lz = z - Z;
+    for (let ix = bounds.minX; ix <= bounds.maxX; ix++) {
+      for (let iz = bounds.minZ; iz <= bounds.maxZ; iz++) {
+        const lx = ix + 0.5 - X;
+        const lz = iz + 0.5 - Z;
         const d = Math.hypot(lx, lz);
         const wobble = (this.noise(ix * 0.2, iz * 0.2) - 0.5) * 3;
         if (d > OUTER + wobble * 0.5) continue;
         const tunnel = this.isTunnel(lx, lz);
         // Rounded dome over the chamber and tunnel; the outside slopes down to the sea.
         const outside = Math.max(0, d - POOL) / (OUTER - POOL);
-        const top = Math.round(WALL + 4 * (1 - (d / OUTER) ** 2) - outside * 3 + wobble);
-
+        tops.set(key(ix, iz), WALL + 4 * (1 - (d / OUTER) ** 2) - outside * 3 + wobble);
         if (d < POOL || tunnel) {
-          // Open water inside, with a roof overhead (hidden when you're in).
-          roof.box(x, (WALL + top) / 2 + 0.5, z, 1, Math.max(1, top - WALL + 1), 1, vary(rng.pick(ROCK), rng, 0.05));
-          if (tunnel && Math.abs(lz + OUTER - 0.5) < 0.6) this.gateCells.add(`${ix},${iz}`);
+          open.add(key(ix, iz));
+          if (tunnel && Math.abs(lz + OUTER - 0.5) < 0.6) this.gateCells.add(key(ix, iz));
           continue;
         }
-        this.solid.add(`${ix},${iz}`);
-        const h = Math.max(1, Math.min(top, WALL));
-        walls.box(x, (h + SEA.floor) / 2, z, 1, h - SEA.floor, 1, vary(rng.pick(ROCK), rng, 0.05)); // rock all the way down
-        if (top > WALL) roof.box(x, (WALL + top) / 2, z, 1, top - WALL, 1, vary(rng.pick(ROCK), rng, 0.05));
-        else walls.box(x, h + 0.1, z, 1, 0.2, 1, vary(rng.pick(MOSS), rng, 0.06)); // mossy top
+        this.solid.add(key(ix, iz));
       }
     }
 
-    this.walls = walls.build({ material: wallMaterial });
-    this.roof = roof.build({ material: roofMaterial });
+    // Rock walls from the seabed up to the walls' height (all that's left when the roof is cut away)...
+    const walls = heightfieldGeometry({
+      ...bounds,
+      top: (ix, iz) => (this.solid.has(key(ix, iz)) ? Math.max(1, Math.min(tops.get(key(ix, iz)), WALL)) : null),
+      blend: (ix, iz) => (open.has(key(ix, iz)) ? null : -2.5), // the outside edge slopes into the sea
+      bottom: () => SEA.floor,
+      color: ROCK_COLORS,
+    });
+    // ...and the dome above them, roofing over the chamber and the tunnel.
+    const isRoof = (ix, iz) => open.has(key(ix, iz)) || (this.solid.has(key(ix, iz)) && tops.get(key(ix, iz)) > WALL);
+    const roof = heightfieldGeometry({
+      ...bounds,
+      top: (ix, iz) => (isRoof(ix, iz) ? Math.max(tops.get(key(ix, iz)), WALL + 1) : null),
+      bottom: () => WALL,
+      underside: (ix, iz) => open.has(key(ix, iz)),
+      color: ROCK_COLORS,
+    });
+
+    this.walls = new THREE.Mesh(walls, wallMaterial);
+    this.roof = new THREE.Mesh(roof, roofMaterial);
+    for (const m of [this.walls, this.roof]) m.castShadow = m.receiveShadow = true;
     this.object3d.add(this.walls, this.roof);
     this.buildGate();
     this.buildLights();

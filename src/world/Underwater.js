@@ -6,7 +6,7 @@ import { vary } from '../utils/color.js';
 import { SEED, SEA, FOG } from '../config.js';
 
 const DEEP = new THREE.Color('#14608f');
-const DREAMY = new THREE.Color('#3a2470');
+const DREAMY = new THREE.Color('#4a2a90');
 const SEAWEED = ['#2f8f3a', '#3aa84a', '#1f7a35'];
 const CORAL = ['#ff6b8a', '#ff9a3d', '#b46bff', '#ffd23f'];
 
@@ -80,8 +80,8 @@ export class Underwater extends Entity {
         water.object3d.visible = mode !== 'dream';
       }
       if (fog) {
-        fog.near = mode === 'under' ? 1 : mode === 'dream' ? 30 : FOG.near;
-        fog.far = mode === 'under' ? 55 : mode === 'dream' ? 260 : FOG.far;
+        fog.near = mode === 'under' ? 1 : mode === 'dream' ? 60 : FOG.near;
+        fog.far = mode === 'under' ? 55 : mode === 'dream' ? 320 : FOG.far;
       }
       game.scene.background = special ? (mode === 'under' ? DEEP : DREAMY).clone() : null;
     }

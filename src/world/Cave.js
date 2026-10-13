@@ -2,8 +2,9 @@ import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
 import { VoxelBuilder } from '../core/VoxelBuilder.js';
 import { stoneTexture, texturedVoxelMaterial } from '../core/textures.js';
+import { gardenMaterial } from '../style/garden.js';
+import { heightfieldGeometry, heightRamp } from '../style/heightfield.js';
 import { createRng, createNoise2D } from '../utils/random.js';
-import { vary } from '../utils/color.js';
 import { Chest } from '../entities/Chest.js';
 import { Spider } from '../entities/Spider.js';
 import { SEED, PLACES } from '../config.js';
@@ -43,15 +44,28 @@ const WALL_HEIGHT = 2; // walls that stay visible when the roof is cut away (low
 const MOUNTAIN_RADIUS = 23;
 const MOUNTAIN_HEIGHT = 26;
 
-const STONE = ['#8d8f96', '#7d8088', '#9a9ca3', '#878079'];
-const GRAVEL = ['#5f5a54', '#57534e', '#68625b'];
-const GOO = ['#4caf50', '#5fc35a', '#3f9e45'];
-const GRASS_TOP = '#5cb85c';
-const SNOW = '#f4f7fb';
+const GRAVEL = '#8a7aa8';
+const GOO = '#5fd86a';
 
-const wallMaterial = texturedVoxelMaterial(stoneTexture);
-const roofMaterial = texturedVoxelMaterial(stoneTexture);
-const floorMaterial = texturedVoxelMaterial(stoneTexture);
+// The mountain is drawn as a layer cake: soft terraces, each its own candy color, from a grassy
+// foot to pink-white snowy peaks.
+const TERRACE = 4;
+const LAYER_COLORS = ['#7ddc5a', '#3fc6a0', '#4aa6f0', '#7c74ff', '#a866f0', '#e070d0', '#ff9ad0', '#ffd0ea', '#fff6fb'];
+const MOUNTAIN_COLORS = heightRamp(LAYER_COLORS.flatMap((c, i) => [[i * TERRACE + 0.4, c], [(i + 1) * TERRACE - 0.6, LAYER_COLORS[Math.min(i + 1, LAYER_COLORS.length - 1)]]]));
+function terrace(h) {
+  const raw = h / TERRACE;
+  const level = Math.floor(raw);
+  return (level + THREE.MathUtils.smoothstep(raw - level, 0.45, 0.9)) * TERRACE;
+}
+function mountainMaterial() {
+  const m = gardenMaterial({ rim: 0.2 });
+  m.vertexColors = true;
+  m.flatShading = true;
+  return m;
+}
+const wallMaterial = mountainMaterial();
+const roofMaterial = mountainMaterial();
+const floorMaterial = texturedVoxelMaterial(stoneTexture, { bevel: 0 });
 const flameMaterial = new THREE.MeshLambertMaterial({ color: '#ffb300', emissive: '#ff8a00', emissiveIntensity: 1 });
 
 /**
@@ -118,50 +132,52 @@ export class Cave extends Entity {
   }
 
   buildMountain() {
-    const walls = new VoxelBuilder();
-    const roof = new VoxelBuilder();
     const floor = new VoxelBuilder();
-    const { rng } = this;
     const r = MOUNTAIN_RADIUS;
     const cx = Math.floor(this.center.x);
     const cz = Math.floor(this.center.z);
+    const bounds = { minX: cx - r - 1, maxX: cx + r + 1, minZ: cz - r - 1, maxZ: cz + r + 1 };
 
-    const cap = (h) => (h <= 8 ? GRASS_TOP : h <= 17 ? rng.pick(STONE) : SNOW);
-    // A stone column from y0 to y1, topped with a grass/stone/snow cap if it reaches the surface.
-    const column = (b, x, z, y0, y1, surface) => {
-      const top = surface ? y1 - 1 : y1;
-      if (top > y0) b.box(x, (y0 + top) / 2, z, 1, top - y0, 1, vary(rng.pick(STONE), rng, 0.03));
-      if (surface) b.add(x, y1 - 0.5, z, vary(cap(y1), rng, 0.04));
-    };
-
-    for (let ix = cx - r - 1; ix <= cx + r + 1; ix++) {
-      for (let iz = cz - r - 1; iz <= cz + r + 1; iz++) {
+    for (let ix = bounds.minX; ix <= bounds.maxX; ix++) {
+      for (let iz = bounds.minZ; iz <= bounds.maxZ; iz++) {
         const h = this.heightAt(ix, iz);
         const cell = this.cells.get(`${ix},${iz}`);
-        const x = ix + 0.5;
-        const z = iz + 0.5;
-
         if (cell) {
-          const palette = cell.chamber ? GOO : GRAVEL;
-          floor.box(x, 0.03, z, 1, 0.06, 1, vary(rng.pick(palette), rng, 0.04));
+          floor.box(ix + 0.5, 0.03, iz + 0.5, 1, 0.06, 1, cell.chamber ? GOO : GRAVEL);
           cell.covered = h > cell.ceiling + 1;
-          if (cell.covered) column(roof, x, z, cell.ceiling, h, true);
           continue;
         }
-        if (h < 1) continue;
-
-        this.solid.add(`${ix},${iz}`);
-        if (h <= WALL_HEIGHT) {
-          column(walls, x, z, -2, h, true);
-        } else {
-          column(walls, x, z, -2, WALL_HEIGHT, false);
-          column(roof, x, z, WALL_HEIGHT, h, true);
-        }
+        if (h >= 1) this.solid.add(`${ix},${iz}`);
       }
     }
 
-    this.walls = walls.build({ material: wallMaterial });
-    this.roof = roof.build({ material: roofMaterial });
+    // The low walls you still see inside when the roof is cut away, sloping down to the grass
+    // round the outside of the mountain.
+    const key = (ix, iz) => `${ix},${iz}`;
+    const walls = heightfieldGeometry({
+      ...bounds,
+      top: (ix, iz) => (this.solid.has(key(ix, iz)) ? Math.min(this.heightAt(ix, iz), WALL_HEIGHT) : null),
+      blend: (ix, iz) => (this.cells.has(key(ix, iz)) ? null : 0),
+      bottom: () => -0.5,
+      color: MOUNTAIN_COLORS,
+    });
+    // The mountain above the walls (and over the covered tunnels): hidden while you're inside.
+    const isRoof = (ix, iz) => (this.solid.has(key(ix, iz)) && this.heightAt(ix, iz) > WALL_HEIGHT) || this.cells.get(key(ix, iz))?.covered;
+    const roof = heightfieldGeometry({
+      ...bounds,
+      top: (ix, iz) => {
+        if (!isRoof(ix, iz)) return null;
+        const floorOfRoof = this.cells.get(key(ix, iz))?.ceiling ?? WALL_HEIGHT;
+        return Math.max(terrace(this.heightAt(ix, iz)), floorOfRoof + 0.8);
+      },
+      bottom: (ix, iz) => this.cells.get(key(ix, iz))?.ceiling ?? WALL_HEIGHT,
+      underside: (ix, iz) => !!this.cells.get(key(ix, iz))?.covered,
+      color: MOUNTAIN_COLORS,
+    });
+
+    this.walls = new THREE.Mesh(walls, wallMaterial);
+    this.roof = new THREE.Mesh(roof, roofMaterial);
+    for (const m of [this.walls, this.roof]) m.castShadow = m.receiveShadow = true;
     this.floor = floor.build({ material: floorMaterial, castShadow: false });
     this.object3d.add(this.walls, this.roof, this.floor);
   }

@@ -1,46 +1,54 @@
 import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
-import { VoxelBuilder } from '../core/VoxelBuilder.js';
+import { gardenMaterial } from '../style/garden.js';
+import { modelParts } from '../style/models.js';
 import { createRng } from '../utils/random.js';
 import { SEED } from '../config.js';
 
-export const cloudMaterial = new THREE.MeshLambertMaterial({ emissive: '#ffffff', emissiveIntensity: 0.35 });
+// Soft glowing white with a pink rim (DayNight dims the glow at night).
+export const cloudMaterial = gardenMaterial({ color: '#ffffff', emissive: '#fff4fb', emissiveIntensity: 0.35, rim: 0.7, rimColor: '#ffc6ec' });
 const WRAP = 320;
+const _m = new THREE.Matrix4();
+const _q = new THREE.Quaternion();
+const _p = new THREE.Vector3();
+const _s = new THREE.Vector3();
+const UP = new THREE.Vector3(0, 1, 0);
 
-/** Puffy blocky clouds drifting slowly across the sky. */
+/** Puffy beveled clouds drifting slowly across the sky (one instanced mesh per cloud shape). */
 export class Clouds extends Entity {
   constructor({ count = 18 } = {}) {
     super();
     const rng = createRng(SEED + 3);
     this.clouds = [];
+    const shapes = ['cloud_a', 'cloud_b'].map((name) => {
+      const mesh = new THREE.InstancedMesh(modelParts(name)[0].geometry, cloudMaterial, count);
+      mesh.count = 0;
+      mesh.frustumCulled = false; // they're spread across the whole sky
+      this.object3d.add(mesh);
+      return mesh;
+    });
 
     for (let i = 0; i < count; i++) {
-      const builder = new VoxelBuilder();
-      const size = 4;
-      const length = rng.int(4, 9);
-      const width = rng.int(3, 5);
-      for (let a = 0; a < length; a++) {
-        for (let b = 0; b < width; b++) {
-          // Taller in the middle, ragged at the edges.
-          const center = 1 - Math.abs(a / (length - 1) - 0.5) * 2;
-          if (rng.chance(0.15) && center < 0.5) continue;
-          const layers = 1 + (center > 0.4 && rng.chance(0.7) ? 1 : 0) + (center > 0.8 ? 1 : 0);
-          for (let l = 0; l < layers; l++) {
-            builder.add(a * size, l * size * 0.6, b * size, l === 0 ? '#eef4ff' : '#ffffff', size);
-          }
-        }
-      }
-      const mesh = builder.build({ castShadow: false, receiveShadow: false, material: cloudMaterial });
-      mesh.position.set(rng.range(-WRAP, WRAP), rng.range(55, 95), rng.range(-260, 260));
-      this.object3d.add(mesh);
-      this.clouds.push({ mesh, speed: rng.range(1.5, 4) });
+      const mesh = shapes[i % shapes.length];
+      this.clouds.push({
+        mesh,
+        index: mesh.count++,
+        position: new THREE.Vector3(rng.range(-WRAP, WRAP), rng.range(55, 95), rng.range(-260, 260)),
+        rotation: rng.range(-0.4, 0.4),
+        scale: rng.range(2.4, 3.6),
+        speed: rng.range(1.5, 4),
+      });
     }
+    this.update(0);
   }
 
   update(dt) {
     for (const cloud of this.clouds) {
-      cloud.mesh.position.x += cloud.speed * dt;
-      if (cloud.mesh.position.x > WRAP) cloud.mesh.position.x = -WRAP;
+      cloud.position.x += cloud.speed * dt;
+      if (cloud.position.x > WRAP) cloud.position.x = -WRAP;
+      _q.setFromAxisAngle(UP, cloud.rotation);
+      cloud.mesh.setMatrixAt(cloud.index, _m.compose(_p.copy(cloud.position), _q, _s.setScalar(cloud.scale)));
     }
+    for (const mesh of this.object3d.children) mesh.instanceMatrix.needsUpdate = true;
   }
 }

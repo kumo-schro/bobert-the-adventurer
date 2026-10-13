@@ -9,9 +9,9 @@ const DAYTIME = {
   middle: SKY.middle,
   horizon: SKY.horizon,
   sun: SKY.sun,
-  sunLight: '#fff3dc',
-  hemiSky: '#d8eeff',
-  hemiGround: '#7a9c5a',
+  sunLight: '#fff0d6',
+  hemiSky: '#efe2ff',
+  hemiGround: '#8a64d8', // violet bounce light: shadows are purple, never grey
 };
 const NIGHTTIME = {
   top: '#060b2b',
@@ -72,9 +72,9 @@ export class DayNight extends Entity {
       game.scene.fog?.color.copy(u.horizonColor.value);
     }
     if (lighting) {
-      lighting.sun.intensity = 2.4 * this.daylight + 0.45 * n;
+      lighting.sun.intensity = 2.5 * this.daylight + 0.45 * n;
       mix(DAYTIME.sunLight, NIGHTTIME.sunLight, n, lighting.sun.color).lerp(_a.set(DUSK), dusk * 0.4);
-      lighting.hemi.intensity = 1.6 * this.daylight + 0.75 * n;
+      lighting.hemi.intensity = 1.7 * this.daylight + 0.75 * n;
       mix(DAYTIME.hemiSky, NIGHTTIME.hemiSky, n, lighting.hemi.color);
       mix(DAYTIME.hemiGround, NIGHTTIME.hemiGround, n, lighting.hemi.groundColor);
     }

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Monster } from './Monster.js';
-import { part } from '../models/character.js';
+import { part, bakeParts } from '../models/character.js';
 
 const FLY_SPEED = 3.2;
 const WAKE_RANGE = 9;
@@ -43,7 +43,10 @@ export class Gargoyle extends Monster {
       part(this.body, [0.12, 0.2, 0.14], DARK, [side * 0.18, 0.08, 0.12]); // feet
     }
     this.eyes = this.body.children.filter((c) => c.position.z === 0.33);
-    for (const eye of this.eyes) eye.material.emissive.set('#ff3b3b');
+    for (const eye of this.eyes) {
+      eye.material.emissive.set('#ff3b3b');
+      eye.userData.keep = true; // they light up when it wakes
+    }
     this.wings = [-1, 1].map((side) => {
       const wing = new THREE.Group();
       wing.position.set(side * 0.25, 0.55, -0.1);
@@ -53,6 +56,7 @@ export class Gargoyle extends Monster {
       return { wing, side };
     });
     part(this.body, [0.1, 0.1, 0.4], DARK, [0, 0.25, -0.4]); // tail
+    bakeParts(this.body);
   }
 
   think(dt, game, toPlayer) {

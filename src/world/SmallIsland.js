@@ -1,39 +1,28 @@
 import { Entity } from '../core/Entity.js';
-import { VoxelBuilder } from '../core/VoxelBuilder.js';
-import { grassMaterial, sandMaterial, blockMaterial } from '../core/textures.js';
+import { IslandSurface } from '../style/IslandSurface.js';
+import { instances } from '../style/models.js';
 import { createRng } from '../utils/random.js';
-import { vary } from '../utils/color.js';
 import { Chest } from '../entities/Chest.js';
-import { SEED, SEA } from '../config.js';
+import { SEED } from '../config.js';
 
-const SAND = '#f5dfa0';
-const WET_SAND = '#e3c47f';
-const GRASS = ['#5cc93b', '#6fd64a', '#4fb83a'];
-const ROCK = ['#c9c2b5', '#b8b1a4', '#aaa497'];
+const BUSHES = ['#2fd27a', '#18c9a0', '#7dff3a', '#4be3a0'];
+const ROCKS = ['#d9ccff', '#c4f2e2', '#ffd9b0'];
 
-/** Adds a round sandy island with a grassy middle (like a tiny main island) to two VoxelBuilders. */
-export function islandGround({ grass, sand }, rng, X, Z, r) {
-  for (let ix = Math.floor(X - r); ix < X + r; ix++) {
-    for (let iz = Math.floor(Z - r); iz < Z + r; iz++) {
-      const x = ix + 0.5;
-      const z = iz + 0.5;
-      const d = Math.hypot(x - X, z - Z);
-      if (d > r) continue;
-      if (d > r - 1.5) sand.box(x, (SEA.floor - 1) / 2, z, 1, -1 - SEA.floor, 1, vary(WET_SAND, rng)); // down to the seabed
-      else if (d > r - 4) sand.add(x, -0.5, z, vary(SAND, rng));
-      else grass.add(x, -0.5, z, vary(rng.pick(GRASS), rng, 0.06));
-    }
-  }
+/** The smooth ground of a round sandy island with a grassy middle (like a tiny main island). */
+export function islandGround(X, Z, r) {
+  return new IslandSurface({ center: { x: X, z: Z }, edge: () => r, maxRadius: r + 2, segments: 96, rings: 24, paths: false }).mesh;
 }
 
-/** A berry bush or a boulder at (x, z). */
-export function bushOrRock(builder, rng, x, z) {
-  if (rng.chance(0.5)) {
-    builder.box(x, 0.4, z, 1.2, 0.8, 1.2, vary('#3fae3a', rng, 0.06));
-    builder.box(x + 0.2, 0.85, z, 0.2, 0.2, 0.2, '#ff4d6d');
-  } else {
-    builder.box(x, 0.3, z, 1.1, 0.6, 0.9, vary(rng.pick(ROCK), rng, 0.05));
-  }
+/** Decides on a berry bush or a boulder at (x, z), into `props` ({ bushes, rocks } lists). */
+export function bushOrRock(props, rng, x, z) {
+  const spot = { x, z, rotation: rng.range(0, Math.PI * 2) };
+  if (rng.chance(0.5)) props.bushes.push({ ...spot, scale: rng.range(0.7, 1.0), color: rng.pick(BUSHES) });
+  else props.rocks.push({ ...spot, scale: rng.range(0.5, 0.8), color: rng.pick(ROCKS) });
+}
+
+/** The bushes and boulders collected by bushOrRock, as instanced meshes. */
+export function buildProps(props) {
+  return [instances('bush', props.bushes), instances('boulder', props.rocks)];
 }
 
 /**
@@ -48,19 +37,13 @@ export class SmallIsland extends Entity {
     this.chestCoins = chest;
     this.swimFromShore = true;
     const rng = createRng(SEED + 60 + index);
-    const ground = { grass: new VoxelBuilder(), sand: new VoxelBuilder() };
-    const props = new VoxelBuilder();
-    islandGround(ground, rng, x, z, radius);
+    const props = { bushes: [], rocks: [] };
     for (let i = 0; i < Math.round(radius / 2); i++) {
       const a = rng.range(0, Math.PI * 2);
       const d = rng.range(1.5, radius - 4);
       bushOrRock(props, rng, x + Math.cos(a) * d, z + Math.sin(a) * d);
     }
-    this.object3d.add(
-      ground.grass.build({ castShadow: false, material: grassMaterial }),
-      ground.sand.build({ castShadow: false, material: sandMaterial }),
-      props.build({ material: blockMaterial }),
-    );
+    this.object3d.add(islandGround(x, z, radius), ...buildProps(props));
   }
 
   onAdd(game) {

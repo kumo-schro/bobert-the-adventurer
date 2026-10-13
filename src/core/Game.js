@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Input } from './Input.js';
+import { Grade } from '../style/Grade.js';
 
 /**
  * Owns the renderer, scene, camera and the main loop.
@@ -7,12 +8,13 @@ import { Input } from './Input.js';
  */
 export class Game {
   constructor(container) {
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)) // crisp enough, and much cheaper than 2x;
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     container.appendChild(this.renderer.domElement);
+    this.grade = new Grade(this.renderer); // antialiasing + color grading
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 4000);
@@ -121,6 +123,10 @@ export class Game {
 
     for (const entity of this.entities) entity.update(dt, this);
     this.input.endFrame();
-    this.renderer.render(this.scene, this.camera);
+    this.render();
+  }
+
+  render() {
+    this.grade.render(this.scene, this.camera);
   }
 }

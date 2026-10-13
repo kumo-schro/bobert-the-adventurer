@@ -2,7 +2,7 @@ import { Quest } from './Quest.js';
 import { Collectible } from '../entities/Collectible.js';
 import { Slime } from '../entities/Slime.js';
 import { OakFighter, Vine } from '../entities/JungleMonsters.js';
-import { createCharacter } from '../models/character.js';
+import { createCharacter, bakeParts } from '../models/character.js';
 import { LOOKS } from '../models/people.js';
 import { createMysteryCrystal, createKey } from '../models/gear.js';
 import { RAINBOW } from '../world/StoneCircle.js';
@@ -361,6 +361,7 @@ export class OakDuelQuest extends Quest {
     const oak = this.giver;
     const model = createCharacter(LOOKS.oak.colors);
     LOOKS.oak.decorate(model);
+    bakeParts(model.root);
     this.fighter = game.add(new OakFighter(oak.object3d.position, model));
     oak.object3d.visible = false;
     oak.collider.x = oak.collider.z = 1e6;

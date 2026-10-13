@@ -6,3 +6,6 @@ dist
 # Players' suggestions (pulled with npm run recommendations)
 recommendations.json
 recommendations/
+
+# Codex texture-generation session logs (local only)
+art/logs/

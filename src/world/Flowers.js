@@ -1,14 +1,22 @@
 import { Entity } from '../core/Entity.js';
-import { VoxelBuilder } from '../core/VoxelBuilder.js';
 import { createRng } from '../utils/random.js';
-import { vary } from '../utils/color.js';
+import { instances } from '../style/models.js';
 import { SEED, WORLD } from '../config.js';
 
-const PETALS = ['#ff4d6d', '#ffd23f', '#ffffff', '#c77dff', '#4cc9f0', '#ff8fab'];
-const STEM = '#2f9e44';
-const TUFT = '#3fa73a';
+const PETALS = ['#ff4fd8', '#ffe14d', '#ffffff', '#b07cff', '#36e6ff', '#ff8a3d', '#ff5e7e'];
+const CAPS = ['#ff3d6e', '#ff8a3d', '#b07cff', '#36b6ff', '#ff4fd8'];
+const BUSHES = ['#2fd27a', '#18c9a0', '#7dff3a', '#4be3a0'];
 
-/** Little voxel flowers and grass tufts sprinkled over the meadow. */
+// How the meadow is shared out between the different plants (out of WORLD.flowerCount).
+const MIX = [
+  { name: 'grass_tuft', share: 0.5, scale: [0.8, 1.3] },
+  { name: 'daisy_small', share: 0.24, scale: [0.35, 0.5], colors: PETALS },
+  { name: 'tulip_small', share: 0.16, scale: [0.35, 0.5], colors: PETALS },
+  { name: 'bush', share: 0.025, scale: [0.7, 1.15], colors: BUSHES, shadow: true },
+  { name: 'mushroom', share: 0.025, scale: [0.35, 0.9], colors: CAPS, shadow: true },
+];
+
+/** Flowers, grass tufts, bushes and toadstools sprinkled over the meadow. */
 export class Flowers extends Entity {
   constructor({ count = WORLD.flowerCount } = {}) {
     super();
@@ -17,8 +25,9 @@ export class Flowers extends Entity {
 
   onAdd(game) {
     const rng = createRng(SEED + 2);
-    const b = new VoxelBuilder();
     const r = game.terrain.radius;
+    const lists = new Map(MIX.map((kind) => [kind, []]));
+    const total = MIX.reduce((sum, k) => sum + k.share, 0);
 
     let placed = 0;
     for (let attempt = 0; attempt < this.count * 10 && placed < this.count; attempt++) {
@@ -27,21 +36,24 @@ export class Flowers extends Entity {
       if (!game.terrain.isGrass(x, z, 1) || game.isReserved(x, z)) continue;
       placed++;
 
-      if (rng.chance(0.55)) {
-        // Grass tuft: a few thin blades.
-        for (let i = 0; i < 3; i++) {
-          const h = rng.range(0.25, 0.5);
-          b.box(x + rng.range(-0.15, 0.15), h / 2, z + rng.range(-0.15, 0.15), 0.08, h, 0.08, vary(TUFT, rng));
-        }
-      } else {
-        // Flower: stem + petals + yellow middle.
-        const h = rng.range(0.3, 0.55);
-        b.box(x, h / 2, z, 0.07, h, 0.07, STEM);
-        b.box(x, h + 0.06, z, 0.26, 0.12, 0.26, vary(rng.pick(PETALS), rng));
-        b.box(x, h + 0.1, z, 0.1, 0.06, 0.1, '#ffb703');
-      }
+      let pick = rng.range(0, total);
+      const kind = MIX.find((k) => (pick -= k.share) < 0) ?? MIX[0];
+      lists.get(kind).push({
+        x,
+        y: game.terrain.heightAt?.(x, z) ?? 0,
+        z,
+        rotation: rng.range(0, Math.PI * 2),
+        scale: rng.range(...kind.scale),
+        tiltX: rng.range(-0.12, 0.12),
+        tiltZ: rng.range(-0.12, 0.12),
+        color: kind.colors && rng.pick(kind.colors),
+      });
     }
 
-    this.object3d.add(b.build({ castShadow: false }));
+    for (const [kind, list] of lists) {
+      if (!list.length) continue;
+      const shadow = !!kind.shadow; // little plants don't cast shadows (much cheaper)
+      this.object3d.add(instances(kind.name, list, { castShadow: shadow }));
+    }
   }
 }

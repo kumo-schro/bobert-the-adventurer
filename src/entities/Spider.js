@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Monster } from './Monster.js';
-import { part } from '../models/character.js';
+import { part, bakeParts } from '../models/character.js';
 
 const SPEED = 2.3;
 const CHASE_RANGE = 8;
@@ -34,6 +34,7 @@ export class Spider extends Monster {
         this.legs.push({ hip, side, phase: i * 1.6 });
       }
     }
+    bakeParts(this.body);
   }
 
   think(dt, game, toPlayer) {

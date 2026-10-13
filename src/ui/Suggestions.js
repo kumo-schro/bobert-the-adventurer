@@ -228,7 +228,7 @@ export class Suggestions extends Entity {
   takeScreenshot(clientX, clientY) {
     try {
       const game = this.game;
-      game.renderer.render(game.scene, game.camera); // the drawing buffer is only valid right after a render
+      game.render(); // the drawing buffer is only valid right after a render
       const source = game.renderer.domElement;
       const width = 640;
       const height = Math.round((width * source.height) / source.width);
