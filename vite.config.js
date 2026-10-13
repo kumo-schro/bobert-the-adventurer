@@ -45,8 +45,13 @@ function localRecommendations() {
 
 export default defineConfig({
   plugins: [localRecommendations()],
-  // three.js alone is ~500 kB, so raise the warning threshold.
-  build: { chunkSizeWarningLimit: 1000 },
+  build: {
+    // three.js alone is ~500 kB, so raise the warning threshold.
+    chunkSizeWarningLimit: 1000,
+    // Keep class names when minifying: the game looks some entities up by name (and the
+    // suggestion tool reports what you clicked on by its class name).
+    rolldownOptions: { output: { keepNames: true } },
+  },
   // Saving a recommendation writes these files: don't reload the page when that happens.
   server: { watch: { ignored: ['**/recommendations.json', '**/recommendations/**'] } },
 });

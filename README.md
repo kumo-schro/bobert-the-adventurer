@@ -8,7 +8,7 @@ npm run dev      # http://localhost:5173
 npm run build    # production build into dist/
 ```
 
-**Controls** (change any of them in-game by pressing **Command**): WASD / arrow keys move (and swim), Space jumps, Shift runs, **Return** (or left click) swings your sword in a wide sideways slash, hold **J** to block with a shield, **K** shoots the bow (hold it to charge the power bow), **F** eats food, **T** talks / opens / shops / chops / mines / boards the boat, **L** dash, **I** invisible, **U** dream heal and **O** star shield (dream powers), **/** suggests a change, **`** opens the debug menu, Enter/Space/click advances dialog. Camera: drag with the left or right mouse button, **Q/E** turn, **R/G** tilt, **C** swings round behind you, scroll or **-/=** zoom. Press **Option** to show or hide the quest panel and the controls list.
+**Controls** (change any of them in-game by pressing **Ctrl** or **Command**): WASD / arrow keys move (and swim), Space jumps, Shift runs, **Return** (or left click) swings your sword in a wide sideways slash, hold **J** to block with a shield, **K** shoots the bow (hold it to charge the power bow), **F** eats food, **T** talks / opens / shops / chops / mines / boards the boat, **L** dash, **I** invisible, **U** dream heal and **O** star shield (dream powers), **/** suggests a change, **`** opens the debug menu, Enter/Space/click advances dialog. Camera: drag with the left or right mouse button, **Q/E** turn, **R/G** tilt, **C** swings round behind you, scroll or **-/=** zoom. Press **Option** (**Alt** on Windows) to show or hide the quest panel and the controls list.
 
 **The story** is in [`story.md`](story.md): a short outline, chapter by chapter. Edit it (add details, change what happens, add chapters) and ask Claude to "update the game from story.md". Feature requests can also go in `theme.md`, one line each.
 
@@ -51,7 +51,7 @@ src/
                        sideQuests (find things, hunt, puzzle, deliveries, crystal, Charibdis, jungle)
   models/              Voxel model recipes: trees, buildings, character, people (outfits), gear
   ui/                  Dialog (+ "Press T" prompts), QuestLog, StatusBar (hearts/coins/food), Shop,
-                       ControlsMenu (Command to change keys, Option to show panels), DebugMenu (`),
+                       ControlsMenu (Ctrl/Command to change keys, Option/Alt to show panels), DebugMenu (`),
                        Suggestions (💡 click on something and suggest a change)
 api/recommendations.js Vercel Function that saves suggestions (and lets the owner download them)
 server/                Code shared by that function and the local dev server (vite.config.js)

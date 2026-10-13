@@ -85,6 +85,7 @@ export class Gargoyle extends Monster {
   }
 
   animate(dt, game) {
+    this.avoid?.keepOutOfTower(this.object3d.position, 0.35);
     const perched = !this.awake && this.object3d.position.distanceTo(this.home) < 0.2;
     for (const eye of this.eyes) eye.material.emissiveIntensity = this.awake ? 1 : 0;
     this.flap += dt * (perched ? 0 : 14);

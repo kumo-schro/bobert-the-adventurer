@@ -44,9 +44,27 @@ export class TowerIsland extends Entity {
 
   onAdd(game) {
     game.lands.push(this);
+    game.towerIsland = this;
     game.cameraBlockers.push(this.towerMesh);
     for (const spot of this.eelSpots) game.add(new Eel(spot));
-    for (const spot of this.gargoyleSpots) game.add(new Gargoyle(spot)).perchFacing = spot.facing;
+    for (const spot of this.gargoyleSpots) {
+      const gargoyle = game.add(new Gargoyle(spot));
+      gargoyle.perchFacing = spot.facing;
+      gargoyle.avoid = this; // flies round the tower, not through its walls
+    }
+  }
+
+  /** Moves a flying thing at `pos` out of the tower's walls (it can still fly over the roof). */
+  keepOutOfTower(pos, radius) {
+    if (pos.y > TOP + 0.3) return;
+    const dx = pos.x - this.center.x;
+    const dz = pos.z - this.center.z;
+    const d = Math.hypot(dx, dz);
+    const min = TOWER_RADIUS + radius;
+    if (d >= min) return;
+    const s = d > 0.001 ? min / d : 0;
+    pos.x = this.center.x + (s ? dx * s : min);
+    pos.z = this.center.z + (s ? dz * s : 0);
   }
 
   /** On the island (keeping off the wet beach edge like the main island does)? */

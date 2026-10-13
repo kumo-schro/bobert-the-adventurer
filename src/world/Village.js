@@ -127,7 +127,7 @@ export class Village extends Entity {
 
     // Well off to the side so it isn't in the merchant's way.
     const wellAngle = stallAngle - Math.PI / 2;
-    const w = this.place(well, wellAngle, VILLAGE.plazaRadius - 2.5, { roof: '#d9493f' }, 'the well');
+    const w = this.place(well, wellAngle, VILLAGE.plazaRadius - 2.5, { roof: '#3f7fd9' }, 'the well');
     this.reserved.push({ ...w.center, radius: 2.5 });
 
     this.buildOuterRing(bakeryAngle);

@@ -1,5 +1,7 @@
 // All the words characters say live here, so the story is easy to read and change.
 
+import { MENU_KEYS } from './controls.js';
+
 export const MAIN_QUEST = {
   title: 'The Precious Artifact',
   text: {
@@ -165,7 +167,7 @@ Object.assign(SIDE_QUESTS, {
       offer: [
         'Lovely day! Say, the old well is getting a bit wobbly.',
         'Could you bring me 8 stone to fix it? Mine the big boulders with a pickaxe (press T next to one). The blacksmith sells pickaxes.',
-        'And a tip: press Option to see your quests and controls, and Command to change the keys!',
+        `And a tip: press ${MENU_KEYS.panels} to see your quests and controls, and ${MENU_KEYS.controls} to change the keys!`,
       ],
       active: ['8 stone for the well, please! Mine the boulders around the island with a pickaxe.'],
       turnIn: ['Wonderful! The well will be good as new. Here, take these coins.'],

@@ -25,9 +25,9 @@ export const FOG = {
   far: 650,
 };
 
-// One full day and night every two minutes. Only the lighting changes (and villagers go to bed).
+// One full day and night every five minutes. Only the lighting changes (and villagers go to bed).
 export const DAY = {
-  length: 120, // seconds for a whole day + night
+  length: 300, // seconds for a whole day + night
   startAt: 0.05, // where in the day the game starts (0 = sunrise, 0.5 = sunset)
 };
 

@@ -1,5 +1,5 @@
 // Every control in the game, with its default keys. Players can change them in-game
-// (press Command to open the controls menu); their choices are saved in the browser.
+// (press Ctrl or Command to open the controls menu); their choices are saved in the browser.
 // Read them with game.input.held('shield'), game.input.hit('swing'), game.input.axisOf('left', 'right').
 
 export const ACTIONS = [
@@ -29,7 +29,12 @@ export const ACTIONS = [
 ];
 
 // Keys the game itself uses for menus; they can't be given to anything else.
-export const RESERVED = new Set(['MetaLeft', 'MetaRight', 'AltLeft', 'AltRight', 'Escape', 'Backquote']); // ` = debug menu
+export const RESERVED = new Set(['MetaLeft', 'MetaRight', 'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight', 'Escape', 'Backquote']); // ` = debug menu
+
+// What the menu keys are called on this computer: Option / Command on a Mac, Alt / Ctrl elsewhere
+// (Windows keyboards have no Command key). Ctrl and Command both open the controls menu everywhere.
+const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+export const MENU_KEYS = IS_MAC ? { panels: 'Option', controls: 'Command' } : { panels: 'Alt', controls: 'Ctrl' };
 
 const NAMES = {
   Space: 'Space',

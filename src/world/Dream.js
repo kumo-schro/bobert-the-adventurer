@@ -4,16 +4,19 @@ import { VoxelBuilder } from '../core/VoxelBuilder.js';
 import { createRng } from '../utils/random.js';
 import { vary } from '../utils/color.js';
 import { glowMaterial } from './Village.js';
+import { part } from '../models/character.js';
 import { SEED, PLACES } from '../config.js';
 
 const GRASS = ['#b8f2d8', '#f7c6e8', '#d6c8ff', '#c8f0ff'];
 const ROCK = ['#6b4fa8', '#5a3f94', '#7d5fc0'];
+const PAD_TOP = 0.5; // a bounce mushroom's cap is this high
 const RAINBOW = ['#ff6b6b', '#ffb36b', '#ffe66b', '#7dff8a', '#6bc6ff', '#b47dff'];
 
 /**
  * The dream dimension: pastel floating islands high in a starry purple sky, joined by rainbow
  * bridges, with a staircase of cloud stones (you have to jump!) up to a summit. Reached through
  * the portal that opens in the jungle once the Vine is beaten. Registers as walkable land.
+ * Glowing bounce mushrooms launch you high into the air (the player asks `bounceAt`).
  * Exposes `arrive`, `keeperSpot`, `shrineSpot`, `wakeSpot`, `summitSpot`, `starSpots`, `wispSpots`.
  */
 export class DreamWorld extends Entity {
@@ -71,6 +74,42 @@ export class DreamWorld extends Entity {
       { x: s.x + 3, y: Y + 2.5, z: s.z },
       { x: s.x - 3, y: Y + 3, z: s.z + 2 },
     ]);
+    // Bounce mushrooms, under where the wandering wisps float: bounce up and swing at them!
+    this.bouncePads = [
+      { x: X + 7, z: Z - 8 },
+      { x: X - 8, z: Z + 8 },
+      ...this.satellites.map((s) => ({ x: s.x - 3.5, z: s.z + 3 })),
+    ].map((p) => ({ ...p, r: 1.3, h: Y, squash: 0 }));
+  }
+
+  /** The bounce mushroom you've just landed on at (x, y, z), if any. */
+  bounceAt(x, y, z) {
+    return this.bouncePads.find((p) => Math.abs(y - (p.h + PAD_TOP)) < 0.2 && Math.hypot(x - p.x, z - p.z) < p.r) ?? null;
+  }
+
+  /** Squish the mushroom and puff some sparkles (call when someone bounces on it). */
+  boing(pad, game) {
+    pad.squash = 1;
+    game.particles?.burst(new THREE.Vector3(pad.x, pad.h + 0.5, pad.z), { count: 14, colors: ['#ff8fe0', '#ffe66b', '#ffffff'], speed: 5, size: 0.16 });
+    if (!this.toldAboutBouncing) {
+      this.toldAboutBouncing = true;
+      game.questLog?.toast('Boing! Bounce mushrooms throw you way up high.');
+    }
+  }
+
+  buildBouncePads() {
+    for (const pad of this.bouncePads) {
+      pad.model = new THREE.Group();
+      pad.model.position.set(pad.x, pad.h, pad.z);
+      part(pad.model, [0.5, 0.3, 0.5], '#fff4fb', [0, 0.15, 0]); // stem
+      pad.cap = new THREE.Group();
+      pad.cap.position.y = 0.3;
+      part(pad.cap, [2.4, 0.2, 2.4], '#ff6bd5', [0, 0.1, 0], { emissive: '#ff6bd5' }); // you stand on this
+      part(pad.cap, [1.6, 0.12, 1.6], '#ff9be6', [0, 0.26, 0], { emissive: '#ff6bd5' });
+      for (const [sx, sz] of [[-0.6, 0.5], [0.7, -0.4], [0.1, 0.8], [-0.4, -0.7]]) part(pad.cap, [0.3, 0.04, 0.3], '#fff4fb', [sx, 0.21, sz]); // spots
+      pad.model.add(pad.cap);
+      this.object3d.add(pad.model);
+    }
   }
 
   /** On a dream island, bridge or cloud stone? */
@@ -82,6 +121,9 @@ export class DreamWorld extends Entity {
     let h = null;
     for (const c of this.circles) {
       if (Math.hypot(x - c.x, z - c.z) < c.r - margin && (h === null || c.h > h)) h = c.h;
+    }
+    for (const p of this.bouncePads ?? []) {
+      if (Math.hypot(x - p.x, z - p.z) < p.r) h = Math.max(h ?? p.h, p.h + PAD_TOP);
     }
     for (const b of this.bridges) {
       const dx = b.bx - b.ax;
@@ -124,6 +166,7 @@ export class DreamWorld extends Entity {
           const x = c.x + Math.cos(a) * d;
           const z = c.z + Math.sin(a) * d;
           if (Math.hypot(x - this.keeperSpot.x, z - this.keeperSpot.z) < 3 || Math.hypot(x - this.shrineSpot.x, z - this.shrineSpot.z) < 3) continue;
+          if (this.bouncePads.some((p) => Math.hypot(x - p.x, z - p.z) < 2.5)) continue;
           if (rng.chance(0.5)) {
             ground.box(x, c.h + 1, z, 0.3, 2, 0.3, '#e8e0ff');
             glow.box(x, c.h + 2.4, z, 1.2, 1.2, 1.2, rng.pick(['#b47dff', '#6bc6ff', '#ff8fe0']));
@@ -149,6 +192,7 @@ export class DreamWorld extends Entity {
       }
     }
     this.object3d.add(ground.build(), glow.build({ material: glowMaterial, castShadow: false }));
+    this.buildBouncePads();
 
     // The way home: a glowing doorway on the hub.
     this.wakePortal = createPortalModel('#ffe66b');
@@ -200,6 +244,11 @@ export class DreamWorld extends Entity {
 
   update(dt, game) {
     this.wakePortal.rotation.y += dt;
+    for (const pad of this.bouncePads) {
+      pad.squash = Math.max(0, pad.squash - dt * 4);
+      const s = Math.sin(pad.squash * Math.PI) * 0.45; // squish down, then spring back
+      pad.cap.scale.set(1 + s * 0.5, 1 - s, 1 + s * 0.5);
+    }
     const player = game.player;
     if (player.dead || game.isUiOpen()) return;
     const p = player.object3d.position;

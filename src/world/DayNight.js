@@ -29,7 +29,7 @@ const _b = new THREE.Color();
 const mix = (from, to, t, target) => target.copy(_a.set(from)).lerp(_b.set(to), t);
 
 /**
- * Day and night: one whole cycle every DAY.length seconds (two minutes). Only the lighting
+ * Day and night: one whole cycle every DAY.length seconds (five minutes). Only the lighting
  * changes: sun and sky colors, stars, fog. Lives at game.dayNight.
  *   daylight  1 at noon, 0 at night
  *   nightness 1 - daylight

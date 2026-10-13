@@ -175,8 +175,9 @@ export class Suggestions extends Entity {
   }
 
   /** Where are we, broadly? */
-  areaName(x, z) {
+  areaName(x, y, z) {
     const game = this.game;
+    if (game.dream?.contains(x, y, z)) return 'the dream dimension';
     if (game.cellar?.isInside(x, z, -2)) return "Keegan's cellar";
     if (game.jungle?.isInside(x, z, -6)) return 'the jungle island';
     if (game.charibdisCave?.isInsideCave(x, z)) return "inside Charibdis's sea cave";
@@ -199,7 +200,7 @@ export class Suggestions extends Entity {
       .map((e) => `${e.title}: ${e.objective}`);
     return {
       target,
-      area: this.areaName(pos.x, pos.z),
+      area: this.areaName(pos.x, pos.y, pos.z),
       player: {
         position: roundVector(pos),
         swimming: p.swimming,

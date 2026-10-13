@@ -16,6 +16,7 @@ const SWIM_FAST = 6.5;
 const SWIM_DEPTH = SEA.swimDepth; // swimming happens underwater
 const STEP_UP = 0.6; // tallest ledge you can walk up without jumping (stairs are 0.5)
 const JUMP_SPEED = 9;
+const BOUNCE_SPEED = 20; // off a dream bounce mushroom (about 7 high)
 const GRAVITY = 28;
 const RADIUS = 0.4;
 const COMBO_WINDOW = 0.45; // swing again within this many seconds to chain the next move of the combo
@@ -557,6 +558,12 @@ export class Player extends Entity {
         this.velocity.y = 0;
         this.onGround = true;
         this.usedDoubleJump = false;
+        const pad = game.dream?.bounceAt(pos.x, pos.y, pos.z);
+        if (pad) {
+          this.velocity.y = BOUNCE_SPEED;
+          this.onGround = false;
+          game.dream.boing(pad, game);
+        }
       } else if (pos.y > ground + 0.05) {
         this.onGround = false; // walked off a ledge
       }

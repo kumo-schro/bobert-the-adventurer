@@ -1,12 +1,14 @@
 import { Entity } from '../core/Entity.js';
-import { ACTIONS, RESERVED, keyName } from '../controls.js';
+import { ACTIONS, RESERVED, MENU_KEYS, keyName } from '../controls.js';
 
 /**
  * Two small bits of UI:
- *  - Option shows / hides the quest panel and the controls list (hidden to start with).
- *  - Command opens the controls menu, where you click a control and press a new key for it.
+ *  - Option (Alt) shows / hides the quest panel and the controls list (hidden to start with).
+ *  - Ctrl or Command opens the controls menu, where you click a control and press a new key for it.
  * Changed keys are saved in the browser. Lives at game.controlsMenu.
  */
+const MENU_OPENERS = ['MetaLeft', 'MetaRight', 'ControlLeft', 'ControlRight'];
+
 export class ControlsMenu extends Entity {
   constructor() {
     super();
@@ -16,7 +18,7 @@ export class ControlsMenu extends Entity {
     this.el.className = 'shop controls-menu hidden';
     this.hint = document.createElement('div');
     this.hint.className = 'menu-hint';
-    this.hint.innerHTML = '<kbd>Option</kbd> quests &amp; controls &nbsp; <kbd>Command</kbd> change keys';
+    this.hint.innerHTML = `<kbd>${MENU_KEYS.panels}</kbd> quests &amp; controls &nbsp; <kbd>${MENU_KEYS.controls}</kbd> change keys`;
     document.body.append(this.el, this.hint);
     this.el.addEventListener('pointerdown', (e) => {
       const button = e.target.closest('button');
@@ -100,7 +102,7 @@ export class ControlsMenu extends Entity {
     if (input.wasPressed('AltLeft', 'AltRight')) document.body.classList.toggle('show-panels');
 
     if (!this.isOpen) {
-      if (input.wasPressed('MetaLeft', 'MetaRight') && !game.isUiOpen()) this.open();
+      if (input.wasPressed(...MENU_OPENERS) && !game.isUiOpen()) this.open();
     } else {
       if (this.waitingFor) {
         const code = [...input.pressed].find((c) => !RESERVED.has(c));
@@ -113,7 +115,7 @@ export class ControlsMenu extends Entity {
           this.waitingFor = null;
           this.dirty = true;
         }
-      } else if (input.wasPressed('Escape', 'MetaLeft', 'MetaRight') || this.pendingClose) {
+      } else if (input.wasPressed('Escape', ...MENU_OPENERS) || this.pendingClose) {
         this.close();
       }
       if (this.pendingReset) {
