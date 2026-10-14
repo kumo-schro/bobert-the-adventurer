@@ -179,7 +179,7 @@ export class Jungle extends Entity {
           }
         }
       }
-      const tree = { x, z, radius: 0.8 };
+      const tree = { x, z, radius: 0.8, sound: 'wood' };
       this.trees.push(tree);
       game.colliders.push(tree);
       game.gathering?.addNode({ kind: 'wood', x, z, radius: 0.8 });

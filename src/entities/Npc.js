@@ -91,7 +91,7 @@ export class Npc extends Entity {
     this.target = null;
     this.walkPhase = 0;
     this.stuckTimer = 0;
-    this.collider = { x: position.x, z: position.z, radius: RADIUS };
+    this.collider = { x: position.x, z: position.z, radius: RADIUS, sound: false };
   }
 
   /** The quest this person is on right now (the first one not finished yet), or null. */

@@ -19,7 +19,7 @@ const CLAUDE = {
   author: 'Claude (Opus 5.5)',
   date: '2026-10-14T12:00',
   game: [
-    ['Save the adventure', 'Reloading the page starts the whole story over. Saving progress (quests, coins, gear and powers) in the browser would let players pick up where they left off.'],
+    ['Save the adventure (done)', 'Added on Oct 14: press Esc to name and save your adventure in the browser, and load it again later.'],
     ['Show the way to the next goal', 'The world is huge now: the jungle and the dream dimension are hundreds of blocks away. A small arrow at the top of the screen that points to the current quest would stop players getting lost.'],
     ['Add sounds and music', 'The game is completely silent. Sword swooshes, coin jingles, splashes and a gentle tune for each place would make every hit and reward feel much bigger.'],
     ['A gentler setting', 'Master Oak does 10 damage and you start with 5 health, so one spin knocks you out. An "easy" switch that halves monster damage would help younger players, without changing the normal game.'],
@@ -58,6 +58,26 @@ const player = records
   })
   .join('');
 
+// Art direction: Bobert in several art styles (see art/bobert/BRIEF.md). styles.json lists them.
+const ART = '../art/bobert';
+const styles = JSON.parse(await readFile('art/bobert/styles.json', 'utf8').catch(() => '[]'));
+const img = (path, alt) => `<a href="${ART}/${path}"><img src="${ART}/${path}" alt="${esc(alt)}" loading="lazy"></a>`;
+const art = styles
+  .map(
+    (s, i) => `
+    <article class="style">
+      <h3>${i + 1}. ${esc(s.name)}</h3>
+      <p>${esc(s.description)}</p>
+      <div class="pair">
+        <figure>${img(`concepts/${s.id}.png`, `Concept painting: ${s.name}`)}<figcaption>Concept painting (Codex)</figcaption></figure>
+        <figure>${img(`renders/${s.id}_hero.png`, `3D model: ${s.name}`)}<figcaption>3D model (Blender)</figcaption></figure>
+      </div>
+      <figure class="turn">${img(`renders/${s.id}_turnaround.png`, `Front, side and back: ${s.name}`)}<figcaption>Front, three-quarter, side and back</figcaption></figure>
+      <p class="world"><strong>For the whole game:</strong> ${esc(s.world)}</p>
+    </article>`,
+  )
+  .join('');
+
 const list = (items) => items.map(([title, text]) => `\n      <li><strong>${esc(title)}.</strong> ${esc(text)}</li>`).join('');
 
 const html = `<!doctype html>
@@ -92,6 +112,16 @@ const html = `<!doctype html>
   .mine ol { margin: 0; padding-left: 20px; }
   .mine li { margin-bottom: 8px; }
   .sign { color: var(--muted); font-style: italic; margin: 16px 0 0; }
+  .style { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 4px 16px 12px; margin-bottom: 16px; }
+  .style h3 { font-size: 18px; margin: 14px 0 4px; }
+  .style p { margin: 0 0 10px; }
+  figure { margin: 0 0 10px; }
+  figure img { display: block; width: 100%; border-radius: 6px; background: var(--line); }
+  figcaption { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .today { max-width: 320px; margin-top: 12px; margin-bottom: 16px; }
+  .world { color: var(--muted); font-size: 14px; }
+  @media (max-width: 560px) { .pair { grid-template-columns: 1fr; } }
   @media (max-width: 560px) { .card { flex-direction: column; } .shot { flex-basis: auto; } }
 </style>
 </head>
@@ -102,6 +132,11 @@ const html = `<!doctype html>
 
   <h2>From players</h2>
   ${player || '<p class="lead">No suggestions yet.</p>'}
+
+  ${art ? `<h2>Art direction</h2>
+  <p class="lead">${styles.length} very different takes on Bobert, each a new character in its own art style, to help choose a new look for the game. Each one has a concept painting made with Codex and a 3D model built in Blender from it (click any picture to see it bigger). First, Bobert as he is in the game today:</p>
+  <figure class="today">${img('renders/current.png', 'Bobert in the game today')}<figcaption>Bobert in the game today</figcaption></figure>
+  ${art}` : ''}
 
   <h2>From Claude</h2>
   <section class="mine">

@@ -26,6 +26,8 @@ export const ACTIONS = [
   { id: 'zoomIn', label: 'Zoom in', keys: ['Equal', 'NumpadAdd'] },
   { id: 'zoomOut', label: 'Zoom out', keys: ['Minus', 'NumpadSubtract'] },
   { id: 'suggest', label: 'Suggest a change', keys: ['Slash'] },
+  { id: 'customize', label: 'Customize Bobert', keys: ['KeyP'] },
+  { id: 'mute', label: 'Sound on / off', keys: ['KeyM'] },
 ];
 
 // Keys the game itself uses for menus; they can't be given to anything else.

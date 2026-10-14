@@ -100,3 +100,7 @@ Everything I've asked for in the game, in the order I asked for it.
 Add new lines below.
 
 - Add a dream boss called Thomage. It is a powerful mage that
+- add noise to sword slashes that hit enemies and other things
+- Make it so update go to the website
+-  add a character customization screen
+-  make it so has to charge up his spin attack before he uses it the first time

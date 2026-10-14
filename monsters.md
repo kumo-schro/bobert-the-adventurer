@@ -301,7 +301,7 @@ Notes:
 | Spin damage | 10 | `damage` in the constructor |
 | Spin reaches | 3.2 | `OAK_SPIN_REACH` |
 | Spin lasts | 0.8 s | `OAK_SPIN_TIME` |
-| Time to charge the next spin | 2.4 s | `OAK_CHARGE_TIME` |
+| Time to charge each spin (even the first) | 2.4 s | `OAK_CHARGE_TIME` |
 | Walking speed | 1.5 | `speed` in `think()` |
 
 Notes:

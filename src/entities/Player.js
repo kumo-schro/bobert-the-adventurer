@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
-import { pushOut } from '../core/collision.js';
+import { pushOut, colliderAt } from '../core/collision.js';
 import { createCharacter, poseWalk, turnToward } from '../models/character.js';
 import { createSword, createShield, createBow, addArmor, createAxe, createPickaxe } from '../models/gear.js';
 import { Arrow } from './Arrow.js';
@@ -515,7 +515,7 @@ export class Player extends Entity {
     if (swingPressed && this.isAttacking && !this.spinning && this.swingProgress > 0.4) this.queuedSwing = true;
     const height = pos.y - game.heightAt(pos.x, pos.z);
     if (free && swingPressed && this.knowsSkyStrike && !this.onGround && !this.swimming && !this.skyStriking && height > 1.2) {
-      this.startSkyStrike();
+      this.startSkyStrike(game);
     } else if (free && (swingPressed || this.queuedSwing)) {
       this.startSwing(game);
     } else if (free && this.hasBow && input.hit('bow')) {
@@ -523,6 +523,13 @@ export class Player extends Entity {
     }
     if (controls && input.hit('eat')) this.tryEat(game);
     this.updateSpin(dt, game, controls);
+    // The slash clonking into a tree, a rock, a wall or a chest (once per swing).
+    const strike = this.strike;
+    if (strike && this.thingSoundSwing !== strike.id) {
+      this.thingSoundSwing = strike.id;
+      const thing = this.hitSoundSwing === strike.id ? null : this.slashHitsThing(game);
+      if (thing) game.sound?.play(thing, { volume: 0.8 });
+    }
     const wasAttacking = this.isAttacking;
     const before = this.swingProgress;
     this.attackTimer = Math.max(0, this.attackTimer - dt);
@@ -701,10 +708,11 @@ export class Player extends Entity {
     this.attackTimer = this.move.duration;
     this.queuedSwing = false;
     this.swingId++;
+    game.sound?.play('swish');
   }
 
   /** Sky Strike (Master Jackson's move): dive straight down with the overhead swing. */
-  startSkyStrike() {
+  startSkyStrike(game) {
     this.skyStriking = true;
     this.velocity.set(0, -JACKSON.skyStrikeSpeed, 0);
     this.comboStep = MOVES.length - 1; // the big overhead finisher
@@ -712,6 +720,7 @@ export class Player extends Entity {
     this.attackDuration = this.attackTimer = this.move.duration;
     this.queuedSwing = false;
     this.swingId++;
+    game.sound?.play('swish');
   }
 
   /** The Sky Strike hits the ground: everything close by gets slammed (and training posts break). */
@@ -734,6 +743,7 @@ export class Player extends Entity {
     }
     game.hitStop?.(0.1);
     game.cameraRig?.shake(0.6);
+    game.sound?.play('thump', { volume: 1.4 });
   }
 
   /** The finisher's sword hits the ground: a puff of dust and a thump. */
@@ -765,6 +775,32 @@ export class Player extends Entity {
     });
     game.hitStop?.(finisher ? 0.12 : 0.06);
     game.cameraRig?.shake(finisher ? 0.3 : 0.15);
+    // One hit sound per swing, even when it hits a crowd.
+    if (this.hitSoundSwing !== this.swingId) {
+      this.hitSoundSwing = this.swingId;
+      game.sound?.play(monster.hitSound ?? 'thwack');
+      if (finisher || this.spinning) game.sound?.play('thump');
+    }
+  }
+
+  /**
+   * What the slash bumps into besides monsters: 'wood' (trees, chests, training posts), 'stone'
+   * (boulders, walls, lamp posts), or null. Checks a few spots along the sword's arc.
+   */
+  slashHitsThing(game) {
+    if (this.swimming) return null;
+    const pos = this.object3d.position;
+    const facing = this.spinning ? this.spinFacing : this.model.root.rotation.y;
+    const reach = this.swordStats.reach + 0.6;
+    const angles = this.spinning ? [0, 1, 2, 3, 4, 5, 6, 7].map((i) => (i / 8) * Math.PI * 2) : [-0.9, -0.45, 0, 0.45, 0.9];
+    const skip = (c) => c.isMonster || c.sound === false; // monsters make their own sound; villagers don't clink
+    for (const a of angles) {
+      for (const d of [reach * 0.6, reach]) {
+        const c = colliderAt(pos.x + Math.sin(facing + a) * d, pos.z + Math.cos(facing + a) * d, game.colliders, skip);
+        if (c) return c.sound || 'stone';
+      }
+    }
+    return null;
   }
 
   wearBowOnBack() {
@@ -876,6 +912,7 @@ export class Player extends Entity {
       this.attackTimer = SPIN_TIME;
       this.spinFacing = this.model.root.rotation.y;
       this.swingId++;
+      game.sound?.play('swish', { volume: 1.6 });
       game.particles?.burst(this.object3d.position.clone().setY(this.object3d.position.y + 1), {
         count: 24,
         colors: ['#ffffff', '#ffe08a', '#bfe6ff'],

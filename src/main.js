@@ -42,6 +42,8 @@ import { ControlsMenu } from './ui/ControlsMenu.js';
 import { DebugMenu } from './ui/DebugMenu.js';
 import { Suggestions } from './ui/Suggestions.js';
 import { SaveMenu } from './ui/SaveMenu.js';
+import { Customizer, storedLook } from './ui/Customizer.js';
+import { Sound } from './core/Sound.js';
 import { ArtifactQuest } from './quest/ArtifactQuest.js';
 import {
   FindGemsQuest,
@@ -353,6 +355,8 @@ game.add(new ControlsMenu());
 const debugMenu = game.add(new DebugMenu());
 game.add(new Suggestions()); // 💡 click on something and suggest a change
 const saveMenu = game.add(new SaveMenu()); // 💾 Esc: name and save your adventure, or load one
+const customizer = game.add(new Customizer()); // 👕 P: pick how Bobert looks
+game.add(new Sound()); // sword swishes and hits (M turns sound off)
 mainQuest.announce();
 
 // Camera last so it follows the player's final position each frame
@@ -367,8 +371,12 @@ game.quests.stars = starsQuest;
 
 // Opened with ?checkpoint=... (from the debug menu)? Jump to that point in the story.
 debugMenu.start();
-// Picked a saved game to load (the page reloaded for it)? Set it up.
-saveMenu.start();
+// Bobert's look from last time, then a saved game to load (the page reloaded for it), which
+// brings its own look. A brand-new player starts by picking how Bobert looks.
+const firstVisit = !storedLook() && !new URLSearchParams(location.search).has('checkpoint');
+customizer.start();
+const loaded = saveMenu.start();
+if (firstVisit && !loaded) customizer.open();
 
 game.start();
 

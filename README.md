@@ -8,11 +8,15 @@ npm run dev      # http://localhost:5173
 npm run build    # production build into dist/
 ```
 
-**Controls** (change any of them in-game by pressing **Ctrl** or **Command**): WASD / arrow keys move (and swim), Space jumps, Shift runs, **Return** (or left click) swings your sword in a wide sideways slash, hold **J** to block with a shield, **K** shoots the bow (hold it to charge the power bow), **F** eats food, **T** talks / opens / shops / chops / mines / boards the boat, swing in mid-air to **Sky Strike** (once Master Jackson teaches you), **L** dash, **I** invisible, **U** dream heal and **O** star shield (dream powers), **/** suggests a change, **`** opens the debug menu, Enter/Space/click advances dialog. Camera: drag with the left or right mouse button, **Q/E** turn, **R/G** tilt, **C** swings round behind you, scroll or **-/=** zoom. Press **Option** (**Alt** on Windows) to show or hide the quest panel and the controls list.
+**Controls** (change any of them in-game by pressing **Ctrl** or **Command**): WASD / arrow keys move (and swim), Space jumps, Shift runs, **Return** (or left click) swings your sword in a wide sideways slash, hold **J** to block with a shield, **K** shoots the bow (hold it to charge the power bow), **F** eats food, **T** talks / opens / shops / chops / mines / boards the boat, swing in mid-air to **Sky Strike** (once Master Jackson teaches you), **L** dash, **I** invisible, **U** dream heal and **O** star shield (dream powers), **/** suggests a change, **P** customizes how Bobert looks, **M** turns sound on and off, **Esc** opens saved games, **`** opens the debug menu, Enter/Space/click advances dialog. Camera: drag with the left or right mouse button, **Q/E** turn, **R/G** tilt, **C** swings round behind you, scroll or **-/=** zoom. Press **Option** (**Alt** on Windows) to show or hide the quest panel and the controls list.
 
 **The story** is in [`story.md`](story.md): a short outline, chapter by chapter. Edit it (add details, change what happens, add chapters) and ask Claude to "update the game from story.md". Feature requests can also go in `theme.md`, one line each.
 
 **Debug menu:** press **`** (the key above Tab) to jump to any chapter of the story (each chapter in `story.md` lists its checkpoint), or use cheats: coins, wood and stone, healing, can't-get-hurt mode, day/night, and teleports. You can also open the game at a checkpoint directly, like `http://localhost:5173/?checkpoint=charibdis`.
+
+**👕 Customize Bobert:** the first time you play, and any time you press **P** (or click 👕), pick Bobert's skin, hair color and style, shirt, trousers and shoes. The look is remembered in the browser and in saved games. The color choices are in `CUSTOMIZE` in `src/config.js`.
+
+**🔊 Sound:** swinging the sword swishes, and hits sound different for monsters (squishy slimes, stony gargoyles), trees, chests and posts (a wooden knock) and rocks and walls (a clink). The sounds are made in code (`src/core/Sound.js`), no sound files. **M** turns them off.
 
 **💾 Saved games:** press **Esc** (or click 💾 in the corner), type a name and press Save. Saves are kept in this browser; load or delete them from the same menu. After a big update to the game (`SAVES.version` in `src/config.js`), older saves can't be loaded any more.
 
@@ -34,6 +38,7 @@ src/
     Game.js            Renderer, scene, camera, main loop, entity list
     Entity.js          Base class for everything in the world
     Input.js           Keyboard + mouse state (game.input)
+    Sound.js           Sound effects made in code with Web Audio (game.sound)
     VoxelBuilder.js    Turns lots of colored boxes into one fast mesh
     textures.js        Generated pixel textures (bark, leaves, stone, grass, sand, dirt, planks,
                        blocks) + textured voxel materials
@@ -55,7 +60,8 @@ src/
   models/              Voxel model recipes: trees, buildings, character, people (outfits), gear
   ui/                  Dialog (+ "Press T" prompts), QuestLog, StatusBar (hearts/coins/food), Shop,
                        ControlsMenu (Ctrl/Command to change keys, Option/Alt to show panels), DebugMenu (`),
-                       Suggestions (💡 click on something and suggest a change), SaveMenu (💾 Esc: saved games)
+                       Suggestions (💡 click on something and suggest a change), SaveMenu (💾 Esc: saved games),
+                       Customizer (👕 P: Bobert's look)
 api/recommendations.js Vercel Function that saves suggestions (and lets the owner download them)
 server/                Code shared by that function and the local dev server (vite.config.js)
 scripts/               npm run recommendations: download everyone's suggestions (and build recommendations/index.html)

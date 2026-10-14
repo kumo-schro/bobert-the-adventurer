@@ -42,7 +42,7 @@ export class Trapdoor extends Entity {
   }
 
   onAdd(game) {
-    this.collider = { x: this.object3d.position.x, z: this.object3d.position.z, halfX: 1, halfZ: 1 };
+    this.collider = { x: this.object3d.position.x, z: this.object3d.position.z, halfX: 1, halfZ: 1, sound: false };
   }
 
   unlock(game) {

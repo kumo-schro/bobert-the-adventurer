@@ -18,7 +18,7 @@ export class Chest extends Entity {
     this.opened = false;
     this.lidAngle = 0;
     this.onOpen = null;
-    this.collider = { x, z, halfX: 0.55, halfZ: 0.55 };
+    this.collider = { x, z, halfX: 0.55, halfZ: 0.55, sound: 'wood' };
   }
 
   onAdd(game) {

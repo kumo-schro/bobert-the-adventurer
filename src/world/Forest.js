@@ -34,7 +34,7 @@ export class Forest extends Entity {
       if (this.trees.some((t) => Math.hypot(t.x - x, t.z - z) < spacing)) continue;
 
       const { radius } = rng.pick(TREE_KINDS)(parts, x, z, rng);
-      const tree = { x, z, radius };
+      const tree = { x, z, radius, sound: 'wood' };
       this.trees.push(tree);
       game.colliders.push(tree);
       game.gathering?.addNode({ kind: 'wood', x, z, radius });

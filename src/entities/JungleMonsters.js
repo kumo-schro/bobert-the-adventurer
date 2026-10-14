@@ -16,6 +16,7 @@ const TRAP_COOLDOWN = attackTime(2.4);
 export class FlyTrap extends Monster {
   constructor({ x, z }) {
     super({
+      hitSound: 'squish',
       x,
       z,
       health: 1,
@@ -202,7 +203,7 @@ export class Gorilla extends Monster {
 /** A poison dart frog: hops after you like a little slime and nips for 1 heart. Two hits. */
 export class Frog extends Monster {
   constructor({ x, z }) {
-    super({ x, z, health: 2, damage: 1, coins: 2, radius: 0.45, barHeight: 1, colors: ['#3fd0ff', '#1d1d1d', '#ffd23f'] });
+    super({ x, z, health: 2, damage: 1, coins: 2, radius: 0.45, barHeight: 1, colors: ['#3fd0ff', '#1d1d1d', '#ffd23f'], hitSound: 'squish' });
     this.hopTimer = Math.random();
     const color = ['#3fd0ff', '#ff3b8d', '#ffd23f'][Math.floor(Math.random() * 3)];
     part(this.body, [0.6, 0.35, 0.7], color, [0, 0.25, 0]);
@@ -308,6 +309,7 @@ function vineArm(parent, length) {
 export class Vine extends Monster {
   constructor({ x, z }) {
     super({
+      hitSound: 'wood',
       x,
       z,
       health: 50,
@@ -416,8 +418,8 @@ export class Vine extends Monster {
 
 /**
  * Master Oak in battle: very strong (one hit hurts a LOT) but slow, and only 8 hit points.
- * He opens the duel with a spin attack, then charges up the next one (his staff glows brighter
- * and brighter and sparkles). Once it's charged, he spins the moment you come close. Hit him
+ * He has to charge up every spin, even the first one (his staff glows brighter and brighter and
+ * sparkles). Once it's charged, he spins the moment you come close. Hit him
  * while he's charging, then get out of reach before the spin! He doesn't flinch when hit.
  * When beaten he doesn't vanish: he bows, and the duel is over.
  */
@@ -431,7 +433,7 @@ export class OakFighter extends Monster {
     this.model = model;
     this.body.add(model.root);
     this.model.armR.rotation.order = 'YXZ';
-    this.spinTimer = 0.01; // he starts the duel with a spin!
+    this.spinTimer = 0; // the duel starts with him charging up his first spin
     this.charge = 0;
     this.walkPhase = 0;
     this.sparkTimer = 0;

@@ -17,6 +17,6 @@ Bobert the Adventurer is a voxel adventure game for kids, built with Vite, Three
 
 - Never say "hearts" in game text (dialogue, toasts, menus). Say "health" or "hits" instead.
 - Most tweakable numbers are in `src/config.js`. Monster attack timers go through `attackTime()` in `src/entities/Monster.js`.
-- Don't commit, push or deploy unless asked. The `art/` folder and `.env*` files stay out of git.
+- When you've built new lines from `theme.md` or `story.md` and checked them, commit, push and deploy them to the live site, so updates go to the website (the owner asked for this in `theme.md`). Otherwise, don't commit, push or deploy unless asked. The `art/` folder and `.env*` files stay out of git.
 - The `art/psychedelic-garden` branch must never be deployed to Vercel.
 - Deploy to production with `npx vercel@latest deploy --prod --yes`. Pushing to GitHub doesn't deploy.

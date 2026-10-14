@@ -6,7 +6,7 @@ export class TrainingPost extends Entity {
   constructor({ x, z }, onBroken) {
     super();
     this.object3d.position.set(x, 0, z);
-    this.collider = { x, z, radius: 0.4 };
+    this.collider = { x, z, radius: 0.4, sound: 'wood' };
     this.onBroken = onBroken;
     part(this.object3d, [0.6, 1.8, 0.6], '#b5713f', [0, 0.9, 0]);
     part(this.object3d, [0.66, 0.2, 0.66], '#d9293f', [0, 1.3, 0]);

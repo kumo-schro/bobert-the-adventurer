@@ -94,7 +94,7 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 *Checkpoint: `oak`*
 - Deep in the jungle, Master Oak waits in his clearing.
 - He knows the spin attack, but only teaches it to someone who beats him in battle.
-- Oak is very strong (10 hearts a hit) but slow, and only has 5 HP. His staff glows before he swings.
+- Oak is very strong (10 damage a hit) but slow, and only has 8 health. He has to charge up every spin, even the first one: his staff glows while it charges.
 - When Bobert wins, Oak teaches him: hold the sword button, then let go to spin.
 
 ## Chapter 10: The Vine

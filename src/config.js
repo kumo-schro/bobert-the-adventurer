@@ -50,6 +50,22 @@ export const VILLAGE = {
   wanderRadius: 22, // how far villagers stroll from the plaza
 };
 
+// Sound effects (made in code, see core/Sound.js). Press M in the game to turn them off.
+export const SOUND = {
+  volume: 0.6,
+};
+
+// The character customization screen (press P): the choices for each part of Bobert, and how he
+// looks to start with. Add a color to a list to offer it.
+export const CUSTOMIZE = {
+  start: { skin: '#ffcc99', hair: '#6b3e1f', hairStyle: 'classic', shirt: '#ff4f6d', pants: '#3d5afe', shoes: '#2b2b2b' },
+  skin: ['#ffe0c4', '#ffcc99', '#e8b07f', '#c68642', '#8d5524', '#5c3a21'],
+  hair: ['#6b3e1f', '#2b1d14', '#e0a030', '#c0392b', '#f2f2f2', '#1d1d1d', '#3f7fd9', '#ff6bb5'],
+  shirt: ['#ff4f6d', '#ff8a1f', '#ffd23f', '#2fa36b', '#2fb5a8', '#3f7fd9', '#7a4fd1', '#ffffff', '#4a4a4a'],
+  pants: ['#3d5afe', '#2b3a55', '#6b5a3a', '#4a4a4a', '#2fa36b', '#7a4fd1', '#c0392b', '#f2c14e'],
+  shoes: ['#2b2b2b', '#4a2f1a', '#e23b4a', '#ffffff', '#3f7fd9', '#2fa36b'],
+};
+
 export const PLAYER = {
   maxHealth: 5, // hits you can take before you're knocked out
   regenDelay: 6, // seconds without getting hit before hearts start coming back

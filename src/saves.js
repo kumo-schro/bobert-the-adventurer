@@ -106,6 +106,7 @@ function collect(game) {
     facing: p.model.root.rotation.y,
     swimming: p.swimming,
     inBoat: !!p.boat,
+    look: p.look,
   });
   const quests = {};
   for (const q of allQuests(game)) quests[q.id] = { stage: q.stage, progress: q.stage === 'active' ? q.saveProgress?.() : undefined };
@@ -162,6 +163,7 @@ function applyPlayer(game, saved) {
   if (saved.pickaxeTier >= 1) p.upgradeTool('pickaxe');
   if (saved.armor) p.giveArmor();
   for (const f of PLAYER_FIELDS) if (saved[f] !== undefined) p[f] = saved[f];
+  if (saved.look) game.customizer?.wear(saved.look);
 }
 
 function applyQuests(game, saved) {

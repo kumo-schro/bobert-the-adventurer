@@ -42,41 +42,102 @@ export function createCharacter({
   hair = '#6b3e1f',
 } = {}) {
   const root = new THREE.Group();
+  // Each part remembers what it's made of (skin, shirt...), so applyLook() can recolor it.
+  const tagged = (role, ...args) => {
+    const mesh = part(...args);
+    mesh.userData.role = role;
+    return mesh;
+  };
 
   // Legs (pivot at hip)
   const legR = pivot(root, [-0.16, 0.75, 0]);
   const legL = pivot(root, [0.16, 0.75, 0]);
   for (const leg of [legL, legR]) {
-    part(leg, [0.28, 0.62, 0.3], pants, [0, -0.31, 0]);
-    part(leg, [0.3, 0.14, 0.36], shoes, [0, -0.68, 0.03]);
+    tagged('pants', leg, [0.28, 0.62, 0.3], pants, [0, -0.31, 0]);
+    tagged('shoes', leg, [0.3, 0.14, 0.36], shoes, [0, -0.68, 0.03]);
   }
 
   // Body
-  part(root, [0.62, 0.72, 0.36], shirt, [0, 1.11, 0]);
-  part(root, [0.64, 0.1, 0.38], pants, [0, 0.78, 0]); // belt line
+  tagged('shirt', root, [0.62, 0.72, 0.36], shirt, [0, 1.11, 0]);
+  tagged('pants', root, [0.64, 0.1, 0.38], pants, [0, 0.78, 0]); // belt line
 
   // Arms (pivot at shoulder)
   const armR = pivot(root, [-0.43, 1.4, 0]);
   const armL = pivot(root, [0.43, 1.4, 0]);
   for (const arm of [armL, armR]) {
-    part(arm, [0.22, 0.5, 0.26], shirt, [0, -0.22, 0]);
-    part(arm, [0.2, 0.18, 0.24], skin, [0, -0.55, 0]);
+    tagged('shirt', arm, [0.22, 0.5, 0.26], shirt, [0, -0.22, 0]);
+    tagged('skin', arm, [0.2, 0.18, 0.24], skin, [0, -0.55, 0]);
   }
   const handR = pivot(armR, [0, -0.58, 0.02]);
   const handL = pivot(armL, [0, -0.58, 0.02]);
 
   // Head
   const head = pivot(root, [0, 1.47, 0]);
-  part(head, [0.6, 0.6, 0.6], skin, [0, 0.3, 0]);
-  part(head, [0.64, 0.16, 0.64], hair, [0, 0.62, 0]);
-  part(head, [0.64, 0.4, 0.14], hair, [0, 0.42, -0.26]);
+  tagged('skin', head, [0.6, 0.6, 0.6], skin, [0, 0.3, 0]);
+  const hairGroup = pivot(head, [0, 0, 0]);
+  buildHair(hairGroup, 'classic', hair);
   part(head, [0.09, 0.12, 0.02], '#1d1d1d', [-0.13, 0.33, 0.305]);
   part(head, [0.09, 0.12, 0.02], '#1d1d1d', [0.13, 0.33, 0.305]);
   part(head, [0.1, 0.06, 0.02], '#ff8fa3', [-0.21, 0.2, 0.305]);
   part(head, [0.1, 0.06, 0.02], '#ff8fa3', [0.21, 0.2, 0.305]);
   part(head, [0.16, 0.05, 0.02], '#b5523b', [0, 0.16, 0.305]);
 
-  return { root, head, armL, armR, legL, legR, handL, handR };
+  return { root, head, hair: hairGroup, hairStyle: 'classic', armL, armR, legL, legR, handL, handR };
+}
+
+/** Hair styles for the character customization screen. Each adds boxes to the head's hair group. */
+export const HAIR_STYLES = {
+  classic: { name: 'Classic' },
+  spiky: { name: 'Spiky' },
+  long: { name: 'Long' },
+  mohawk: { name: 'Mohawk' },
+  curly: { name: 'Curly' },
+};
+
+function buildHair(group, style, color) {
+  while (group.children.length) group.remove(group.children[0]);
+  const add = (size, at) => (part(group, size, color, at).userData.role = 'hair');
+  if (style === 'mohawk') {
+    add([0.16, 0.22, 0.6], [0, 0.68, 0]);
+    add([0.12, 0.12, 0.5], [0, 0.82, -0.02]);
+    return;
+  }
+  add([0.64, 0.16, 0.64], [0, 0.62, 0]); // top
+  if (style === 'spiky') {
+    add([0.64, 0.4, 0.14], [0, 0.42, -0.26]); // back
+    for (const [x, z, h] of [[-0.2, 0.15, 0.2], [0, 0.18, 0.26], [0.2, 0.12, 0.2], [-0.12, -0.12, 0.22], [0.14, -0.1, 0.24]]) {
+      add([0.16, h, 0.16], [x, 0.7 + h / 2, z]);
+    }
+  } else if (style === 'long') {
+    add([0.66, 0.72, 0.16], [0, 0.3, -0.27]); // down to the shoulders
+    for (const side of [-1, 1]) add([0.1, 0.5, 0.4], [side * 0.33, 0.37, -0.08]); // over the ears
+    add([0.64, 0.1, 0.12], [0, 0.52, 0.27]); // fringe
+  } else if (style === 'curly') {
+    add([0.64, 0.4, 0.14], [0, 0.42, -0.26]);
+    for (let i = 0; i < 9; i++) {
+      const a = (i / 9) * Math.PI * 2;
+      add([0.2, 0.18, 0.2], [Math.sin(a) * 0.28, 0.7 + (i % 2) * 0.06, Math.cos(a) * 0.28]);
+    }
+    add([0.24, 0.2, 0.24], [0, 0.76, 0]);
+  } else {
+    add([0.64, 0.4, 0.14], [0, 0.42, -0.26]); // classic: a short back
+  }
+}
+
+/**
+ * Recolor (and restyle) a character from createCharacter(): look = { skin, hair, hairStyle, shirt,
+ * pants, shoes } (any of them). Parts added later, like armor or held gear, aren't touched.
+ */
+export function applyLook(model, look) {
+  if (look.hairStyle && look.hairStyle !== model.hairStyle && HAIR_STYLES[look.hairStyle]) {
+    const hairColor = look.hair ?? model.hair.children[0]?.material.color.getStyle();
+    buildHair(model.hair, look.hairStyle, hairColor);
+    model.hairStyle = look.hairStyle;
+  }
+  model.root.traverse((o) => {
+    const color = o.userData.role && look[o.userData.role];
+    if (color) o.material.color.set(color);
+  });
 }
 
 /** Swings arms and legs for walking. `swing` 0 = standing still, ~1 = full stride. */

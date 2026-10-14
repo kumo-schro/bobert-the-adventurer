@@ -95,10 +95,21 @@ export class CameraRig extends Entity {
       const offB = wrapAngle(line - Math.PI / 2 - this.yaw);
       this.yaw += (Math.abs(offA) < Math.abs(offB) ? offA : offB) * (1 - Math.exp(-3 * dt));
     }
+    // The customization screen: swing round to Bobert's front, close up and low, with him on the
+    // left of the screen (the menu is on the right).
+    let focusHeight = 1.4;
+    if (game.customizer?.isOpen) {
+      this.yaw += wrapAngle(this.target.model.root.rotation.y - this.yaw) * (dt === 0 ? 1 : 1 - Math.exp(-4 * dt));
+      wantedZoom = 4.4;
+      wantedTilt = 0.2;
+      focusHeight = 1.0;
+      fx = t.x + Math.cos(this.yaw) * 0.9; // a little to the camera's right
+      fz = t.z - Math.sin(this.yaw) * 0.9;
+    }
 
     const k = dt === 0 ? 1 : 1 - Math.exp(-10 * dt);
     this.focus.x += (fx - this.focus.x) * k;
-    this.focus.y += (t.y + 1.4 - this.focus.y) * k;
+    this.focus.y += (t.y + focusHeight - this.focus.y) * k;
     this.focus.z += (fz - this.focus.z) * k;
     const ease = dt === 0 ? 1 : 1 - Math.exp(-4 * dt);
     this.zoom += (wantedZoom - this.zoom) * ease;

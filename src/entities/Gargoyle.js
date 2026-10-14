@@ -16,6 +16,7 @@ const DARK = '#5f6268';
 export class Gargoyle extends Monster {
   constructor({ x, y, z }) {
     super({
+      hitSound: 'stone',
       x,
       y,
       z,

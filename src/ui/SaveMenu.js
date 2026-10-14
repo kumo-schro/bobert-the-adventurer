@@ -70,6 +70,7 @@ export class SaveMenu extends Entity {
   start() {
     const save = applyPendingLoad(this.game);
     if (save) this.game.questLog.toast(`Loaded “${save.name}”`);
+    return save;
   }
 
   open() {

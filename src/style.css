@@ -913,3 +913,109 @@ body.underwater::after {
   background: #c9563c;
   box-shadow: 0 3px 0 #9a3c27;
 }
+
+/* Character customization (P) */
+.customize-button {
+  position: fixed;
+  right: 16px;
+  bottom: 98px;
+  padding: 7px 12px;
+  border: none;
+  border-radius: 12px;
+  background: #fffaf0;
+  box-shadow: 0 3px 0 #b8b2a6;
+  color: #2b3a55;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+body.customizing .customize-button,
+body.customizing .save-button,
+body.customizing .suggest-button {
+  display: none;
+}
+
+.shop.customizer {
+  left: auto;
+  right: 24px;
+  transform: translateY(-50%);
+  width: min(390px, calc(100% - 32px));
+  max-height: calc(100% - 40px);
+  overflow-y: auto;
+}
+
+.shop-message kbd {
+  padding: 0 5px;
+  border-radius: 5px;
+  background: #2b3a55;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+}
+
+.custom-row {
+  margin-bottom: 10px;
+}
+
+.custom-label {
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.custom-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.shop button.swatch {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 3px solid #fffaf0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #d8cdb6;
+}
+
+.shop button.swatch.chosen {
+  box-shadow: 0 0 0 3px #2b3a55;
+}
+
+.shop button.style-choice {
+  padding: 6px 10px;
+  background: #f3ead8;
+  box-shadow: none;
+  color: #2b3a55;
+  font-size: 13px;
+}
+
+.shop button.style-choice.chosen {
+  background: #2b3a55;
+  color: #fff;
+}
+
+.customizer .controls-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.customizer .controls-buttons .shop-close {
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .shop.customizer {
+    top: auto;
+    bottom: 12px;
+    left: 50%;
+    right: auto;
+    max-height: 55%;
+    transform: translateX(-50%);
+  }
+}

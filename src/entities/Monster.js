@@ -23,7 +23,8 @@ const NIGHT_DAMAGE = 1; // ...and hit 1 heart harder
  *   animate(dt, game)          - wiggle, squash, etc.
  *
  * Options: { x, z, y, health, radius, coins, damage, barHeight, colors (death burst),
- *            aquatic, flying, touchDamage }
+ *            aquatic, flying, touchDamage, hitSound }
+ * hitSound: what our sword sounds like hitting it ('thwack', 'squish', 'stone' or 'wood', see core/Sound.js).
  * Aquatic monsters (sharks, eels) swim at the water surface, can't go on land, and only
  * bite players who are swimming. Land monsters only reach players on land.
  * Flying monsters (gargoyles) move freely in 3D and can reach you anywhere.
@@ -47,11 +48,13 @@ export class Monster extends Entity {
     aquatic = false,
     flying = false,
     touchDamage = true,
+    hitSound = 'thwack',
   }) {
     super();
     this.aquatic = aquatic;
     this.flying = flying;
     this.touchDamage = touchDamage;
+    this.hitSound = hitSound;
     this.home = new THREE.Vector3(x, aquatic ? SEA.level - SEA.monsterDepth : y, z);
     this.object3d.position.copy(this.home);
     this.maxHealth = health;

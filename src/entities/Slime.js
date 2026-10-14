@@ -20,6 +20,7 @@ export class Slime extends Monster {
       coins,
       radius: 1.3 * size,
       barHeight: 3.1 * size,
+      hitSound: 'squish',
       colors: [color, '#ffffff', glow],
     });
     this.size = size;

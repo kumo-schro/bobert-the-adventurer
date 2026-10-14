@@ -206,7 +206,7 @@ Object.assign(SIDE_QUESTS, {
       offer: [
         'Hmm. A young adventurer, deep in my jungle. I am Master Oak.',
         'I know a secret sword move: the SPIN ATTACK. But I only teach those who can beat me in battle.',
-        'Be warned: I begin with my own spin attack, and it hurts a LOT. Then I must charge up the next one.',
+        'Be warned: my own spin attack hurts a LOT. But I must charge it up before every spin, even the first one.',
         'While my staff glows, strike fast! When it sparkles, it is ready, so stay out of reach or I will spin again. I may be old, but I do not flinch!',
         'Are you ready? Then let us begin!',
       ],
