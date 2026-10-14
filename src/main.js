@@ -26,6 +26,7 @@ import { Butterflies } from './entities/Butterflies.js';
 import { Particles } from './entities/Particles.js';
 import { Player } from './entities/Player.js';
 import { Npc } from './entities/Npc.js';
+import { Grayson } from './entities/Grayson.js';
 import { Shark } from './entities/Shark.js';
 import { Eel } from './entities/Eel.js';
 import { Kraken } from './entities/Kraken.js';
@@ -54,12 +55,15 @@ import {
   DreamStarsQuest,
   DreamWispsQuest,
   CloudHopQuest,
+  FindJacksonQuest,
+  SkyStrikeQuest,
 } from './quest/sideQuests.js';
 import { createShell } from './models/gear.js';
 import { LOOKS } from './models/people.js';
+import { createGecko } from './models/critters.js';
 import { SIDE_QUESTS, BLACKSMITH, BAKER, VILLAGER_CHATTER } from './story.js';
-import { FORGE_SHOP, BAKERY_SHOP, BOAT_MENU, DREAM_SHRINE } from './shops.js';
-import { VILLAGE, SEA, PLACES, DREAM } from './config.js';
+import { FORGE_SHOP, BAKERY_SHOP, BOAT_MENU, DREAM_SHRINE, BARRETT_SHOP } from './shops.js';
+import { VILLAGE, SEA, PLACES, DREAM, JACKSON } from './config.js';
 
 const game = new Game(document.getElementById('app'));
 
@@ -100,6 +104,7 @@ game.add(new Particles());
 game.add(new Butterflies());
 const player = game.add(new Player({ x: 0, z: 0 }));
 for (const spot of SEA.sharks) game.add(new Shark(spot));
+game.add(new Grayson(game)); // a friendly fish who gives free buffs (and turns up all over the sea)
 
 // Shops (their menus open when you talk to the shopkeeper).
 const forgeShop = new Shop(FORGE_SHOP);
@@ -107,6 +112,8 @@ FORGE_SHOP.onBuilt = () => village.upgradeForge(game); // the forge grows a big 
 const bakeryShop = new Shop(BAKERY_SHOP);
 const boatMenu = new Shop(BOAT_MENU);
 const dreamShrine = new Shop(DREAM_SHRINE);
+const barrettShop = new Shop(BARRETT_SHOP);
+BARRETT_SHOP.game = game;
 BOAT_MENU.game = game;
 game.add(new Boat(dock, boatMenu)); // built at the end of the dock once you've been to the jungle
 
@@ -205,15 +212,40 @@ game.add(
 );
 
 // Master Oak, in his jungle clearing: beat him to learn the spin attack, then take on the Vine.
+// After that he sends you to find his old friend Master Jackson, who teaches the Sky Strike.
 const oakDuel = new OakDuelQuest(game);
 const vineQuest = new VineQuest(game, { jungle, after: oakDuel });
+const findJackson = new FindJacksonQuest(game, { after: vineQuest });
 game.add(
   new Npc({
     name: 'Master Oak',
     look: LOOKS.oak,
     position: jungle.oakSpot,
     facing: Math.PI / 2,
-    quests: [oakDuel, vineQuest],
+    quests: [oakDuel, vineQuest, findJackson],
+  }),
+);
+const skyStrike = new SkyStrikeQuest(game, { island: JACKSON.island, requires: () => findJackson.stage === 'complete' });
+findJackson.jackson = game.add(
+  new Npc({
+    name: 'Master Jackson',
+    look: LOOKS.jackson,
+    position: JACKSON.island,
+    facing: -Math.PI / 2,
+    quests: [skyStrike],
+    onTalk: () => findJackson.found(), // Oak sent you to find him: found him!
+  }),
+);
+
+// Barrett the gecko, near the jungle beach: he loves coins, and sells buffs for them.
+game.add(
+  new Npc({
+    name: 'Barrett',
+    createModel: createGecko,
+    position: jungle.barrettSpot,
+    facing: Math.PI,
+    interactText: 'Press T to see Barrett the gecko',
+    onInteract: () => barrettShop.open(),
   }),
 );
 
@@ -313,6 +345,7 @@ game.add(forgeShop);
 game.add(bakeryShop);
 game.add(boatMenu);
 game.add(dreamShrine);
+game.add(barrettShop);
 game.add(new QuestLog());
 game.add(new StatusBar());
 game.add(new ControlsMenu());
@@ -326,6 +359,8 @@ game.add(new Underwater()); // after the camera: switches to the underwater look
 
 game.quests.oak = oakDuel;
 game.quests.vine = vineQuest;
+game.quests.findJackson = findJackson;
+game.quests.skyStrike = skyStrike;
 game.quests.stars = starsQuest;
 
 // Opened with ?checkpoint=... (from the debug menu)? Jump to that point in the story.

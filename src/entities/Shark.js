@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Monster } from './Monster.js';
+import { Monster, attackTime } from './Monster.js';
 import { part } from '../models/character.js';
 
 const PATROL_SPEED = 1.8;
@@ -79,7 +79,7 @@ export class Shark extends Monster {
 
   /** Chomp! Then swim off for a bit so you can get away. */
   bitPlayer() {
-    this.retreatTimer = 1.5;
+    this.retreatTimer = attackTime(1.5);
   }
 
   animate(dt, game) {

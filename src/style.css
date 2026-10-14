@@ -852,3 +852,10 @@ body.underwater::after {
 .status-dream .cooling {
   opacity: 0.35;
 }
+
+/* Buffs from Barrett and Grayson, with time left. */
+.status-buffs {
+  color: #b8ffc8;
+  font-size: 15px;
+  white-space: pre;
+}

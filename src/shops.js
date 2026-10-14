@@ -1,7 +1,7 @@
 // What each shop sells. Each function gets the player and returns the items for the Shop menu
 // (see ui/Shop.js for the fields). Add a new item by adding an entry to a list.
 
-import { SWORDS, FORGE, FOOD, BOW, GATHER, DREAM } from './config.js';
+import { SWORDS, FORGE, FOOD, BOW, GATHER, DREAM, BUFFS } from './config.js';
 import { BLACKSMITH, BAKER } from './story.js';
 
 const U = FORGE.upgrades;
@@ -302,4 +302,26 @@ export const DREAM_SHRINE = {
       bought: 'A shield made of starlight! Press O to use it.',
     },
   ],
+};
+
+/** Barrett the gecko loves coins: pay him and he gives you a little boost for five minutes. */
+export const BARRETT_SHOP = {
+  title: "🦎 Barrett's Lucky Buffs",
+  greeting: "Coins! Shiny, shiny coins! Give me some and I'll give you a little boost. Each one lasts five minutes!",
+  game: null, // set in main.js
+  items: (player) =>
+    ['quickFeet', 'toughScales', 'luckyTail'].map((id) => {
+      const buff = BUFFS[id];
+      const left = player.buffs[id];
+      return {
+        name: buff.name,
+        icon: buff.icon,
+        description: buff.description,
+        price: buff.price,
+        owned: false,
+        locked: left ? `${Math.ceil(left / 60)} min left` : null,
+        buy: () => player.addBuff(BARRETT_SHOP.game, id),
+        bought: `${buff.name}! Ooh, thank you for the coins! Hee hee!`,
+      };
+    }),
 };

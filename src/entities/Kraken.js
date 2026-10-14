@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Monster } from './Monster.js';
+import { Monster, attackTime } from './Monster.js';
 import { part } from '../models/character.js';
 import { SEA } from '../config.js';
 
@@ -8,7 +8,7 @@ const DRIFT_SPEED = 1.2;
 const SLAM_RANGE = 7; // starts a tentacle slam when you swim this close
 const SLAM_RADIUS = 2.4; // the slam hurts anyone this close to where it lands
 const WARNING_TIME = 1.3; // the tentacle rises (and a red circle shows) this long before it slams
-const SLAM_COOLDOWN = 2.2;
+const SLAM_COOLDOWN = attackTime(2.2);
 
 const PURPLE = '#7b3fd1';
 const DARK = '#5a2a9e';

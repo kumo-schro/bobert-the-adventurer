@@ -94,6 +94,44 @@ export class TowerIsland extends Entity {
     return step < STEPS ? step : null;
   }
 
+  /** Wooden posts and a handrail along the outside edge of the stairs, all the way up. */
+  buildRailing(b) {
+    const { x: X, z: Z } = this.center;
+    const r = TOWER_RADIUS + STAIR_WIDTH - 0.12;
+    const tops = [];
+    for (let i = 1; i < STEPS; i += 2) {
+      const a = STAIR_START + (i + 0.5) * (SWEEP / STEPS);
+      const floor = (i + 1) * STEP_HEIGHT;
+      const x = X + Math.cos(a) * r;
+      const z = Z + Math.sin(a) * r;
+      b.box(x, floor + 0.5, z, 0.14, 1, 0.14, '#6b4226'); // post
+      tops.push(new THREE.Vector3(x, floor + 1, z));
+    }
+    const dir = new THREE.Vector3();
+    const along = new THREE.Vector3(1, 0, 0);
+    for (let i = 0; i + 1 < tops.length; i++) {
+      dir.subVectors(tops[i + 1], tops[i]);
+      const length = dir.length();
+      const mid = tops[i].clone().addScaledVector(dir, 0.5);
+      const q = new THREE.Quaternion().setFromUnitVectors(along, dir.normalize());
+      b.box(mid.x, mid.y, mid.z, length + 0.1, 0.1, 0.1, '#a0703f', q); // handrail
+    }
+  }
+
+  /**
+   * The railing stops you walking off the side of the stairs (or off their top end) once you're
+   * up off the ground. Called by the player before each step.
+   */
+  railingBlocks(from, x, z) {
+    if (from.y < 0.75) return false; // on the bottom step you can still hop off
+    const { x: X, z: Z } = this.center;
+    const d0 = Math.hypot(from.x - X, from.z - Z);
+    if (d0 < TOWER_RADIUS - 0.3 || d0 > TOWER_RADIUS + STAIR_WIDTH) return false; // not on the stairs
+    const d1 = Math.hypot(x - X, z - Z);
+    if (d1 > TOWER_RADIUS + STAIR_WIDTH - 0.3) return true; // over the side
+    return d1 >= TOWER_RADIUS && this.stepAt(snap(x) - X, snap(z) - Z) === null; // off the top end
+  }
+
   /** The low wall round the roof, with an opening where the stairs arrive. */
   isParapet(cx, cz, d) {
     if (d < TOWER_RADIUS - CELL) return false;
@@ -191,6 +229,8 @@ export class TowerIsland extends Entity {
       tower.box(X + Math.cos(a) * r, y - 0.15, Z + Math.sin(a) * r, 0.9, 0.3, 0.9, '#9d968a'); // ledge
       this.gargoyleSpots.push({ x: X + Math.cos(a) * (r + 0.1), y, z: Z + Math.sin(a) * (r + 0.1), facing: Math.atan2(Math.cos(a), Math.sin(a)) });
     }
+
+    this.buildRailing(tower);
 
     // Flag on the roof.
     tower.box(X - 1.6, TOP + 1.5, Z - 1.6, 0.15, 3, 0.15, '#5e3b22');

@@ -207,7 +207,7 @@ Object.assign(SIDE_QUESTS, {
         'Hmm. A young adventurer, deep in my jungle. I am Master Oak.',
         'I know a secret sword move: the SPIN ATTACK. But I only teach those who can beat me in battle.',
         'Be warned: I begin with my own spin attack, and it hurts a LOT. Then I must charge up the next one.',
-        'While my staff glows, strike fast! When it sparkles, it is ready, so stay out of reach or I will spin again. I am old and slow, but I do not flinch!',
+        'While my staff glows, strike fast! When it sparkles, it is ready, so stay out of reach or I will spin again. I may be old, but I do not flinch!',
         'Are you ready? Then let us begin!',
       ],
       active: ['Defeat Master Oak in battle! Strike while his staff charges, and keep away when it sparkles.'],
@@ -233,6 +233,35 @@ Object.assign(SIDE_QUESTS, {
         'They say it leads to the dream dimension, where the Dream Keeper gives out dream points. With enough of them, you can learn amazing powers.',
       ],
       complete: ['The dream portal is to the east, where the Vine used to grow.'],
+    },
+  },
+  findJackson: {
+    giver: 'Master Oak',
+    title: 'The Second Master',
+    text: {
+      offer: [
+        'You beat me, and you beat the Vine. There is nothing left for me to teach you.',
+        'But I have an old friend: Master Jackson. We trained together when we were young. He knows a move even I never learned!',
+        'He lives alone on a little island far to the east of your village, out past the tower. Find him, and tell him Oak sent you.',
+      ],
+      active: ['Master Jackson lives on a little island far to the east of your village, past the tower island. Take the boat, or swim!'],
+      complete: ['Did you find Jackson? Ha! I bet he is still doing push-ups on that beach.'],
+    },
+  },
+  skyStrike: {
+    giver: 'Master Jackson',
+    title: 'The Sky Strike',
+    text: {
+      locked: ['Hm? Who are you? I only train the students of my old friend, Master Oak.'],
+      offer: [
+        'Oak sent you? That old tree! Welcome, welcome. I am Master Jackson.',
+        'I will teach you my move: the SKY STRIKE. Jump high, then swing your sword while you are in the air.',
+        'You will dive straight down and SLAM the ground, hitting everything around you!',
+        'Show me you can do it: smash my three training posts. Only a Sky Strike can break them!',
+      ],
+      active: ['Jump, then swing in the air to Sky Strike! Smash all three training posts.'],
+      turnIn: ['Ha! Look at those splinters! You have mastered the Sky Strike. Here, take these coins.'],
+      complete: ['Jump high and swing to Sky Strike. Bounce mushrooms and double jumps make it even stronger... or at least more fun!'],
     },
   },
   stars: {

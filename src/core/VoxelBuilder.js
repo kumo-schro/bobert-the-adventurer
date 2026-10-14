@@ -16,6 +16,7 @@ const _color = new THREE.Color();
  *   const b = new VoxelBuilder();
  *   b.add(0, 0.5, 0, '#ff0000');            // one 1x1x1 voxel centered at (0, 0.5, 0)
  *   b.box(0, 2, 0, 3, 1, 3, '#00ff00');      // a 3x1x3 box centered at (0, 2, 0)
+ *   b.box(0, 2, 0, 3, 1, 3, '#00ff00', q);   // ...turned by the quaternion q (for railings)
  *   scene.add(b.build());
  */
 export class VoxelBuilder {
@@ -27,8 +28,8 @@ export class VoxelBuilder {
     return this.box(x, y, z, size, size, size, color);
   }
 
-  box(x, y, z, sx, sy, sz, color) {
-    this.items.push({ x, y, z, sx, sy, sz, color });
+  box(x, y, z, sx, sy, sz, color, rotation = null) {
+    this.items.push({ x, y, z, sx, sy, sz, color, rotation });
     return this;
   }
 
@@ -39,7 +40,7 @@ export class VoxelBuilder {
   build({ castShadow = true, receiveShadow = true, material = voxelMaterial } = {}) {
     const mesh = new THREE.InstancedMesh(unitBox, material, this.items.length);
     this.items.forEach((v, i) => {
-      _matrix.compose(_pos.set(v.x, v.y, v.z), _quat, _scale.set(v.sx, v.sy, v.sz));
+      _matrix.compose(_pos.set(v.x, v.y, v.z), v.rotation ?? _quat, _scale.set(v.sx, v.sy, v.sz));
       mesh.setMatrixAt(i, _matrix);
       mesh.setColorAt(i, _color.set(v.color));
     });

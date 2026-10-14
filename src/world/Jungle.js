@@ -20,7 +20,7 @@ const stoneMaterial = texturedVoxelMaterial(stoneTexture);
  * fly traps, snakes and gorillas. You can't swim away (the currents are too strong); talk to
  * Finn on the beach to go home. Master Oak lives in a clearing to the west, and the Vine (the
  * jungle's boss) grows to the east. Exposes `arrive`, `finnSpot`, `oakSpot`, `vineSpot`,
- * `portalSpot`; `travel(game)` takes you there.
+ * `portalSpot`, `barrettSpot`; `travel(game)` takes you there.
  */
 export class Jungle extends Entity {
   constructor({ x, z, radius } = PLACES.jungle) {
@@ -37,10 +37,12 @@ export class Jungle extends Entity {
     this.oakSpot = { x: x - 26, z: z + 6 }; // Master Oak's clearing
     this.vineSpot = { x: x + 26, z: z - 8 }; // where the Vine grows
     this.portalSpot = { x: x + 26, z: z + 1 }; // the dream portal opens here once the Vine is gone
+    this.barrettSpot = { x: x + 14, z: z + south - 12 }; // Barrett the gecko sells buffs here
     this.clearings = [
       { ...this.oakSpot, r: 6 },
       { ...this.vineSpot, r: 11 },
       { ...this.portalSpot, r: 4 },
+      { ...this.barrettSpot, r: 3 },
     ];
     this.trees = [];
   }

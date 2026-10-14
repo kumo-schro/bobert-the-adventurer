@@ -2,12 +2,13 @@ import { Quest } from './Quest.js';
 import { Collectible } from '../entities/Collectible.js';
 import { Slime } from '../entities/Slime.js';
 import { OakFighter, Vine } from '../entities/JungleMonsters.js';
+import { TrainingPost } from '../entities/TrainingPost.js';
 import { createCharacter } from '../models/character.js';
 import { LOOKS } from '../models/people.js';
 import { createMysteryCrystal, createKey } from '../models/gear.js';
 import { RAINBOW } from '../world/StoneCircle.js';
 import { createRng } from '../utils/random.js';
-import { SEED, PLACES } from '../config.js';
+import { SEED, PLACES, JACKSON } from '../config.js';
 import { SIDE_QUESTS } from '../story.js';
 
 /**
@@ -486,5 +487,58 @@ export class CloudHopQuest extends Quest {
     const star = this.game.add(new Collectible(this.dream.summitSpot, { color: '#ff8fe0' }));
     star.onCollect = () => this.readyToTurnIn('You reached the top of the clouds!');
     this.setObjective('Jump up the cloud stones to the summit (press Space to jump)', star);
+  }
+}
+
+/** Master Oak sends you to find his old friend, Master Jackson. Talking to Jackson finishes it. */
+export class FindJacksonQuest extends Quest {
+  constructor(game, rest = {}) {
+    super(game, { id: 'findJackson', title: SIDE_QUESTS.findJackson.title, text: SIDE_QUESTS.findJackson.text, ...rest });
+    this.jackson = null; // set in main.js
+  }
+
+  onStart() {
+    this.setObjective('Find Master Jackson on the little island far east of the village', this.jackson);
+  }
+
+  /** You reached Jackson (he calls this when you talk to him). */
+  found() {
+    if (this.stage !== 'active') return;
+    this.finish();
+    this.game.questLog.toast('You found Master Jackson!');
+  }
+}
+
+/** Master Jackson teaches the Sky Strike: smash his training posts with it to pass. */
+export class SkyStrikeQuest extends Quest {
+  constructor(game, { island, ...rest }) {
+    super(game, { id: 'skyStrike', title: SIDE_QUESTS.skyStrike.title, text: SIDE_QUESTS.skyStrike.text, reward: 60, ...rest });
+    this.island = island;
+    this.smashed = 0;
+  }
+
+  onStart() {
+    const { game } = this;
+    game.player.knowsSkyStrike = true;
+    game.questLog.toast('You learned the SKY STRIKE! Jump, then swing in the air.', 5);
+    this.posts = [];
+    for (let i = 0; i < JACKSON.posts; i++) {
+      const a = Math.PI * 0.75 + (i - 1) * 1.2;
+      const post = game.add(new TrainingPost({ x: this.island.x + Math.cos(a) * 3.2, z: this.island.z + Math.sin(a) * 3.2 }, () => this.postBroken()));
+      this.posts.push(post);
+    }
+    this.showProgress();
+  }
+
+  showProgress() {
+    this.setObjective(`Smash Master Jackson's training posts with a Sky Strike (${this.smashed}/${JACKSON.posts})`, () =>
+      this.posts.find((p) => this.game.entities.includes(p)) ?? null,
+    );
+  }
+
+  postBroken() {
+    this.smashed++;
+    if (this.smashed < JACKSON.posts) this.showProgress();
+    else this.readyToTurnIn('All the posts are smashed! Talk to Master Jackson.');
   }
 }

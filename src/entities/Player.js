@@ -6,7 +6,7 @@ import { createSword, createShield, createBow, addArmor, createAxe, createPickax
 import { Arrow } from './Arrow.js';
 import { SwordTrail } from './SwordTrail.js';
 import { MOVES, poseAt } from './swordMoves.js';
-import { PLAYER, SWORDS, FORGE, FOOD, BOW, SEA, DREAM } from '../config.js';
+import { PLAYER, SWORDS, FORGE, FOOD, BOW, SEA, DREAM, BUFFS, JACKSON } from '../config.js';
 
 const WALK_SPEED = 6;
 const RUN_SPEED = 11;
@@ -86,6 +86,9 @@ export class Player extends Entity {
     this.tempHealth = 0;
     this.coins = 0;
     this.dreamPoints = 0;
+    this.buffs = {}; // buff id (see BUFFS) -> seconds left
+    this.knowsSkyStrike = false; // Master Jackson teaches it: swing in mid-air to dive and slam
+    this.skyStriking = false;
     this.hasDash = false; // dream abilities
     this.hasInvisibility = false;
     this.dashTimer = 0;
@@ -368,6 +371,7 @@ export class Player extends Entity {
       return 'blocked';
     }
 
+    if (this.buffs.toughScales) amount = Math.max(1, amount - 1);
     // Golden extra hearts go first.
     const soaked = Math.min(this.tempHealth, amount);
     this.tempHealth -= soaked;
@@ -415,6 +419,7 @@ export class Player extends Entity {
       if (game.isWalkable(x, z)) return game.heightAt(x, z) <= SEA.level + 1.5;
       return Math.hypot(x, z) < SEA.radius;
     }
+    if (game.towerIsland?.railingBlocks(pos, x, z)) return false;
     if (game.isWalkable(x, z)) return game.heightAt(x, z) <= pos.y + STEP_UP;
     // You get into the sea off the dock (or off the shore of an island out at sea). Once Captain
     // Finn has shown you how, you can wade in from any beach of the home island too.
@@ -484,6 +489,8 @@ export class Player extends Entity {
     if (this.hasSpeedBoots) speed *= DREAM.speedBoost;
     else if (this.shielding) speed = this.shieldTier >= 1 ? WALK_SPEED : SHIELD_SPEED;
     if (this.drawing) speed = Math.min(speed, SHIELD_SPEED); // steady while aiming
+    if (this.swimming && this.buffs.fastFins) speed *= BUFFS.fastFins.swim;
+    if (!this.swimming && this.buffs.quickFeet) speed *= BUFFS.quickFeet.speed;
     this.updateAbilities(dt, game, controls);
     if (this.stunTimer === 0 && this.dashTimer === 0) {
       const grip = this.swimming ? 5 : this.onGround ? 14 : 4;
@@ -506,7 +513,10 @@ export class Player extends Entity {
     const swingPressed = input.hit('swing') || input.clicked;
     // Pressing swing near the end of a swing lines up the next move of the combo.
     if (swingPressed && this.isAttacking && !this.spinning && this.swingProgress > 0.4) this.queuedSwing = true;
-    if (free && (swingPressed || this.queuedSwing)) {
+    const height = pos.y - game.heightAt(pos.x, pos.z);
+    if (free && swingPressed && this.knowsSkyStrike && !this.onGround && !this.swimming && !this.skyStriking && height > 1.2) {
+      this.startSkyStrike();
+    } else if (free && (swingPressed || this.queuedSwing)) {
       this.startSwing(game);
     } else if (free && this.hasBow && input.hit('bow')) {
       this.startDraw(game);
@@ -545,6 +555,7 @@ export class Player extends Entity {
     this.updateWater(game);
 
     if (this.swimming) {
+      this.skyStriking = false;
       const surface = SEA.level - SWIM_DEPTH + Math.sin(game.elapsed * 2.2) * 0.05;
       if (pos.y <= surface) {
         pos.y = surface;
@@ -558,6 +569,7 @@ export class Player extends Entity {
         this.velocity.y = 0;
         this.onGround = true;
         this.usedDoubleJump = false;
+        if (this.skyStriking) this.skyStrikeLand(game);
         const pad = game.dream?.bounceAt(pos.x, pos.y, pos.z);
         if (pad) {
           this.velocity.y = BOUNCE_SPEED;
@@ -691,6 +703,39 @@ export class Player extends Entity {
     this.swingId++;
   }
 
+  /** Sky Strike (Master Jackson's move): dive straight down with the overhead swing. */
+  startSkyStrike() {
+    this.skyStriking = true;
+    this.velocity.set(0, -JACKSON.skyStrikeSpeed, 0);
+    this.comboStep = MOVES.length - 1; // the big overhead finisher
+    this.move = MOVES[this.comboStep];
+    this.attackDuration = this.attackTimer = this.move.duration;
+    this.queuedSwing = false;
+    this.swingId++;
+  }
+
+  /** The Sky Strike hits the ground: everything close by gets slammed (and training posts break). */
+  skyStrikeLand(game) {
+    this.skyStriking = false;
+    const pos = this.object3d.position;
+    const r = JACKSON.skyStrikeRadius;
+    for (const m of [...game.monsters]) {
+      const mp = m.object3d.position;
+      const dx = pos.x - mp.x;
+      const dz = pos.z - mp.z;
+      const d = Math.hypot(dx, dz);
+      if (d > r + m.radius || Math.abs(mp.y - pos.y) > 2.5 || m.health <= 0) continue;
+      m.hit(game, { x: dx / (d || 1), z: dz / (d || 1) }, JACKSON.skyStrikeDamage);
+    }
+    for (const e of [...game.entities]) e.onSkyStrike?.(game, pos, r);
+    for (let i = 0; i < 16; i++) {
+      const a = (i / 16) * Math.PI * 2;
+      game.particles?.burst(new THREE.Vector3(pos.x + Math.cos(a) * r * 0.7, pos.y + 0.2, pos.z + Math.sin(a) * r * 0.7), { count: 2, colors: ['#ffffff', '#ffe08a', '#c9a46b'], speed: 3, size: 0.2, life: 0.5, up: 0.5 });
+    }
+    game.hitStop?.(0.1);
+    game.cameraRig?.shake(0.6);
+  }
+
   /** The finisher's sword hits the ground: a puff of dust and a thump. */
   groundSlam(game) {
     const tip = this.sword.localToWorld(new THREE.Vector3(0, 0.9, 0));
@@ -759,6 +804,13 @@ export class Player extends Entity {
       this.bubble.visible = true;
       game.questLog?.toast('Star Shield! It blocks the next few hits.');
     }
+    for (const [id, left] of Object.entries(this.buffs)) {
+      if (left - dt > 0) this.buffs[id] = left - dt;
+      else {
+        delete this.buffs[id];
+        game.questLog?.toast(`Your ${BUFFS[id].name} wore off.`);
+      }
+    }
     if (this.invisibleTimer > 0 && (this.invisibleTimer = Math.max(0, this.invisibleTimer - dt)) === 0) {
       this.setSeeThrough(false);
       game.questLog?.toast("You're visible again.");
@@ -782,6 +834,12 @@ export class Player extends Entity {
       this.setSeeThrough(true);
       game.questLog?.toast("You're invisible! Monsters can't see you.");
     }
+  }
+
+  /** Start (or top up) a buff from BUFFS for its usual time. */
+  addBuff(game, id) {
+    this.buffs[id] = BUFFS.seconds;
+    game.particles?.burst(this.object3d.position.clone().setY(this.object3d.position.y + 1.2), { count: 24, colors: ['#7dff8a', '#ffe66b', '#ffffff'], speed: 3, size: 0.13, gravity: -3 });
   }
 
   endStarShield(game) {

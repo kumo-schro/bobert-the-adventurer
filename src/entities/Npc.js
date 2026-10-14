@@ -59,6 +59,7 @@ export class Npc extends Entity {
     home = null,
     quests = null,
     onTalk = null,
+    createModel = null, // for animal friends (see models/critters.js); otherwise a person in `look`
   }) {
     super();
     this.name = name;
@@ -75,8 +76,8 @@ export class Npc extends Entity {
     this.zzzTimer = 0;
     this.object3d.position.set(position.x, position.y ?? 0, position.z);
 
-    this.model = createCharacter(look.colors);
-    look.decorate?.(this.model);
+    this.model = createModel ? createModel() : createCharacter(look.colors);
+    look?.decorate?.(this.model);
     this.object3d.add(this.model.root);
     this.model.root.rotation.y = facing;
     // People who stand in one place (shopkeepers) walk back to it in the morning.
@@ -237,6 +238,7 @@ export class Npc extends Entity {
 
     this.walkPhase += this.moving * dt * 1.6;
     poseWalk(this.model, this.walkPhase, this.moving > 0 ? 0.7 : 0);
+    this.model.idle?.(game.elapsed);
     if (this.state === 'talking') this.model.armR.rotation.x = -0.9 + Math.sin(game.elapsed * 6) * 0.25; // gesturing
 
     if (!this.asleep) {

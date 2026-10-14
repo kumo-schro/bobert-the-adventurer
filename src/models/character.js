@@ -86,7 +86,7 @@ export function poseWalk(model, phase, swing) {
   model.legR.rotation.x = -s;
   model.armL.rotation.x = -s;
   model.armR.rotation.x = s;
-  model.head.position.y = 1.47 + Math.abs(Math.sin(phase)) * 0.04 * swing;
+  model.head.position.y = (model.headY ?? 1.47) + Math.abs(Math.sin(phase)) * 0.04 * swing;
 }
 
 /** Turns the model to face an angle (radians around Y), smoothly and the short way round. */

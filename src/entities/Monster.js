@@ -2,10 +2,13 @@ import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
 import { pushOut } from '../core/collision.js';
 import { part } from '../models/character.js';
-import { SEA } from '../config.js';
+import { SEA, BUFFS, MONSTERS } from '../config.js';
 
 const GRAVITY = 25;
-const CONTACT_COOLDOWN = 1;
+/** How long to wait between attacks, sped up by MONSTERS.attackSpeed (use it for every attack timer). */
+export const attackTime = (seconds) => seconds / MONSTERS.attackSpeed;
+
+const CONTACT_COOLDOWN = attackTime(1);
 const GIVE_UP_DISTANCE = 30; // once a monster is after you, it follows until you're this far away
 const NIGHT_SPEED = 1.2; // monsters move 20% faster at night...
 const NIGHT_DAMAGE = 1; // ...and hit 1 heart harder
@@ -265,8 +268,9 @@ export class Monster extends Entity {
       life: 1.4,
     });
     if (this.coins) {
-      game.player.addCoins(this.coins);
-      game.particles?.burst(where.clone().setY(where.y + 1), { count: this.coins * 3, colors: ['#ffc93c', '#ffe08a'], speed: 5, size: 0.14 });
+      const coins = this.coins * (game.player.buffs?.luckyTail ? BUFFS.luckyTail.coins : 1); // Lucky Tail buff
+      game.player.addCoins(coins);
+      game.particles?.burst(where.clone().setY(where.y + 1), { count: coins * 3, colors: ['#ffc93c', '#ffe08a'], speed: 5, size: 0.14 });
     }
     game.remove(this);
     this.onDefeated?.(where);

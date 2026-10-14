@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Monster } from './Monster.js';
+import { Monster, attackTime } from './Monster.js';
 import { part } from '../models/character.js';
 
 // The jungle's monsters: giant Venus fly traps, snakes and gorillas.
@@ -7,7 +7,7 @@ import { part } from '../models/character.js';
 const TRAP_NOTICE = 5; // starts opening its mouth when you come this close
 const TRAP_BITE_RANGE = 2.8; // the bite reaches this far
 const TRAP_WINDUP = 1.4; // seconds the mouth hangs open before it snaps (slow!)
-const TRAP_COOLDOWN = 2.4;
+const TRAP_COOLDOWN = attackTime(2.4);
 
 /**
  * A giant Venus fly trap. It can't move, and it attacks slowly: its jaws creak open (they glow
@@ -365,7 +365,7 @@ export class Vine extends Monster {
     const awake = this.chasing(toPlayer, 20, !game.player.swimming);
     this.slamTimer -= dt;
     if (awake && this.slamTimer <= 0 && this.slams.length < 2 && toPlayer.dist < 22) {
-      this.slamTimer = 1.6;
+      this.slamTimer = attackTime(1.6);
       const p = game.player.object3d.position;
       const arm = vineArm(this.object3d, 8);
       const warning = new THREE.Mesh(new THREE.CircleGeometry(2.4, 24), vineWarning);
@@ -422,12 +422,12 @@ export class Vine extends Monster {
  * When beaten he doesn't vanish: he bows, and the duel is over.
  */
 const OAK_SPIN_TIME = 0.8;
-const OAK_CHARGE_TIME = 3; // seconds to charge the next spin
+const OAK_CHARGE_TIME = attackTime(3); // seconds to charge the next spin
 const OAK_SPIN_REACH = 3.2;
 
 export class OakFighter extends Monster {
   constructor({ x, z }, model) {
-    super({ x, z, health: 5, damage: 10, coins: 0, radius: 0.6, barHeight: 2.6, colors: ['#3fae3a', '#8a5a35', '#ffd23f'], touchDamage: false });
+    super({ x, z, health: 8, damage: 10, coins: 0, radius: 0.6, barHeight: 2.6, colors: ['#3fae3a', '#8a5a35', '#ffd23f'], touchDamage: false });
     this.model = model;
     this.body.add(model.root);
     this.model.armR.rotation.order = 'YXZ';

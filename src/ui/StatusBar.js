@@ -1,5 +1,5 @@
 import { Entity } from '../core/Entity.js';
-import { FOOD } from '../config.js';
+import { FOOD, BUFFS } from '../config.js';
 import { keyName } from '../controls.js';
 
 /**
@@ -19,6 +19,7 @@ export class StatusBar extends Entity {
       <div class="status-materials hidden"></div>
       <div class="status-arrows hidden"></div>
       <div class="status-dream hidden"></div>
+      <div class="status-buffs hidden"></div>
       <div class="status-food hidden"></div>`;
     this.heartsEl = this.el.querySelector('.hearts');
     this.hpEl = this.el.querySelector('.hp');
@@ -27,6 +28,7 @@ export class StatusBar extends Entity {
     this.arrowsEl = this.el.querySelector('.status-arrows');
     this.materialsEl = this.el.querySelector('.status-materials');
     this.dreamEl = this.el.querySelector('.status-dream');
+    this.buffsEl = this.el.querySelector('.status-buffs');
 
     this.chargeEl = document.createElement('div');
     this.chargeEl.className = 'charge hidden';
@@ -131,6 +133,13 @@ export class StatusBar extends Entity {
       const anyPower = powers.some(([has]) => has) || passives;
       this.dreamEl.classList.toggle('hidden', !p.dreamPoints && !anyPower && !game.dream?.contains(p.object3d.position.x, p.object3d.position.y, p.object3d.position.z));
     }
-    this.shown = { health, maxHealth, coins, food, arrows, tempHealth, materials, dream, charge: charging ? game.player.arrowDamage : null };
+    // Buffs from Barrett and Grayson, with the minutes (or seconds) they have left.
+    const left = (s) => (s >= 60 ? `${Math.ceil(s / 60)}m` : `${Math.ceil(s)}s`);
+    const buffs = Object.entries(p.buffs).map(([id, s]) => `${BUFFS[id].icon} ${left(s)}`).join('  ');
+    if (buffs !== this.shown.buffs) {
+      this.buffsEl.textContent = buffs;
+      this.buffsEl.classList.toggle('hidden', !buffs);
+    }
+    this.shown = { health, maxHealth, coins, food, arrows, tempHealth, materials, dream, buffs, charge: charging ? game.player.arrowDamage : null };
   }
 }

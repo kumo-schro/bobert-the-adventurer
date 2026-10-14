@@ -1,8 +1,6 @@
 import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
 import { Monster } from './Monster.js';
-import { Shark } from './Shark.js';
-import { Eel } from './Eel.js';
 import { part } from '../models/character.js';
 import { CHARIBDIS, SEA } from '../config.js';
 

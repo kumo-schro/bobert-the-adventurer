@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Monster } from './Monster.js';
+import { Monster, attackTime } from './Monster.js';
 import { part } from '../models/character.js';
 
 const FLY_SPEED = 3.2;
@@ -81,7 +81,7 @@ export class Gargoyle extends Monster {
   }
 
   bitPlayer() {
-    this.retreatTimer = 1.2;
+    this.retreatTimer = attackTime(1.2);
   }
 
   animate(dt, game) {

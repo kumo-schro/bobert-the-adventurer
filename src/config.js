@@ -31,10 +31,14 @@ export const DAY = {
   startAt: 0.05, // where in the day the game starts (0 = sunrise, 0.5 = sunset)
 };
 
+// The camera always looks down from overhead: you can turn it and zoom, and tilt it between
+// minPitch and maxPitch (radians above the horizon; 1.57 is straight down).
 export const CAMERA = {
   yaw: 0.9, // starting angle around the player (radians)
-  pitch: 0.35,
-  distance: 13,
+  pitch: 1.0,
+  minPitch: 0.85,
+  maxPitch: 1.4,
+  distance: 16,
 };
 
 export const VILLAGE = {
@@ -155,6 +159,43 @@ export const PLACES = {
   jungle: { x: 0, z: -1000, radius: 55 }, // the jungle island, far across the sea (Finn takes you)
   cellar: { x: 900, z: 0 },
   dream: { x: -1000, z: 0, y: 140 }, // the dream dimension, floating high in the sky far away // Old Man Keegan's cellar, under the trapdoor (built far away, out of sight)
+};
+
+// All monsters attack this many times faster than their base timings below and in their files
+// (Charibdis's whirlpool keeps its own exact timing).
+export const MONSTERS = {
+  attackSpeed: 1.25,
+};
+
+// Little power-ups that last a few minutes: Barrett the gecko sells them in the jungle, and
+// Grayson the fish gives one away free when you find him at sea.
+export const BUFFS = {
+  seconds: 300, // each one lasts five minutes
+  quickFeet: { name: 'Quick Feet', icon: '🦎', price: 25, speed: 1.2, description: 'Walk and run a little faster.' },
+  toughScales: { name: 'Tough Scales', icon: '🛡️', price: 35, description: 'Every hit hurts 1 less (but always at least 1).' },
+  luckyTail: { name: 'Lucky Tail', icon: '🍀', price: 30, coins: 2, description: 'Monsters drop twice as many coins.' },
+  fastFins: { name: 'Fast Fins', icon: '🐟', price: 0, swim: 1.5, description: 'Swim much faster.' },
+};
+
+// Grayson the friendly fish: where he can turn up, and how long he's away after giving a gift.
+export const GRAYSON = {
+  spots: [
+    { x: 125, z: 24 }, // off the beach just north of the dock
+    { x: -122, z: 92 }, // by the little island in the north-west
+    { x: 14, z: -145 }, // by the little island to the south
+    { x: 100, z: -90 }, // south-east, on the way to the kraken's rocks
+    { x: -124, z: -44 }, // off the west beach
+  ], // (all well away from the sharks)
+  awaySeconds: 60,
+};
+
+// Master Jackson, Oak's old friend, and the Sky Strike he teaches.
+export const JACKSON = {
+  island: { x: 190, z: -80 }, // he trains on this little island
+  posts: 3, // training posts to smash with a Sky Strike
+  skyStrikeDamage: 3,
+  skyStrikeRadius: 3.5,
+  skyStrikeSpeed: 32, // how fast you dive down
 };
 
 // Dream abilities, bought at the dream shrine with dream points.

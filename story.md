@@ -19,6 +19,9 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 - **Master Oak**: an old jungle master with a leafy beard and a glowing staff.
 - **The Dream Keeper**: guards the dream dimension and its stars.
 - **Luma**: a little star sprite who runs the dream shrine.
+- **Barrett**: a gecko who loves coins if you give them coins the will give you slight buffs for 5 minutes they are found in the jungle
+- **Grayson**: a friendly fish found in various water areas that will give you buffs
+- **Master Jackson**: the 2nd master that Oak will tell you about and send you on a quest to find.
 
 ## Chapter 1: The village in danger
 *Checkpoint: `start`*
@@ -43,7 +46,7 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
   - Tomas: bring 8 stone to fix the well.
 - The blacksmith sells a shield, a bow and arrows, an axe and a pickaxe.
 - Chop wood and mine stone to build a bigger forge (it unlocks the Knight's Sword, Power Bow, Iron Shield, armor and steel tools) and a bigger oven for Hana (special food with golden hearts).
-- Every two minutes day turns to night. At night everyone in town (even the shopkeepers) goes to bed and monsters get stronger.
+- Every five minutes day turns to night. At night everyone in town (even the shopkeepers) goes to bed and monsters get stronger.
 - Monsters that spot Bobert keep chasing him until he gets far away.
 
 ## Chapter 4: The mystery crystal
@@ -115,4 +118,4 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
   - **Star Shield** (press O for a bubble that blocks the next 3 hits).
 
 ## What happens next?
-- (Add the next chapter here!)
+

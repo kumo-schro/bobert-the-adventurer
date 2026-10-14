@@ -127,6 +127,22 @@ export const LOOKS = {
     },
   },
 
+  jackson: {
+    colors: { skin: '#a8714a', shirt: '#ff8a1f', pants: '#2b2b4a', shoes: '#2b2b2b', hair: '#1d1d1d' },
+    decorate({ head, root, handR }) {
+      part(head, [0.66, 0.12, 0.66], '#d9293f', [0, 0.5, 0]); // red headband
+      part(head, [0.12, 0.3, 0.06], '#d9293f', [0.2, 0.42, -0.34]); // headband tails
+      part(head, [0.12, 0.24, 0.06], '#d9293f', [0.32, 0.38, -0.34]);
+      part(head, [0.4, 0.07, 0.06], '#1d1d1d', [0, 0.17, 0.33]); // big mustache
+      part(head, [0.08, 0.2, 0.06], '#1d1d1d', [-0.2, 0.08, 0.33]);
+      part(head, [0.08, 0.2, 0.06], '#1d1d1d', [0.2, 0.08, 0.33]);
+      part(root, [0.66, 0.14, 0.4], '#1d1d1d', [0, 0.8, 0]); // black belt
+      part(root, [0.14, 0.4, 0.06], '#1d1d1d', [0.18, 0.6, 0.21]); // belt ends
+      part(handR, [0.1, 1.4, 0.1], '#c58b52', [0, 0.1, 0.1]); // wooden practice sword
+      part(handR, [0.3, 0.08, 0.14], '#5e3b22', [0, -0.3, 0.1]);
+    },
+  },
+
   guard: {
     colors: { skin: '#e0ac69', shirt: '#d9293f', pants: '#2b3a55', shoes: '#2b2b2b', hair: '#5a3a1a' },
     decorate({ head, root }) {

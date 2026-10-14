@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Monster } from './Monster.js';
+import { Monster, attackTime } from './Monster.js';
 import { part } from '../models/character.js';
 
 // The regular eel and its huge cousin, the sea serpent.
@@ -82,7 +82,7 @@ export class Eel extends Monster {
       dirZ = toPlayer.z;
       if (this.lungeTimer <= 0 && this.lungeCooldown <= 0 && toPlayer.dist < 3.5 * this.kind.scale) {
         this.lungeTimer = 0.4;
-        this.lungeCooldown = 2;
+        this.lungeCooldown = attackTime(2);
       }
       speed = this.lungeTimer > 0 ? this.kind.lunge : this.kind.swim;
     } else {
@@ -97,7 +97,7 @@ export class Eel extends Monster {
 
   /** Zap! Then slither back to the rocks. */
   bitPlayer() {
-    this.retreatTimer = 2;
+    this.retreatTimer = attackTime(2);
     this.sparkTimer = 0;
   }
 

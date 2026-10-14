@@ -248,6 +248,17 @@ export const CHECKPOINTS = [
       go(game, s.x, s.z - 2, { y: s.y, facing: 0 });
     },
   },
+  {
+    id: 'jackson',
+    label: '20. Master Jackson teaches the Sky Strike',
+    setup(game) {
+      skipQuest(game, game.quests.findJackson);
+    },
+    place(game) {
+      const j = game.entities.find((e) => e.name === 'Master Jackson').object3d.position;
+      go(game, j.x - 2.5, j.z, { facing: Math.PI / 2 });
+    },
+  },
 ];
 
 /** Set the game up as it would be at checkpoint `id` (on a freshly loaded game). */

@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
-import { CAMERA, SEA } from '../config.js';
+import { CAMERA } from '../config.js';
 
 const _dir = new THREE.Vector3();
 
 const CONVERSATION_DISTANCE = 7;
-const UNDERWATER_DISTANCE = 8;
+const UNDERWATER_DISTANCE = 12;
 // Inside caves (and Keegan's cellar) the camera looks down from above (the roof is cut away).
 const MODES = {
   cave: { minPitch: 1.05, maxDistance: 11 },
@@ -13,8 +13,9 @@ const MODES = {
 };
 
 /**
- * Third-person orbit camera that follows a target entity. Drag (left or right mouse) to orbit,
- * scroll or -/= to zoom, Q/E to turn, R/G to tilt, and C to swing round behind the player.
+ * Overhead camera that follows a target entity, always looking down from above. Drag (left or
+ * right mouse) to orbit, scroll or -/= to zoom, Q/E to turn, R/G to tilt (but never down low),
+ * and C to swing round behind the player.
  * While a dialog with a `focus` entity is open, it swings round to show both characters side-on.
  * When game.cameraMode is 'cave' or 'indoor' it tilts down to look in from above.
  */
@@ -56,7 +57,7 @@ export class CameraRig extends Entity {
     const turn = input.drag.dx * 0.008 - input.axisOf('camRight', 'camLeft') * 2.6 * dt;
     const tilt = input.drag.dy * 0.006 + input.axisOf('tiltDown', 'tiltUp') * 1.5 * dt;
     this.yaw -= turn;
-    this.pitch = THREE.MathUtils.clamp(this.pitch + tilt, 0.05, 1.35);
+    this.pitch = THREE.MathUtils.clamp(this.pitch + tilt, CAMERA.minPitch, CAMERA.maxPitch);
     const zoomKeys = input.axisOf('zoomOut', 'zoomIn');
     this.distance = THREE.MathUtils.clamp(this.distance * (1 + input.wheel * 0.001) * (1 - zoomKeys * 1.2 * dt), 4, 40);
 
@@ -79,12 +80,8 @@ export class CameraRig extends Entity {
       wantedZoom = Math.min(wantedZoom, mode.maxDistance);
       wantedTilt = Math.max(wantedTilt, mode.minPitch);
     }
-    // Swimming is underwater: keep the camera under the surface too, a bit closer in.
-    if (this.target.swimming) {
-      wantedZoom = Math.min(wantedZoom, UNDERWATER_DISTANCE);
-      const room = (SEA.level - 0.6 - (t.y + 1.4)) / wantedZoom;
-      wantedTilt = Math.min(wantedTilt, Math.asin(THREE.MathUtils.clamp(room, -0.6, 0.9)));
-    }
+    // Swimming: look down through the water from a little closer in.
+    if (this.target.swimming) wantedZoom = Math.min(wantedZoom, UNDERWATER_DISTANCE);
 
     const speaker = game.dialog?.isOpen ? game.dialog.focus : null;
     if (speaker) {
