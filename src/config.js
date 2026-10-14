@@ -248,6 +248,12 @@ export const CHARIBDIS = {
   spitRange: 22,
 };
 
+// Saved games (press Esc in the game). Bump `version` after a big change to the game:
+// saves made with a different version can't be loaded any more (they're not converted).
+export const SAVES = {
+  version: 1,
+};
+
 export const QUEST = {
   slimeHealth: 10, // sword hits (with the starting sword) to defeat the Gelationus Slime
   rewardCoins: 100,

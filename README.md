@@ -14,6 +14,8 @@ npm run build    # production build into dist/
 
 **Debug menu:** press **`** (the key above Tab) to jump to any chapter of the story (each chapter in `story.md` lists its checkpoint), or use cheats: coins, wood and stone, healing, can't-get-hurt mode, day/night, and teleports. You can also open the game at a checkpoint directly, like `http://localhost:5173/?checkpoint=charibdis`.
 
+**💾 Saved games:** press **Esc** (or click 💾 in the corner), type a name and press Save. Saves are kept in this browser; load or delete them from the same menu. After a big update to the game (`SAVES.version` in `src/config.js`), older saves can't be loaded any more.
+
 **💡 Suggest a change:** press **/** (or click the button in the corner), click on anything in the game, and type how you'd like it changed. It's saved with where you were, what you clicked, your quest and a small screenshot. Nothing happens automatically; the ideas are just collected for later:
 - Playing locally (`npm run dev`), ideas go straight into `recommendations.json` (screenshots in `recommendations/`).
 - On the live site, they're saved to a private Vercel Blob store. Run `npm run recommendations` to download everyone's ideas into `recommendations.json` (it needs `RECOMMENDATIONS_KEY` from `.env.local`; get it with `npx vercel env pull`). Then ask Claude to review them.
@@ -49,13 +51,14 @@ src/
                        Collectible, Artifact, Particles, Butterflies, CameraRig
   quest/               Quest (base, with `requires` / `after` for quest chains), ArtifactQuest (main),
                        sideQuests (find things, hunt, puzzle, deliveries, crystal, Charibdis, jungle)
+  saves.js             Saved games in the browser (what's saved, and setting a fresh game up from a save)
   models/              Voxel model recipes: trees, buildings, character, people (outfits), gear
   ui/                  Dialog (+ "Press T" prompts), QuestLog, StatusBar (hearts/coins/food), Shop,
                        ControlsMenu (Ctrl/Command to change keys, Option/Alt to show panels), DebugMenu (`),
-                       Suggestions (💡 click on something and suggest a change)
+                       Suggestions (💡 click on something and suggest a change), SaveMenu (💾 Esc: saved games)
 api/recommendations.js Vercel Function that saves suggestions (and lets the owner download them)
 server/                Code shared by that function and the local dev server (vite.config.js)
-scripts/               npm run recommendations: download everyone's suggestions
+scripts/               npm run recommendations: download everyone's suggestions (and build recommendations/index.html)
   utils/               Seeded random, noise, color helpers
 ```
 

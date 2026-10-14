@@ -14,6 +14,12 @@ import { QUEST_LOCKED, COME_BACK_LATER } from '../story.js';
  *   requires: () => true when it may be offered (side quests wait for the merchant's quest)
  *   after: another quest that has to be finished first, `delay` seconds earlier
  *          (villagers give you more quests over time this way)
+ *
+ * Saved games (see saves.js) remember each quest's stage. Loading a save starts active quests
+ * again from the beginning, unless the quest has saveProgress() (returns what to remember) and
+ * loadProgress(saved) (puts it back after onStart). Finished quests run onFinish() again on load,
+ * so put lasting changes to the world there (not the reward). restartsWhenLoaded: true sends an
+ * active quest back to 'offer' instead.
  */
 export class Quest {
   constructor(game, { id, title, text, reward = 0, dreamPoints = 0, seekDistance = 0, requires = null, after = null, delay = 0 }) {

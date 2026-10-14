@@ -1,6 +1,7 @@
 // Downloads everyone's suggestions from the live game into recommendations.json (and their
 // screenshots into recommendations/), merged with any saved while playing locally.
 //   npm run recommendations
+// Then rebuilds recommendations/index.html (see recommendations-page.mjs).
 // Needs RECOMMENDATIONS_KEY in .env.local (it's there after `vercel env pull`).
 
 import { readFile, writeFile, mkdir, access } from 'node:fs/promises';
@@ -39,3 +40,6 @@ for (const record of remote) {
 const all = [...byId.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 await writeFile('recommendations.json', `${JSON.stringify(all, null, 2)}\n`);
 console.log(`${added} new from the live game, ${all.length} recommendations in recommendations.json`);
+
+// Rebuild the page that lists them all.
+await import('./recommendations-page.mjs');

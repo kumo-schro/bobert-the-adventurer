@@ -18,7 +18,7 @@ export class ControlsMenu extends Entity {
     this.el.className = 'shop controls-menu hidden';
     this.hint = document.createElement('div');
     this.hint.className = 'menu-hint';
-    this.hint.innerHTML = `<kbd>${MENU_KEYS.panels}</kbd> quests &amp; controls &nbsp; <kbd>${MENU_KEYS.controls}</kbd> change keys`;
+    this.hint.innerHTML = `<kbd>${MENU_KEYS.panels}</kbd> quests &amp; controls &nbsp; <kbd>${MENU_KEYS.controls}</kbd> change keys &nbsp; <kbd>Esc</kbd> save`;
     document.body.append(this.el, this.hint);
     this.el.addEventListener('pointerdown', (e) => {
       const button = e.target.closest('button');

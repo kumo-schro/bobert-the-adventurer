@@ -41,6 +41,7 @@ import { StatusBar } from './ui/StatusBar.js';
 import { ControlsMenu } from './ui/ControlsMenu.js';
 import { DebugMenu } from './ui/DebugMenu.js';
 import { Suggestions } from './ui/Suggestions.js';
+import { SaveMenu } from './ui/SaveMenu.js';
 import { ArtifactQuest } from './quest/ArtifactQuest.js';
 import {
   FindGemsQuest,
@@ -351,6 +352,7 @@ game.add(new StatusBar());
 game.add(new ControlsMenu());
 const debugMenu = game.add(new DebugMenu());
 game.add(new Suggestions()); // 💡 click on something and suggest a change
+const saveMenu = game.add(new SaveMenu()); // 💾 Esc: name and save your adventure, or load one
 mainQuest.announce();
 
 // Camera last so it follows the player's final position each frame
@@ -365,6 +367,8 @@ game.quests.stars = starsQuest;
 
 // Opened with ?checkpoint=... (from the debug menu)? Jump to that point in the story.
 debugMenu.start();
+// Picked a saved game to load (the page reloaded for it)? Set it up.
+saveMenu.start();
 
 game.start();
 

@@ -859,3 +859,57 @@ body.underwater::after {
   font-size: 15px;
   white-space: pre;
 }
+
+/* Saved games (Esc) */
+.save-button {
+  position: fixed;
+  right: 16px;
+  bottom: 56px;
+  padding: 7px 12px;
+  border: none;
+  border-radius: 12px;
+  background: #fffaf0;
+  box-shadow: 0 3px 0 #b8b2a6;
+  color: #2b3a55;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.save-menu {
+  max-height: calc(100% - 40px);
+  overflow-y: auto;
+}
+
+.save-new {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.save-new input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px;
+  border: 2px solid #d8cdb6;
+  border-radius: 10px;
+  background: #fff;
+  color: #2b3a55;
+  font: inherit;
+  font-size: 15px;
+  user-select: text;
+}
+
+.save-row .shop-name {
+  overflow-wrap: anywhere;
+}
+
+.save-row.obsolete {
+  opacity: 0.6;
+}
+
+.shop button.save-delete {
+  background: #c9563c;
+  box-shadow: 0 3px 0 #9a3c27;
+}

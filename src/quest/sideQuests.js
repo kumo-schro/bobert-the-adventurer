@@ -73,6 +73,19 @@ export class FindGemsQuest extends Quest {
     }
     this.count = this.gems.length; // in case fewer spots were free than asked for
     this.found = 0;
+    this.allGems = [...this.gems];
+    this.updateObjective();
+  }
+
+  /** Saved games remember which ones you've found (they're always in the same spots). */
+  saveProgress() {
+    return this.allGems.flatMap((g, i) => (this.gems.includes(g) ? [] : [i]));
+  }
+
+  loadProgress(found) {
+    for (const i of found) this.game.remove(this.allGems[i]);
+    this.gems = this.allGems.filter((_, i) => !found.includes(i));
+    this.found = this.count - this.gems.length;
     this.updateObjective();
   }
 
@@ -182,6 +195,15 @@ export class SlimeHuntQuest extends Quest {
     this.updateObjective();
   }
 
+  saveProgress() {
+    return this.count - this.slimes.length; // how many are defeated
+  }
+
+  loadProgress(defeated) {
+    for (const slime of this.slimes.splice(0, defeated)) this.game.remove(slime);
+    this.updateObjective();
+  }
+
   defeated(slime) {
     this.slimes = this.slimes.filter((s) => s !== slime);
     if (this.slimes.length === 0) this.readyToTurnIn('All the blue slimes are gone!');
@@ -275,6 +297,20 @@ export class CharibdisQuest extends Quest {
     this.cave.onUnlock = () => this.caveOpened();
   }
 
+  /** Saved games remember whether the key has dropped, and which key holders are left. */
+  saveProgress() {
+    return { keyDropped: !!this.keyDropped, alive: this.keyHolders.map((m) => this.game.monsters.includes(m)) };
+  }
+
+  loadProgress({ keyDropped, alive }) {
+    const { game } = this;
+    this.keyHolders.forEach((m, i) => alive[i] || game.remove(m));
+    if (!keyDropped) return;
+    this.keyDropped = true;
+    game.player.hasKey = true; // if it was still lying on the seabed, it's in your pocket now
+    this.setObjective("Unlock Charibdis's cave", this.cave);
+  }
+
   nearestKeyHolder() {
     const p = this.game.player.object3d.position;
     const alive = this.keyHolders.filter((m) => this.game.monsters.includes(m));
@@ -355,6 +391,7 @@ export class JungleQuest extends Quest {
 export class OakDuelQuest extends Quest {
   constructor(game, rest = {}) {
     super(game, { id: 'oak', title: SIDE_QUESTS.oak.title, text: SIDE_QUESTS.oak.text, reward: 0, ...rest });
+    this.restartsWhenLoaded = true; // saved in the middle of the duel? Talk to Oak to start again
   }
 
   onStart() {
@@ -439,6 +476,17 @@ export class DreamStarsQuest extends Quest {
       this.stars.push(star);
     }
     this.total = this.stars.length;
+    this.allStars = [...this.stars];
+    this.updateObjective();
+  }
+
+  saveProgress() {
+    return this.allStars.flatMap((s, i) => (this.stars.includes(s) ? [] : [i]));
+  }
+
+  loadProgress(caught) {
+    for (const i of caught) this.game.remove(this.allStars[i]);
+    this.stars = this.allStars.filter((_, i) => !caught.includes(i));
     this.updateObjective();
   }
 
@@ -468,6 +516,17 @@ export class DreamWispsQuest extends Quest {
       };
       return wisp;
     });
+    this.allWisps = [...this.wisps];
+    this.updateObjective();
+  }
+
+  saveProgress() {
+    return this.allWisps.flatMap((w, i) => (this.wisps.includes(w) ? [] : [i]));
+  }
+
+  loadProgress(gone) {
+    for (const i of gone) this.game.remove(this.allWisps[i]);
+    this.wisps = this.allWisps.filter((_, i) => !gone.includes(i));
     this.updateObjective();
   }
 
@@ -527,6 +586,16 @@ export class SkyStrikeQuest extends Quest {
       const post = game.add(new TrainingPost({ x: this.island.x + Math.cos(a) * 3.2, z: this.island.z + Math.sin(a) * 3.2 }, () => this.postBroken()));
       this.posts.push(post);
     }
+    this.showProgress();
+  }
+
+  saveProgress() {
+    return this.smashed;
+  }
+
+  loadProgress(smashed) {
+    for (const post of this.posts.slice(0, smashed)) this.game.remove(post);
+    this.smashed = smashed;
     this.showProgress();
   }
 
