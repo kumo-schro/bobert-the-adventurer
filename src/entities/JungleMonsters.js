@@ -415,7 +415,7 @@ export class Vine extends Monster {
 }
 
 /**
- * Master Oak in battle: very strong (one hit hurts a LOT) but slow, and only 5 hit points.
+ * Master Oak in battle: very strong (one hit hurts a LOT) but slow, and only 8 hit points.
  * He opens the duel with a spin attack, then charges up the next one (his staff glows brighter
  * and brighter and sparkles). Once it's charged, he spins the moment you come close. Hit him
  * while he's charging, then get out of reach before the spin! He doesn't flinch when hit.

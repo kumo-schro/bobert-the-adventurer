@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
-import { Monster } from './Monster.js';
+import { Monster, attackTime } from './Monster.js';
+import { Shark } from './Shark.js';
+import { Eel } from './Eel.js';
 import { part } from '../models/character.js';
 import { CHARIBDIS, SEA } from '../config.js';
 
@@ -73,7 +75,7 @@ export class Charibdis extends Monster {
     this.helpers = [];
     this.biteWindup = 0; // > 0 while the mouth is wide open, about to bite
     this.biteCooldown = 1;
-    this.spitTimer = CHARIBDIS.spitEvery;
+    this.spitTimer = attackTime(CHARIBDIS.spitEvery);
     this.shieldToastAt = -99;
     this.buildModel();
     this.buildWhirlpool();
@@ -182,7 +184,7 @@ export class Charibdis extends Monster {
       // Spit water at anyone keeping their distance.
       this.spitTimer -= dt;
       if (this.spitTimer <= 0) {
-        this.spitTimer = CHARIBDIS.spitEvery;
+        this.spitTimer = attackTime(CHARIBDIS.spitEvery);
         if (!inside && !player.dead && dist < CHARIBDIS.spitRange) this.spit(game);
       }
     } else {
@@ -202,7 +204,7 @@ export class Charibdis extends Monster {
     if (this.biteWindup > 0) {
       this.biteWindup -= dt;
       if (this.biteWindup <= 0) {
-        this.biteCooldown = CHARIBDIS.biteCooldown;
+        this.biteCooldown = attackTime(CHARIBDIS.biteCooldown);
         const pos = this.object3d.position;
         game.particles?.burst(pos.clone().setY(pos.y + 1), { count: 25, colors: ['#ffffff', '#bfe6ff'], speed: 6, size: 0.18 });
         if (!player.dead && dist < CHARIBDIS.biteRange) player.takeDamage(game, CHARIBDIS.biteDamage + (this.power - this.damage), pos.x, pos.z);
