@@ -45,6 +45,7 @@ export class Collectible extends Entity {
         size: 0.14,
       });
       game.remove(this);
+      game.sound?.play('pickup');
       this.onCollect?.();
     }
   }

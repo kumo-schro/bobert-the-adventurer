@@ -2,13 +2,15 @@ import { Quest } from './Quest.js';
 import { Collectible } from '../entities/Collectible.js';
 import { Slime } from '../entities/Slime.js';
 import { OakFighter, Vine } from '../entities/JungleMonsters.js';
+import { JacksonFighter } from '../entities/JacksonFighter.js';
 import { TrainingPost } from '../entities/TrainingPost.js';
 import { createCharacter } from '../models/character.js';
 import { LOOKS } from '../models/people.js';
 import { createMysteryCrystal, createKey } from '../models/gear.js';
 import { RAINBOW } from '../world/StoneCircle.js';
 import { createRng } from '../utils/random.js';
-import { SEED, PLACES, JACKSON } from '../config.js';
+import { SEED, PLACES, JACKSON, SKY_STRIKE } from '../config.js';
+import { keyName } from '../controls.js';
 import { SIDE_QUESTS } from '../story.js';
 
 /**
@@ -255,14 +257,19 @@ export class CrystalQuest extends Quest {
     this.setObjective('Swim to the tower island and climb to the top', this.crystal);
   }
 
+  /** The quest log points at the trapdoor (once Pip has told you about it). */
+  pointToTrapdoor() {
+    if (this.trapdoor.open) return; // already open: its own line takes over
+    this.game.questLog.set('trapdoor', { title: 'The Old Trapdoor', objective: 'Use the crystal on the trapdoor outside of town', target: this.trapdoor });
+  }
+
   onFinish() {
     const { game } = this;
     game.player.hasCrystal = true;
-    game.questLog.set('trapdoor', {
-      title: 'The Old Trapdoor',
-      objective: 'Use the crystal on the trapdoor outside of town',
-      target: this.trapdoor,
-    });
+    // Pip (the crystal collector) knows where it goes. After he's seen it, it's off to the trapdoor.
+    if (this.pip && !this.pip.crystalShown) {
+      game.questLog.set('trapdoor', { title: 'The Old Trapdoor', objective: 'Show the mystery crystal to Pip in the village', target: this.pip });
+    } else this.pointToTrapdoor();
     this.trapdoor.onOpen = () => game.questLog.set('trapdoor', {
       title: 'The Old Trapdoor',
       objective: 'Climb down the trapdoor',
@@ -385,40 +392,44 @@ export class JungleQuest extends Quest {
 }
 
 /**
- * Master Oak will only teach the spin attack to someone who beats him in battle. When the duel
- * starts he steps out as an OakFighter; if you're knocked out, the duel is off (try again).
+ * A duel with a master: when it starts the master steps out as a fighter (made by makeFighter);
+ * beat them and they teach you something. If you're knocked out, the duel is off (talk to them
+ * to try again). Saved in the middle of a duel? It starts again from the beginning.
  */
-export class OakDuelQuest extends Quest {
-  constructor(game, rest = {}) {
-    super(game, { id: 'oak', title: SIDE_QUESTS.oak.title, text: SIDE_QUESTS.oak.text, reward: 0, ...rest });
-    this.restartsWhenLoaded = true; // saved in the middle of the duel? Talk to Oak to start again
+class DuelQuest extends Quest {
+  constructor(game, options) {
+    super(game, options);
+    this.restartsWhenLoaded = true;
+  }
+
+  /** The fighter that stands in for the master during the duel. */
+  makeFighter() {
+    throw new Error('makeFighter() is missing');
   }
 
   onStart() {
     const { game } = this;
-    const oak = this.giver;
-    const model = createCharacter(LOOKS.oak.colors);
-    LOOKS.oak.decorate(model);
-    this.fighter = game.add(new OakFighter(oak.object3d.position, model));
-    oak.object3d.visible = false;
-    oak.collider.x = oak.collider.z = 1e6;
-    oak.hidden = true;
+    const master = this.giver;
+    this.fighter = game.add(this.makeFighter(master.object3d.position));
+    master.object3d.visible = false;
+    master.collider.x = master.collider.z = 1e6;
+    master.hidden = true;
     this.fighter.onDefeated = () => {
       this.endDuel();
-      this.readyToTurnIn('You beat Master Oak! Talk to him.');
+      this.readyToTurnIn(this.duel.won);
     };
-    this.setObjective('Defeat Master Oak in battle! (Dodge when his staff glows.)', this.fighter);
-    game.questLog.toast('Master Oak raises his staff. The duel begins!');
+    this.setObjective(this.duel.objective, this.fighter);
+    game.questLog.toast(this.duel.begins);
   }
 
   endDuel() {
-    const oak = this.giver;
-    oak.hidden = false;
-    oak.object3d.visible = true;
-    if (this.fighter) oak.object3d.position.copy(this.fighter.object3d.position);
+    const master = this.giver;
+    master.hidden = false;
+    master.object3d.visible = true;
+    if (this.fighter) master.object3d.position.copy(this.fighter.object3d.position);
   }
 
-  /** Knocked out by Oak? The duel's off; talk to him again to try again. */
+  /** Knocked out? The duel's off; talk to the master to try again. */
   update() {
     const { game } = this;
     if (this.stage !== 'active' || !game.player.dead || !this.fighter) return;
@@ -428,6 +439,24 @@ export class OakDuelQuest extends Quest {
     this.stage = 'offer';
     game.questLog.remove(this.id);
   }
+}
+
+/** Master Oak only teaches the spin attack to someone who beats him in battle. */
+export class OakDuelQuest extends DuelQuest {
+  constructor(game, rest = {}) {
+    super(game, { id: 'oak', title: SIDE_QUESTS.oak.title, text: SIDE_QUESTS.oak.text, reward: 0, ...rest });
+    this.duel = {
+      objective: 'Defeat Master Oak in battle! (Dodge when his staff glows.)',
+      begins: 'Master Oak raises his staff. The duel begins!',
+      won: 'You beat Master Oak! Talk to him.',
+    };
+  }
+
+  makeFighter(position) {
+    const model = createCharacter(LOOKS.oak.colors);
+    LOOKS.oak.decorate(model);
+    return new OakFighter(position, model);
+  }
 
   onFinish() {
     this.game.player.knowsSpin = true;
@@ -435,7 +464,30 @@ export class OakDuelQuest extends Quest {
   }
 }
 
-/** The Vine, boss of the jungle. Beating it opens the way to the dream dimension. */
+/** Master Jackson dodges everything except a spin attack. Beat him and he teaches you to dodge. */
+export class JacksonDuelQuest extends DuelQuest {
+  constructor(game, rest = {}) {
+    super(game, { id: 'jackson', title: SIDE_QUESTS.jackson.title, text: SIDE_QUESTS.jackson.text, reward: JACKSON.reward, ...rest });
+    this.duel = {
+      objective: 'Land hits on Master Jackson! He dodges almost everything... (What did Master Oak teach you?)',
+      begins: 'Master Jackson bows, then bounces on his toes. The duel begins!',
+      won: 'You beat Master Jackson! Talk to him.',
+    };
+  }
+
+  makeFighter(position) {
+    const model = createCharacter(LOOKS.jackson.colors);
+    LOOKS.jackson.decorate?.(model);
+    return new JacksonFighter(position, model);
+  }
+
+  onFinish() {
+    this.game.player.knowsDodge = true;
+    this.game.questLog.toast(`You learned to DODGE! Press ${keyName(this.game.input.bindings.dodge[0] ?? 'KeyX')} to leap out of the way.`, 5);
+  }
+}
+
+/** The Viniac, boss of the jungle. Beating it opens the way to the dream dimension. */
 export class VineQuest extends Quest {
   constructor(game, { jungle, ...rest }) {
     super(game, { id: 'vine', title: SIDE_QUESTS.vine.title, text: SIDE_QUESTS.vine.text, reward: 150, ...rest });
@@ -445,8 +497,8 @@ export class VineQuest extends Quest {
   onStart() {
     const { game } = this;
     this.vine = game.add(new Vine(this.jungle.vineSpot));
-    this.vine.onDefeated = () => this.readyToTurnIn('You defeated the Vine!');
-    this.setObjective('Defeat the Vine, boss of the jungle (watch for the red circles!)', this.vine);
+    this.vine.onDefeated = () => this.readyToTurnIn('You defeated the Viniac!');
+    this.setObjective('Defeat the Viniac, boss of the jungle (watch for the red circles!)', this.vine);
   }
 
   onFinish() {
@@ -459,7 +511,7 @@ export class VineQuest extends Quest {
 /** Catch the fallen stars scattered around the dream islands. */
 export class DreamStarsQuest extends Quest {
   constructor(game, { dream, ...rest }) {
-    super(game, { id: 'stars', title: SIDE_QUESTS.stars.title, text: SIDE_QUESTS.stars.text, dreamPoints: 3, ...rest });
+    super(game, { id: 'stars', title: SIDE_QUESTS.stars.title, text: SIDE_QUESTS.stars.text, abilities: ['doubleJump', 'speedBoots'], ...rest });
     this.dream = dream;
     this.stars = [];
   }
@@ -501,7 +553,7 @@ export class DreamStarsQuest extends Quest {
 /** Chase away the nightmare wisps. */
 export class DreamWispsQuest extends Quest {
   constructor(game, { dream, makeWisp, ...rest }) {
-    super(game, { id: 'wisps', title: SIDE_QUESTS.wisps.title, text: SIDE_QUESTS.wisps.text, dreamPoints: 3, ...rest });
+    super(game, { id: 'wisps', title: SIDE_QUESTS.wisps.title, text: SIDE_QUESTS.wisps.text, abilities: ['dash', 'invisible'], ...rest });
     this.dream = dream;
     this.makeWisp = makeWisp;
   }
@@ -538,7 +590,7 @@ export class DreamWispsQuest extends Quest {
 /** Jump up the cloud stones to the summit and catch the dream star there. */
 export class CloudHopQuest extends Quest {
   constructor(game, { dream, ...rest }) {
-    super(game, { id: 'hop', title: SIDE_QUESTS.hop.title, text: SIDE_QUESTS.hop.text, dreamPoints: 2, ...rest });
+    super(game, { id: 'hop', title: SIDE_QUESTS.hop.title, text: SIDE_QUESTS.hop.text, abilities: ['dreamHeal', 'starShield'], ...rest });
     this.dream = dream;
   }
 
@@ -568,11 +620,11 @@ export class FindJacksonQuest extends Quest {
   }
 }
 
-/** Master Jackson teaches the Sky Strike: smash his training posts with it to pass. */
+/** Master Oak teaches the Sky Strike after the spin attack: smash his training posts with it to pass. */
 export class SkyStrikeQuest extends Quest {
-  constructor(game, { island, ...rest }) {
+  constructor(game, { place, ...rest }) {
     super(game, { id: 'skyStrike', title: SIDE_QUESTS.skyStrike.title, text: SIDE_QUESTS.skyStrike.text, reward: 60, ...rest });
-    this.island = island;
+    this.place = place; // the posts go in a ring around here
     this.smashed = 0;
   }
 
@@ -581,9 +633,9 @@ export class SkyStrikeQuest extends Quest {
     game.player.knowsSkyStrike = true;
     game.questLog.toast('You learned the SKY STRIKE! Jump, then swing in the air.', 5);
     this.posts = [];
-    for (let i = 0; i < JACKSON.posts; i++) {
+    for (let i = 0; i < SKY_STRIKE.posts; i++) {
       const a = Math.PI * 0.75 + (i - 1) * 1.2;
-      const post = game.add(new TrainingPost({ x: this.island.x + Math.cos(a) * 3.2, z: this.island.z + Math.sin(a) * 3.2 }, () => this.postBroken()));
+      const post = game.add(new TrainingPost({ x: this.place.x + Math.cos(a) * 3.2, z: this.place.z + Math.sin(a) * 3.2 }, () => this.postBroken()));
       this.posts.push(post);
     }
     this.showProgress();
@@ -600,14 +652,18 @@ export class SkyStrikeQuest extends Quest {
   }
 
   showProgress() {
-    this.setObjective(`Smash Master Jackson's training posts with a Sky Strike (${this.smashed}/${JACKSON.posts})`, () =>
+    this.setObjective(`Smash Master Oak's training posts with a Sky Strike (${this.smashed}/${SKY_STRIKE.posts})`, () =>
       this.posts.find((p) => this.game.entities.includes(p)) ?? null,
     );
   }
 
   postBroken() {
     this.smashed++;
-    if (this.smashed < JACKSON.posts) this.showProgress();
-    else this.readyToTurnIn('All the posts are smashed! Talk to Master Jackson.');
+    if (this.smashed < SKY_STRIKE.posts) this.showProgress();
+    else this.readyToTurnIn('All the posts are smashed! Talk to Master Oak.');
+  }
+
+  onFinish() {
+    this.game.player.knowsSkyStrike = true;
   }
 }

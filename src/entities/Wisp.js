@@ -54,14 +54,12 @@ export class Wisp extends Monster {
     this.velocity.lerp(to.multiplyScalar(Math.min(FLOAT_SPEED, d * 2) / d), 1 - Math.exp(-3 * dt));
   }
 
-  /** Wandering wisps (not quest ones) give dream points when popped, then float back later. */
+  /** Wandering wisps (not quest ones) float back a while after they're popped. */
   defeat(game) {
-    if (this.dreamPoints) {
-      game.player.dreamPoints += this.dreamPoints;
-      game.questLog?.toast(`+${this.dreamPoints} dream point ✨`);
+    const make = this.respawn;
+    if (make) {
       const { x, y, z } = this.home;
-      const make = this.respawn;
-      if (make) setTimeoutGame(game, this.respawnSeconds, () => make({ x, y, z }));
+      setTimeoutGame(game, this.respawnSeconds, () => make({ x, y, z }));
     }
     super.defeat(game);
   }

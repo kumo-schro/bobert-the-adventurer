@@ -9,7 +9,7 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 - **The Merchant**: purple robe, white beard, travels with a big backpack. Runs the market stall.
 - **The Blacksmith**: sells gear and upgrades at the forge.
 - **Hana**: the baker. Sells food that heals you.
-- **Pip**: a kid who loses things (gems, seashells).
+- **Pip**: a kid who loses things (gems, seashells) and collects crystals.
 - **Bram**: a farmer with a slime problem and a broken fence.
 - **Elda**: an old lady who knows the riddle of the rainbow stones.
 - **Tomas**: a friendly villager who gives handy tips.
@@ -21,7 +21,7 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 - **Luma**: a little star sprite who runs the dream shrine.
 - **Barrett**: a gecko who loves coins if you give them coins the will give you slight buffs for 5 minutes they are found in the jungle
 - **Grayson**: a friendly fish found in various water areas that will give you buffs
-- **Master Jackson**: the 2nd master that Oak will tell you about and send you on a quest to find.
+- **Master Jackson**: the 2nd master that Oak will tell you about and send you on a quest to find. Nobody has ever landed a hit on him.
 
 ## Chapter 1: The village in danger
 *Checkpoint: `start`*
@@ -56,7 +56,10 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 - Bobert jumps off the dock and swims there, underwater, past lots of sharks and a few electric eels.
 - After talking to Finn once, Bobert can swim from any beach.
 - Stone gargoyles guard the tower's spiral stairs.
-- Bobert brings the crystal back. Finn says it fits the old trapdoor by the road, and lets him keep it.
+- Bobert brings the crystal back, and Finn lets him keep it.
+- Pip, who collects crystals, gasps when he sees it. He tells Bobert about Old Man Keegan, who lives under the old trapdoor by the road, and from then on sells crystals of his own:
+  - **Heart Crystal** (80 coins): 1 more max health, up to 2 of them.
+  - **Magic Crystal** (15 coins): fills up 30 magic points (needs a magic conduit, see chapter 11).
 
 ## Chapter 5: Old Man Keegan
 *Checkpoints: `crystal-done`, `keegan`*
@@ -96,26 +99,31 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 - He knows the spin attack, but only teaches it to someone who beats him in battle.
 - Oak is very strong (10 damage a hit) but slow, and only has 8 health. He has to charge up every spin, even the first one: his staff glows while it charges.
 - When Bobert wins, Oak teaches him: hold the sword button, then let go to spin.
+- Then Oak teaches his second move, the **Sky Strike**: jump, then swing in mid-air to dive down and slam everything nearby. To pass, Bobert smashes Oak's three training posts (only a Sky Strike breaks them). Oak pays 60 coins.
+- *Checkpoint: `sky-strike`*
 
-## Chapter 10: The Vine
+## Chapter 10: The Viniac
 *Checkpoint: `vine`*
-- The Vine, the boss of the jungle, grows to the east: a giant carnivorous plant (50 HP).
+- The Viniac, the boss of the jungle, grows to the east: a giant carnivorous plant (50 HP).
 - Its thorny arms slam down like the Kraken's (5 hearts). A red circle shows where.
-- When the Vine is beaten, a shimmering portal opens where it grew.
+- When the Viniac is beaten, a shimmering portal opens where it grew.
+
+## Chapter 10½: Master Jackson
+*Checkpoint: `jackson`*
+- After the Viniac, Oak tells Bobert about his old friend Master Jackson, who trains alone on a little island far east of the village.
+- Jackson only trains Oak's students. He challenges Bobert to a duel: he dodges every sword swing, arrow and Sky Strike. Only a spin attack (it comes from every side at once) can hit him. He has 6 health, and darts in with quick jabs of his wooden practice sword (2 damage).
+- When Bobert wins, Jackson teaches him to **dodge**: press X to leap out of the way, and nothing can hurt him mid-leap. Jackson pays 60 coins.
 
 ## Chapter 11: The dream dimension
 *Checkpoints: `dream`, `dream-powers`*
 - The portal leads to floating pastel islands in a starry purple sky, joined by rainbow bridges.
-- The Dream Keeper gives special quests that earn dream points:
-  - Catch the fallen stars (3 points).
-  - Chase away the nightmare wisps (3 points).
-  - Jump up the cloud stones to the summit (2 points).
-- Wandering wisps float around the islands. Popping one gives 1 dream point, and they come back after a while.
-- At the shrine, Luma trades dream points for powers:
-  - **Dash** (press L) and **Invisibility** (press I).
-  - **Double Jump** (press Space again in mid-air) and **Speed Boots** (always faster).
-  - **Dream Heal** (press U to heal all the way, once a minute).
-  - **Star Shield** (press O for a bubble that blocks the next 3 hits).
+- Luma at the shrine sells a **magic conduit** (60 coins). It holds up to 100 magic points (it comes with 20), and dream powers run on magic.
+- Every monster Bobert defeats (once he has the conduit) gives magic points: its health plus its damage, divided by 4, and at least 1.
+- The Dream Keeper's quests each teach two dream powers:
+  - Catch the fallen stars: **Double Jump** (press Space again in mid-air, 3 magic) and **Speed Boots** (faster while you have magic, 1 magic a second while moving).
+  - Chase away the nightmare wisps: **Dash** (press L, 5 magic) and **Invisibility** (press I, 20 magic).
+  - Jump up the cloud stones to the summit: **Dream Heal** (press U to heal all the way, once a minute, 25 magic) and **Star Shield** (press O for a bubble that blocks the next 3 hits, 20 magic).
+- Wandering wisps float around the islands and come back after a while, so there's always a little magic to collect.
 
 ## What happens next?
 

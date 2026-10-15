@@ -12,6 +12,9 @@ const STORAGE_KEY = 'bobert-sound';
  *   stone   hitting stone (gargoyles, boulders, walls)
  *   wood    hitting wood (trees, chests, training posts, the Vine)
  *   thump   the extra weight of a finisher or a spin
+ *   block   a hit bouncing off your shield
+ *   jump, land, splash, swim     moving around (swim is one stroke of the front crawl)
+ *   coin, pickup, chest, eat, hurt, bow, dash, boing, dodge, magic, quest   everything else
  *
  * Browsers only allow sound after the player has pressed a key or clicked, so the audio starts
  * then. M turns sound on and off (remembered in the browser). Lives at game.sound.
@@ -139,5 +142,59 @@ const RECIPES = {
   },
   thump(s, t, v, p) {
     s.tone(t, { duration: 0.25, volume: 0.5 * v, frequency: 110 * p, endFrequency: 40 });
+  },
+  block(s, t, v, p) {
+    s.tone(t, { duration: 0.18, volume: 0.25 * v, type: 'triangle', frequency: 1300 * p, endFrequency: 900 * p });
+    s.noise(t, { duration: 0.05, volume: 0.3 * v, type: 'highpass', frequency: 3000 });
+  },
+  jump(s, t, v, p) {
+    s.tone(t, { duration: 0.14, volume: 0.18 * v, type: 'triangle', frequency: 260 * p, endFrequency: 520 * p });
+  },
+  land(s, t, v, p) {
+    s.noise(t, { duration: 0.08, volume: 0.25 * v, type: 'lowpass', frequency: 700 * p, endFrequency: 200 });
+    s.tone(t, { duration: 0.08, volume: 0.15 * v, frequency: 90 * p, endFrequency: 50 });
+  },
+  splash(s, t, v, p) {
+    s.noise(t, { duration: 0.45, volume: 0.4 * v, type: 'lowpass', frequency: 3000 * p, endFrequency: 300 });
+    s.noise(t + 0.03, { duration: 0.25, volume: 0.2 * v, type: 'highpass', frequency: 4000 * p });
+  },
+  swim(s, t, v, p) {
+    s.noise(t, { duration: 0.22, volume: 0.12 * v, frequency: 700 * p, endFrequency: 1400 * p, q: 0.8 });
+  },
+  coin(s, t, v, p) {
+    s.tone(t, { duration: 0.08, volume: 0.15 * v, type: 'square', frequency: 988 * p });
+    s.tone(t + 0.07, { duration: 0.22, volume: 0.15 * v, type: 'square', frequency: 1319 * p });
+  },
+  pickup(s, t, v, p) {
+    [523, 659, 784, 1047].forEach((f, i) => s.tone(t + i * 0.06, { duration: 0.12, volume: 0.15 * v, type: 'triangle', frequency: f * p }));
+  },
+  chest(s, t, v, p) {
+    s.tone(t, { duration: 0.2, volume: 0.15 * v, type: 'sawtooth', frequency: 120 * p, endFrequency: 180 * p });
+    [784, 988, 1175].forEach((f, i) => s.tone(t + 0.15 + i * 0.07, { duration: 0.18, volume: 0.13 * v, type: 'triangle', frequency: f * p }));
+  },
+  eat(s, t, v, p) {
+    for (let i = 0; i < 3; i++) s.noise(t + i * 0.09, { duration: 0.05, volume: 0.25 * v, frequency: 1800 * p, q: 2 });
+  },
+  hurt(s, t, v, p) {
+    s.tone(t, { duration: 0.22, volume: 0.22 * v, type: 'square', frequency: 330 * p, endFrequency: 150 * p });
+  },
+  bow(s, t, v, p) {
+    s.tone(t, { duration: 0.2, volume: 0.25 * v, type: 'triangle', frequency: 180 * p, endFrequency: 120 * p });
+    s.noise(t, { duration: 0.12, volume: 0.15 * v, frequency: 2500 * p, endFrequency: 800, q: 1 });
+  },
+  dash(s, t, v, p) {
+    s.noise(t, { duration: 0.25, volume: 0.25 * v, frequency: 600 * p, endFrequency: 3000 * p, q: 1 });
+  },
+  dodge(s, t, v, p) {
+    s.noise(t, { duration: 0.18, volume: 0.2 * v, frequency: 2000 * p, endFrequency: 700 * p, q: 1.2 });
+  },
+  boing(s, t, v, p) {
+    s.tone(t, { duration: 0.35, volume: 0.25 * v, frequency: 180 * p, endFrequency: 700 * p });
+  },
+  magic(s, t, v, p) {
+    [880, 1109, 1319].forEach((f, i) => s.tone(t + i * 0.05, { duration: 0.25, volume: 0.1 * v, frequency: f * p }));
+  },
+  quest(s, t, v) {
+    [523, 659, 784, 1047, 784, 1047].forEach((f, i) => s.tone(t + i * 0.09, { duration: 0.2, volume: 0.14 * v, type: 'triangle', frequency: f }));
   },
 };

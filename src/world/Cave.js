@@ -214,9 +214,7 @@ export class Cave extends Entity {
       this.inside = inside;
       // Hide the roof but keep its shadow, so the cave stays dark and cozy.
       roofMaterial.colorWrite = roofMaterial.depthWrite = !inside;
-      this.roof.userData.ignoreCamera = inside;
-      this.walls.userData.ignoreCamera = inside;
-      game.cameraMode = inside ? 'cave' : null;
+      this.roof.userData.ignoreCamera = inside; // the walls turn see-through when they're in the way
     }
 
     for (const [i, flame] of this.flames.entries()) {

@@ -44,6 +44,7 @@ export class Cellar extends Entity {
     const rng = createRng(SEED + 91);
     const stone = new VoxelBuilder();
     const b = new VoxelBuilder();
+    const earth = new VoxelBuilder(); // the dark earth around the room (see-through when it's in the way)
     const glow = new VoxelBuilder();
     const { x: X, z: Z } = this.center;
 
@@ -57,7 +58,7 @@ export class Cellar extends Entity {
         const cx = X + ix + 1;
         const cz = Z + iz + 1;
         if (Math.abs(cx - X) < HALF_X + 1 && Math.abs(cz - Z) < HALF_Z + 1) continue;
-        b.box(cx, WALL / 2 - 0.5, cz, 2, WALL + 1, 2, vary(rng.pick(['#4a3526', '#56402c', '#3f2e21']), rng, 0.05));
+        earth.box(cx, WALL / 2 - 0.5, cz, 2, WALL + 1, 2, vary(rng.pick(['#4a3526', '#56402c', '#3f2e21']), rng, 0.05));
       }
     }
     for (let ix = -HALF_X - 1; ix <= HALF_X; ix++) {
@@ -110,7 +111,17 @@ export class Cellar extends Entity {
     beam.position.set(lx, (WALL + 2) / 2, lz);
     this.object3d.add(beam);
 
-    this.object3d.add(stone.build({ material: stoneMaterial }), b.build({ material: blockMaterial }), glow.build({ material: glowMaterial, castShadow: false }));
+    // A big dark shell all around, so from the cellar you only ever see earth (it's built far
+    // out at sea). The camera sits inside it.
+    const shell = new THREE.Mesh(new THREE.BoxGeometry(90, 70, 90), new THREE.MeshBasicMaterial({ color: '#140d08', side: THREE.BackSide }));
+    shell.position.set(X, 20, Z);
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(90, 90), new THREE.MeshBasicMaterial({ color: '#1f150d' }));
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.set(X, -0.3, Z); // covers the sea under the see-through earth
+    this.object3d.add(shell, ground);
+    this.walls = stone.build({ material: stoneMaterial });
+    this.earth = earth.build({ material: blockMaterial });
+    this.object3d.add(this.walls, this.earth, b.build({ material: blockMaterial }), glow.build({ material: glowMaterial, castShadow: false }));
 
     // Warm firelight and candlelight
     const fire = new THREE.PointLight('#ff9a4a', 12, 16, 1.4);
@@ -124,6 +135,7 @@ export class Cellar extends Entity {
   onAdd(game) {
     game.lands.push(this);
     game.cellar = this;
+    game.cameraBlockers.push(this.walls, this.earth); // see-through when they're between the camera and you
     const { x: X, z: Z } = this.center;
     const back = Z - HALF_Z;
     game.colliders.push(
@@ -140,10 +152,7 @@ export class Cellar extends Entity {
     const p = player?.object3d.position;
     if (!p) return;
     const inside = Math.abs(p.x - this.center.x) < HALF_X + 2 && Math.abs(p.z - this.center.z) < HALF_Z + 2;
-    if (inside !== this.inside) {
-      this.inside = inside;
-      game.cameraMode = inside ? 'indoor' : null;
-    }
+    this.inside = inside;
     if (!inside) return;
     this.fire.intensity = 12 + Math.sin(game.elapsed * 11) * 1.5 + Math.sin(game.elapsed * 5.3) * 1;
 

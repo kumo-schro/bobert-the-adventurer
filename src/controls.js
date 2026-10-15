@@ -14,6 +14,7 @@ export const ACTIONS = [
   { id: 'bow', label: 'Shoot bow', keys: ['KeyK'] },
   { id: 'eat', label: 'Eat food', keys: ['KeyF'] },
   { id: 'interact', label: 'Talk / open / chop / mine', keys: ['KeyT'] },
+  { id: 'dodge', label: 'Dodge (Master Jackson)', keys: ['KeyX'] },
   { id: 'dash', label: 'Dash (dream ability)', keys: ['KeyL'] },
   { id: 'invisible', label: 'Turn invisible (dream ability)', keys: ['KeyI'] },
   { id: 'dreamHeal', label: 'Dream Heal (dream ability)', keys: ['KeyU'] },

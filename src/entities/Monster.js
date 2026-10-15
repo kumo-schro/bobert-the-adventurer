@@ -5,6 +5,9 @@ import { part } from '../models/character.js';
 import { SEA, BUFFS, MONSTERS } from '../config.js';
 
 const GRAVITY = 25;
+/** Magic points a monster gives when it's defeated: (its health + its damage) / 4, at least 1. */
+export const magicPoints = (monster) => Math.max(1, Math.round((monster.maxHealth + monster.damage) / 4));
+
 /** How long to wait between attacks, sped up by MONSTERS.attackSpeed (use it for every attack timer). */
 export const attackTime = (seconds) => seconds / MONSTERS.attackSpeed;
 
@@ -30,6 +33,8 @@ const NIGHT_DAMAGE = 1; // ...and hit 1 heart harder
  * Flying monsters (gargoyles) move freely in 3D and can reach you anywhere.
  * touchDamage: false for monsters that hurt you some other way (the kraken's tentacles).
  * Set `onDefeated(position)` to react when it dies.
+ *
+ * A monster with dodges(game) -> true and dodge(game, toPlayer) leaps aside instead of being hit.
  *
  * Use `chasing(toPlayer, noticeRange)` in think(): once a monster notices you it keeps
  * following until you get far away. At night monsters are faster and hit harder (`power`).
@@ -163,9 +168,12 @@ export class Monster extends Entity {
     const strike = player.strike;
     if (strike && strike.id !== this.lastSwing && player.slashReaches(this)) {
       this.lastSwing = strike.id;
-      player.swordHit?.(game, this);
-      this.hit(game, toPlayer, strike.damage);
-      if (this.health <= 0) return;
+      if (this.dodges?.(game)) this.dodge(game, toPlayer); // some masters just aren't there when the sword arrives
+      else {
+        player.swordHit?.(game, this);
+        this.hit(game, toPlayer, strike.damage);
+        if (this.health <= 0) return;
+      }
     }
 
     // Touching the player hurts them. Sea monsters only reach swimmers, land monsters only
@@ -274,6 +282,12 @@ export class Monster extends Entity {
       const coins = this.coins * (game.player.buffs?.luckyTail ? BUFFS.luckyTail.coins : 1); // Lucky Tail buff
       game.player.addCoins(coins);
       game.particles?.burst(where.clone().setY(where.y + 1), { count: coins * 3, colors: ['#ffc93c', '#ffe08a'], speed: 5, size: 0.14 });
+    }
+    // Magic points for the dream abilities: (health + damage) / 4, at least 1 (with a magic conduit).
+    if (game.player.hasConduit) {
+      game.player.addMagic(magicPoints(this));
+      game.particles?.burst(where.clone().setY(where.y + 1.2), { count: 10, colors: ['#b47dff', '#7af0ff', '#ffffff'], speed: 3, size: 0.12, gravity: -3 });
+      game.sound?.play('magic');
     }
     game.remove(this);
     this.onDefeated?.(where);

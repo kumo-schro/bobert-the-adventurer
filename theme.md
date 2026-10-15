@@ -81,7 +81,7 @@ Everything I've asked for in the game, in the order I asked for it.
 - Add more houses and villagers.
 - When you swim, you go underwater. This means all the sea monsters are underwater too.
 - Add a boat that costs 40 wood, so you can go to the jungle or explore the ocean. It's unlocked once you've been to the jungle.
-- Add a boss called the Vine. It has 50 health and arms that slam down on you like the Kraken's, doing 5 damage.
+- Add a boss called the Viniac. It has 50 health and arms that slam down on you like the Kraken's, doing 5 damage.
 - Add monsters in the jungle, like snakes.
 - Add an upgraded pickaxe and axe to the upgraded Forge, to get more wood and stone.
 - Once you defeat the Vine, the boss of the jungle, you unlock a dream dimension that gives you special quests.
@@ -91,16 +91,20 @@ Everything I've asked for in the game, in the order I asked for it.
 - Oak is very strong and does 10 damage if he hits you, but he only has 8 health.
 - Add more dream shrine abilities.
 - Add a railing to the tower.
-- Make it always an overhead view.
+- make it so where you move doesn't change the POV
 - Gargoyles can't fly through walls.
-- Increase enemy attack speed by 25%.
+- Increase enemy attack speed by 25%
+- add noise to sword slashes that hit enemies and other things as well as noise for swimming jumping etc
+- Make it so update go to the website
+-  add a character customization screen
+-  make it so has to charge up his spin attack before he uses it the first time you do not have to add this in the dialouge
+-   make it so pip sells crystal to you once you bring him the mystery crystal and then he tells you about old man and Keegan
+-  make the sky strike a thing that teaches you after he teaches you the spin move and master Jackson teaches you a technique on dodging attacks
+-   the only way to beat Master Jackson is with a spin attack the other attacks he Dodges
+-  make it so in the dream dimension you are sold a magic conduit and that gives you 100 possible magic points. to get a dream abilities like double jump and speed you have to do the quests. However, to get magic points, which you use to use, the dream abilities. you must kill monsters the amount of dream points monsters give are their health plus their attack damage divided by four with a minimum of one
 
 ## New requests
 
 Add new lines below.
 
 - Add a dream boss called Thomage. It is a powerful mage that
-- add noise to sword slashes that hit enemies and other things
-- Make it so update go to the website
--  add a character customization screen
--  make it so has to charge up his spin attack before he uses it the first time

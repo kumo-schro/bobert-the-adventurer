@@ -1,8 +1,8 @@
 // What each shop sells. Each function gets the player and returns the items for the Shop menu
 // (see ui/Shop.js for the fields). Add a new item by adding an entry to a list.
 
-import { SWORDS, FORGE, FOOD, BOW, GATHER, DREAM, BUFFS } from './config.js';
-import { BLACKSMITH, BAKER } from './story.js';
+import { SWORDS, FORGE, FOOD, BOW, GATHER, BUFFS, MAGIC, CRYSTALS, DREAM_ABILITIES } from './config.js';
+import { BLACKSMITH, BAKER, PIP_CRYSTAL } from './story.js';
 
 const U = FORGE.upgrades;
 
@@ -235,71 +235,73 @@ export const BOAT_MENU = {
   },
 };
 
-/** The dream shrine: spend dream points on special abilities. */
+/**
+ * The dream shrine (Luma): sells the magic conduit, which holds the magic points that dream
+ * abilities run on. The abilities themselves are taught by the Dream Keeper's quests; the shrine
+ * lists them so you can see which quest teaches which.
+ */
 export const DREAM_SHRINE = {
   title: '✨ Dream Shrine',
-  greeting: 'Dream points become dream powers. Choose wisely, dreamer.',
-  showDreamPoints: true,
+  greeting: 'Dream powers run on magic, dreamer. A conduit holds it, and every monster you defeat fills it up.',
+  quests: {}, // set in main.js: ability id -> the quest that teaches it
+  items(player) {
+    const list = [
+      {
+        name: 'Magic Conduit',
+        icon: '🔮',
+        description: `Holds up to ${MAGIC.max} magic points for your dream abilities (it comes with ${MAGIC.starting}). Defeat monsters to fill it up.`,
+        price: MAGIC.conduitPrice,
+        owned: player.hasConduit,
+        buy: () => {
+          player.hasConduit = true;
+          player.magic = Math.max(player.magic, MAGIC.starting);
+        },
+        bought: 'Feel it hum? Every monster you defeat now gives you magic. Bigger monsters give more!',
+      },
+    ];
+    Object.entries(DREAM_ABILITIES).forEach(([id, a], i) => {
+      const quest = this.quests[id];
+      list.push({
+        section: i === 0 ? 'Dream abilities (the Dream Keeper teaches them)' : undefined,
+        name: a.name,
+        icon: a.icon,
+        description: `${a.how[0].toUpperCase()}${a.how.slice(1)}. Uses ${MAGIC.cost[id]} magic${id === 'speedBoots' ? ' a second while you move' : ''}.`,
+        price: 0,
+        owned: player[a.flag],
+        locked: player[a.flag] ? null : 'Quest',
+        lockedMessage: `The Dream Keeper teaches this one. Do her quest "${quest?.title ?? '?'}".`,
+        buy: () => {},
+      });
+    });
+    return list;
+  },
+};
+
+/** Pip's crystals (once you've shown Pip the mystery crystal). */
+export const PIP_SHOP = {
+  title: PIP_CRYSTAL.shop.title,
+  greeting: PIP_CRYSTAL.shop.greeting,
   items: (player) => [
     {
-      name: 'Dash',
-      icon: '💨',
-      description: `Press L to dash forward in a flash (you can't be hurt mid-dash).`,
-      price: DREAM.dashCost,
-      currency: 'dreamPoints',
-      owned: player.hasDash,
-      buy: () => (player.hasDash = true),
-      bought: 'The wind is yours now. Press L to dash!',
+      name: 'Heart Crystal',
+      icon: '💗',
+      description: `One more health, for good! (You have ${player.heartCrystals}/${CRYSTALS.heart.most}.)`,
+      price: CRYSTALS.heart.price,
+      owned: player.heartCrystals >= CRYSTALS.heart.most,
+      buy: () => player.addHeartCrystal(),
+      bought: 'It glows right into you! You feel tougher already.',
     },
     {
-      name: 'Invisibility',
-      icon: '👻',
-      description: `Press I to turn invisible for ${DREAM.invisibleTime} seconds: monsters can't see you or hurt you.`,
-      price: DREAM.invisibleCost,
-      currency: 'dreamPoints',
-      owned: player.hasInvisibility,
-      buy: () => (player.hasInvisibility = true),
-      bought: 'Now you see yourself... now you don\'t! Press I to turn invisible.',
-    },
-    {
-      name: 'Double Jump',
-      icon: '🦘',
-      description: 'Press Space again in mid-air to jump a second time.',
-      price: DREAM.doubleJumpCost,
-      currency: 'dreamPoints',
-      owned: player.hasDoubleJump,
-      buy: () => (player.hasDoubleJump = true),
-      bought: 'Up, and up again! Try jumping twice.',
-    },
-    {
-      name: 'Speed Boots',
-      icon: '👟',
-      description: 'Run and swim much faster, all the time.',
-      price: DREAM.speedBootsCost,
-      currency: 'dreamPoints',
-      owned: player.hasSpeedBoots,
-      buy: () => (player.hasSpeedBoots = true),
-      bought: 'Zoom! Your feet feel as light as a dream.',
-    },
-    {
-      name: 'Dream Heal',
-      icon: '🌈',
-      description: `Press U to heal all the way, about once every ${DREAM.healCooldown} seconds.`,
-      price: DREAM.healCost,
-      currency: 'dreamPoints',
-      owned: player.hasDreamHeal,
-      buy: () => (player.hasDreamHeal = true),
-      bought: 'When you are hurt, press U and the dream will make you better.',
-    },
-    {
-      name: 'Star Shield',
-      icon: '🔮',
-      description: `Press O for a glowing bubble that blocks the next ${DREAM.starShieldHits} hits.`,
-      price: DREAM.starShieldCost,
-      currency: 'dreamPoints',
-      owned: player.hasStarShield,
-      buy: () => (player.hasStarShield = true),
-      bought: 'A shield made of starlight! Press O to use it.',
+      name: 'Magic Crystal',
+      icon: '💎',
+      description: `Fills up ${CRYSTALS.magic.points} magic points for your dream abilities.`,
+      price: CRYSTALS.magic.price,
+      locked: !player.hasConduit ? 'Needs a conduit' : player.magic >= MAGIC.max ? 'Magic full' : null,
+      lockedMessage: !player.hasConduit
+        ? 'Ooh, this one is magic! You need a magic conduit to hold it. They say they sell them in the dream dimension...'
+        : 'Your magic is already full!',
+      buy: () => player.addMagic(CRYSTALS.magic.points),
+      bought: 'Zing! Magic, right into your conduit.',
     },
   ],
 };

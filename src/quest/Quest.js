@@ -1,4 +1,5 @@
 import { QUEST_LOCKED, COME_BACK_LATER } from '../story.js';
+import { DREAM_ABILITIES } from '../config.js';
 
 /**
  * Base class for quests. A quest belongs to an Npc (its `giver`) and moves through stages:
@@ -22,9 +23,9 @@ import { QUEST_LOCKED, COME_BACK_LATER } from '../story.js';
  * active quest back to 'offer' instead.
  */
 export class Quest {
-  constructor(game, { id, title, text, reward = 0, dreamPoints = 0, seekDistance = 0, requires = null, after = null, delay = 0 }) {
+  constructor(game, { id, title, text, reward = 0, abilities = [], seekDistance = 0, requires = null, after = null, delay = 0 }) {
     this.game = game;
-    this.dreamPoints = dreamPoints; // a reward in dream points (dream dimension quests)
+    this.abilities = abilities; // dream abilities it teaches (ids from DREAM_ABILITIES)
     this.requires = requires;
     this.after = after;
     this.delay = delay;
@@ -101,6 +102,7 @@ export class Quest {
     const { game } = this;
     this.stage = 'complete';
     this.completedAt = game.elapsed;
+    game.sound?.play('quest');
     if (this.reward) {
       game.player.addCoins(this.reward);
       game.questLog.toast(`Quest complete! +${this.reward} gold coins`);
@@ -112,13 +114,16 @@ export class Quest {
         life: 1.4,
       });
     }
-    if (this.dreamPoints) {
-      game.player.dreamPoints += this.dreamPoints;
-      game.questLog.toast(`Quest complete! +${this.dreamPoints} dream points ✨`);
+    for (const id of this.abilities) {
+      const a = DREAM_ABILITIES[id];
+      game.questLog.toast(`You learned ${a.icon} ${a.name}: ${a.how}! (It uses magic points.)`, 5);
     }
     game.questLog.complete(this.id);
     this.onFinish();
   }
 
-  onFinish() {}
+  /** What finishing changes for good. It runs again when a saved game is loaded, so no rewards here. */
+  onFinish() {
+    for (const id of this.abilities) this.game.player[DREAM_ABILITIES[id].flag] = true;
+  }
 }

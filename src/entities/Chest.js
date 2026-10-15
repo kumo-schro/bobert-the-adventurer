@@ -32,6 +32,7 @@ export class Chest extends Entity {
 
   open(game) {
     this.opened = true;
+    game.sound?.play('chest');
     const top = this.object3d.position.clone().setY(1);
     game.particles?.burst(top, { count: 30, colors: ['#ffc93c', '#ffe08a', '#f0a500'], speed: 6, size: 0.16, life: 1.2 });
     if (this.coins) {

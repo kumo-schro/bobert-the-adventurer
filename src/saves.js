@@ -75,8 +75,8 @@ export function applyPendingLoad(game) {
 // ---- What goes into a save ----
 
 const PLAYER_FIELDS = [
-  'coins', 'health', 'tempHealth', 'arrows', 'wood', 'stone', 'food', 'dreamPoints', 'buffs',
-  'knowsSpin', 'knowsSkyStrike', 'hasDash', 'hasInvisibility', 'hasDoubleJump', 'hasSpeedBoots',
+  'coins', 'health', 'tempHealth', 'arrows', 'wood', 'stone', 'food', 'buffs', 'heartCrystals',
+  'hasConduit', 'magic', 'knowsSpin', 'knowsSkyStrike', 'knowsDodge', 'hasDash', 'hasInvisibility', 'hasDoubleJump', 'hasSpeedBoots',
   'hasDreamHeal', 'hasStarShield', 'hasCrystal', 'hasKey', 'visitedJungle', 'canSwimFromBeach',
 ];
 
@@ -116,6 +116,7 @@ function collect(game) {
     world: {
       time: game.dayNight.time,
       forgeBuilt: FORGE_SHOP.forgeBuilt,
+      pipCrystalShown: !!game.pip?.crystalShown,
       ovenUpgraded: BAKERY_SHOP.ovenUpgraded,
       boatBuilt: !!game.boat?.built,
       trapdoorOpen: !!game.quests.crystal.trapdoor.open,
@@ -162,6 +163,7 @@ function applyPlayer(game, saved) {
   if (saved.pickaxeTier >= 0) p.giveTool('pickaxe');
   if (saved.pickaxeTier >= 1) p.upgradeTool('pickaxe');
   if (saved.armor) p.giveArmor();
+  p.maxHealth += saved.heartCrystals ?? 0; // Pip's heart crystals
   for (const f of PLAYER_FIELDS) if (saved[f] !== undefined) p[f] = saved[f];
   if (saved.look) game.customizer?.wear(saved.look);
 }
@@ -199,6 +201,10 @@ function applyWorld(game, world) {
   if (world.caveUnlocked && game.charibdisCave.locked) game.charibdisCave.unlock(game);
   const chests = worldChests(game);
   for (const i of world.chests) if (chests[i]) chests[i].opened = true;
+  if (world.pipCrystalShown && game.pip) {
+    game.pip.crystalShown = true;
+    if (game.quests.crystal.stage === 'complete') game.quests.crystal.pointToTrapdoor();
+  }
   // The trapdoor's quest-log line is done once you've met Old Man Keegan.
   if (game.quests.keegan.stage !== 'offer') game.questLog.complete('trapdoor');
 }

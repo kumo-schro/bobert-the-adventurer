@@ -8,7 +8,7 @@ npm run dev      # http://localhost:5173
 npm run build    # production build into dist/
 ```
 
-**Controls** (change any of them in-game by pressing **Ctrl** or **Command**): WASD / arrow keys move (and swim), Space jumps, Shift runs, **Return** (or left click) swings your sword in a wide sideways slash, hold **J** to block with a shield, **K** shoots the bow (hold it to charge the power bow), **F** eats food, **T** talks / opens / shops / chops / mines / boards the boat, swing in mid-air to **Sky Strike** (once Master Jackson teaches you), **L** dash, **I** invisible, **U** dream heal and **O** star shield (dream powers), **/** suggests a change, **P** customizes how Bobert looks, **M** turns sound on and off, **Esc** opens saved games, **`** opens the debug menu, Enter/Space/click advances dialog. Camera: drag with the left or right mouse button, **Q/E** turn, **R/G** tilt, **C** swings round behind you, scroll or **-/=** zoom. Press **Option** (**Alt** on Windows) to show or hide the quest panel and the controls list.
+**Controls** (change any of them in-game by pressing **Ctrl** or **Command**): WASD / arrow keys move (and swim), Space jumps, Shift runs, **Return** (or left click) swings your sword in a wide sideways slash, hold **J** to block with a shield, **K** shoots the bow (hold it to charge the power bow), **F** eats food, **T** talks / opens / shops / chops / mines / boards the boat, swing in mid-air to **Sky Strike** (once Master Oak teaches you), **X** dodges (once Master Jackson teaches you), **L** dash, **I** invisible, **U** dream heal and **O** star shield (dream powers, which use magic points), **/** suggests a change, **P** customizes how Bobert looks, **M** turns sound on and off, **Esc** opens saved games, **`** opens the debug menu, Enter/Space/click advances dialog. Camera: drag with the left or right mouse button, **Q/E** turn, **R/G** tilt, **C** swings round behind you, scroll or **-/=** zoom. Where you go never moves the camera by itself: walls, houses and cave rock in the way turn see-through instead. Press **Option** (**Alt** on Windows) to show or hide the quest panel and the controls list.
 
 **The story** is in [`story.md`](story.md): a short outline, chapter by chapter. Edit it (add details, change what happens, add chapters) and ask Claude to "update the game from story.md". Feature requests can also go in `theme.md`, one line each.
 
@@ -116,7 +116,7 @@ Useful things on `game` inside `onAdd(game)` / `update(dt, game)`:
 | `game.reservedAreas` | Push `{ x, z, radius }` to keep trees and flowers from spawning there |
 | `game.dialog` | `show(name, pages, { focus, onClose })`, `offerInteraction(text, distance, action)` |
 | `game.questLog` | `set(id, { title, objective, target })`, `complete(id)`, `toast(text)` |
-| `game.cameraBlockers` | Push meshes the camera should zoom in front of instead of clipping through |
+| `game.cameraBlockers` | Push meshes that should turn see-through when they're between the camera and the player |
 | `game.add(e)` / `game.remove(e)` | Spawn and despawn entities at any time |
 
 Other easy changes:

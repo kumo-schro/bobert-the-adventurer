@@ -5,19 +5,15 @@ import { CAMERA } from '../config.js';
 const _dir = new THREE.Vector3();
 
 const CONVERSATION_DISTANCE = 7;
-const UNDERWATER_DISTANCE = 12;
-// Inside caves (and Keegan's cellar) the camera looks down from above (the roof is cut away).
-const MODES = {
-  cave: { minPitch: 1.05, maxDistance: 11 },
-  indoor: { minPitch: 0.95, maxDistance: 9 },
-};
+const SEE_THROUGH = 0.25; // how see-through a wall gets when it's between the camera and the player
 
 /**
- * Overhead camera that follows a target entity, always looking down from above. Drag (left or
- * right mouse) to orbit, scroll or -/= to zoom, Q/E to turn, R/G to tilt (but never down low),
- * and C to swing round behind the player.
- * While a dialog with a `focus` entity is open, it swings round to show both characters side-on.
- * When game.cameraMode is 'cave' or 'indoor' it tilts down to look in from above.
+ * Third-person orbit camera that follows a target entity. Drag (left or right mouse) to orbit,
+ * scroll or -/= to zoom, Q/E to turn, R/G to tilt, and C to swing round behind the player.
+ * Where you go never changes the view by itself: walls, houses and the tower that get between
+ * the camera and the player turn see-through instead of the camera moving.
+ * While a dialog with a `focus` entity is open, it swings round to show both characters side-on,
+ * and while the customization screen is open it shows the player from the front.
  */
 export class CameraRig extends Entity {
   constructor(target, { yaw = CAMERA.yaw, pitch = CAMERA.pitch, distance = CAMERA.distance } = {}) {
@@ -30,6 +26,7 @@ export class CameraRig extends Entity {
     this.tilt = pitch; // smoothed pitch actually used
     this.focus = new THREE.Vector3();
     this.raycaster = new THREE.Raycaster();
+    this.faded = new Map(); // wall mesh -> { opacity, material it had before }
   }
 
   onAdd(game) {
@@ -75,13 +72,6 @@ export class CameraRig extends Entity {
     let fz = t.z;
     let wantedZoom = this.distance;
     let wantedTilt = this.pitch;
-    const mode = MODES[game.cameraMode];
-    if (mode) {
-      wantedZoom = Math.min(wantedZoom, mode.maxDistance);
-      wantedTilt = Math.max(wantedTilt, mode.minPitch);
-    }
-    // Swimming: look down through the water from a little closer in.
-    if (this.target.swimming) wantedZoom = Math.min(wantedZoom, UNDERWATER_DISTANCE);
 
     const speaker = game.dialog?.isOpen ? game.dialog.focus : null;
     if (speaker) {
@@ -121,15 +111,8 @@ export class CameraRig extends Entity {
       Math.cos(this.yaw) * Math.cos(this.tilt),
     );
 
-    // Pull the camera in if something (like a tree) is between it and the player.
-    let distance = this.zoom;
-    const blockers = game.cameraBlockers.filter((m) => !m.userData.ignoreCamera);
-    if (blockers.length) {
-      this.raycaster.set(this.focus, _dir);
-      this.raycaster.far = distance;
-      const hit = this.raycaster.intersectObjects(blockers, false)[0];
-      if (hit) distance = Math.max(1.5, hit.distance - 0.4);
-    }
+    const distance = this.zoom;
+    this.seeThrough(dt, game, distance);
 
     camera.position.copy(this.focus).addScaledVector(_dir, distance);
     camera.lookAt(this.focus);
@@ -138,6 +121,32 @@ export class CameraRig extends Entity {
       camera.position.x += (Math.random() - 0.5) * s;
       camera.position.y += (Math.random() - 0.5) * s;
       this.shakeAmount *= Math.exp(-14 * dt);
+    }
+  }
+
+  /** Fade out any wall between the camera and the player, and fade walls back in once they're clear. */
+  seeThrough(dt, game, distance) {
+    const blockers = game.cameraBlockers.filter((m) => !m.userData.ignoreCamera);
+    this.raycaster.set(this.focus, _dir);
+    this.raycaster.far = distance;
+    const blocking = new Set(this.raycaster.intersectObjects(blockers, false).map((hit) => hit.object));
+    for (const mesh of blocking) {
+      if (this.faded.has(mesh)) continue;
+      // Its own copy of the material, so other things that share it don't fade too.
+      this.faded.set(mesh, { opacity: 1, original: mesh.material });
+      mesh.material = mesh.material.clone();
+      mesh.material.transparent = true;
+    }
+    const k = dt === 0 ? 1 : 1 - Math.exp(-8 * dt);
+    for (const [mesh, fade] of this.faded) {
+      fade.opacity += ((blocking.has(mesh) ? SEE_THROUGH : 1) - fade.opacity) * k;
+      mesh.material.opacity = fade.opacity;
+      mesh.material.depthWrite = fade.opacity > 0.9;
+      if (!blocking.has(mesh) && fade.opacity > 0.99) {
+        mesh.material.dispose();
+        mesh.material = fade.original;
+        this.faded.delete(mesh);
+      }
     }
   }
 }

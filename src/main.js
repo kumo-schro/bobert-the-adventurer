@@ -60,12 +60,13 @@ import {
   CloudHopQuest,
   FindJacksonQuest,
   SkyStrikeQuest,
+  JacksonDuelQuest,
 } from './quest/sideQuests.js';
 import { createShell } from './models/gear.js';
 import { LOOKS } from './models/people.js';
 import { createGecko } from './models/critters.js';
-import { SIDE_QUESTS, BLACKSMITH, BAKER, VILLAGER_CHATTER } from './story.js';
-import { FORGE_SHOP, BAKERY_SHOP, BOAT_MENU, DREAM_SHRINE, BARRETT_SHOP } from './shops.js';
+import { SIDE_QUESTS, BLACKSMITH, BAKER, VILLAGER_CHATTER, PIP_CRYSTAL } from './story.js';
+import { FORGE_SHOP, BAKERY_SHOP, BOAT_MENU, DREAM_SHRINE, BARRETT_SHOP, PIP_SHOP } from './shops.js';
 import { VILLAGE, SEA, PLACES, DREAM, JACKSON } from './config.js';
 
 const game = new Game(document.getElementById('app'));
@@ -100,7 +101,7 @@ const charibdisCave = game.add(new CharibdisCave());
 const jungle = game.add(new Jungle());
 game.add(new DreamPortal(jungle.portalSpot)); // opens once the Vine is beaten
 const dream = game.add(new DreamWorld());
-dream.addWanderingWisps(game, (spot) => new Wisp(spot), { dreamPoints: DREAM.wispDreamPoints, respawnSeconds: DREAM.wispRespawn });
+dream.addWanderingWisps(game, (spot) => new Wisp(spot), { respawnSeconds: DREAM.wispRespawn });
 
 // Living things. The player spawns in the middle of the village plaza.
 game.add(new Particles());
@@ -116,6 +117,7 @@ const bakeryShop = new Shop(BAKERY_SHOP);
 const boatMenu = new Shop(BOAT_MENU);
 const dreamShrine = new Shop(DREAM_SHRINE);
 const barrettShop = new Shop(BARRETT_SHOP);
+const pipShop = new Shop(PIP_SHOP);
 BARRETT_SHOP.game = game;
 BOAT_MENU.game = game;
 game.add(new Boat(dock, boatMenu)); // built at the end of the dock once you've been to the jungle
@@ -214,10 +216,12 @@ game.add(
   }),
 );
 
-// Master Oak, in his jungle clearing: beat him to learn the spin attack, then take on the Vine.
-// After that he sends you to find his old friend Master Jackson, who teaches the Sky Strike.
+// Master Oak, in his jungle clearing: beat him to learn the spin attack, then he teaches the Sky
+// Strike, then you take on the Viniac. After that he sends you to find his old friend Master
+// Jackson, who dodges everything but a spin attack, and teaches you to dodge.
 const oakDuel = new OakDuelQuest(game);
-const vineQuest = new VineQuest(game, { jungle, after: oakDuel });
+const skyStrike = new SkyStrikeQuest(game, { place: jungle.oakSpot, after: oakDuel });
+const vineQuest = new VineQuest(game, { jungle, after: skyStrike });
 const findJackson = new FindJacksonQuest(game, { after: vineQuest });
 game.add(
   new Npc({
@@ -225,17 +229,17 @@ game.add(
     look: LOOKS.oak,
     position: jungle.oakSpot,
     facing: Math.PI / 2,
-    quests: [oakDuel, vineQuest, findJackson],
+    quests: [oakDuel, skyStrike, vineQuest, findJackson],
   }),
 );
-const skyStrike = new SkyStrikeQuest(game, { island: JACKSON.island, requires: () => findJackson.stage === 'complete' });
+const jacksonDuel = new JacksonDuelQuest(game, { requires: () => findJackson.stage === 'complete' });
 findJackson.jackson = game.add(
   new Npc({
     name: 'Master Jackson',
     look: LOOKS.jackson,
     position: JACKSON.island,
     facing: -Math.PI / 2,
-    quests: [skyStrike],
+    quests: [jacksonDuel],
     onTalk: () => findJackson.found(), // Oak sent you to find him: found him!
   }),
 );
@@ -252,16 +256,19 @@ game.add(
   }),
 );
 
-// The dream dimension: the Dream Keeper's quests earn dream points; Luma's shrine turns them into powers.
+// The dream dimension: each of the Dream Keeper's quests teaches two dream abilities. Luma's shrine
+// sells the magic conduit they run on (defeating monsters fills it with magic).
 const starsQuest = new DreamStarsQuest(game, { dream });
 const wispsQuest = new DreamWispsQuest(game, { dream, makeWisp: (spot) => new Wisp(spot), after: starsQuest });
+const hopQuest = new CloudHopQuest(game, { dream, after: wispsQuest });
+for (const q of [starsQuest, wispsQuest, hopQuest]) for (const id of q.abilities) DREAM_SHRINE.quests[id] = q;
 game.add(
   new Npc({
     name: 'Dream Keeper',
     look: LOOKS.dreamKeeper,
     position: dream.keeperSpot,
     facing: Math.PI,
-    quests: [starsQuest, wispsQuest, new CloudHopQuest(game, { dream, after: wispsQuest })],
+    quests: [starsQuest, wispsQuest, hopQuest],
   }),
 );
 game.add(
@@ -326,6 +333,25 @@ const villagers = [
 villagers.forEach((v, i) => {
   game.add(new Npc({ ...v, position: { x: v.at[0], z: v.at[1] }, wander: strolling, home: houses[i].door }));
 });
+// Pip collects crystals. Show him the mystery crystal and he tells you about Old Man Keegan, then
+// sells you crystals from his collection (after that, his shop opens unless he has a quest to talk about).
+const pip = game.entities.find((e) => e.name === SIDE_QUESTS.gems.giver);
+game.pip = pip;
+crystalQuest.pip = pip;
+pip.onInteract = (g) => {
+  if (!g.player.hasCrystal) return false; // just his quests until then
+  if (!pip.crystalShown) {
+    pip.say(g, PIP_CRYSTAL.first, () => {
+      pip.crystalShown = true;
+      crystalQuest.pointToTrapdoor();
+      pipShop.open();
+    });
+    return true;
+  }
+  if (pip.quest?.marker) return false; // a quest to give or hand in comes first
+  pipShop.open();
+  return true;
+};
 // More villagers, living in the outer ring of houses.
 const neighbours = [
   { name: 'Rosa', look: LOOKS.gardener },
@@ -349,6 +375,7 @@ game.add(bakeryShop);
 game.add(boatMenu);
 game.add(dreamShrine);
 game.add(barrettShop);
+game.add(pipShop);
 game.add(new QuestLog());
 game.add(new StatusBar());
 game.add(new ControlsMenu());
@@ -367,6 +394,7 @@ game.quests.oak = oakDuel;
 game.quests.vine = vineQuest;
 game.quests.findJackson = findJackson;
 game.quests.skyStrike = skyStrike;
+game.quests.jacksonDuel = jacksonDuel;
 game.quests.stars = starsQuest;
 
 // Opened with ?checkpoint=... (from the debug menu)? Jump to that point in the story.

@@ -27,6 +27,7 @@ These apply to every monster unless a monster below says otherwise.
 | Speed at night | ×1.2 | `Monster.js`, `NIGHT_SPEED` |
 | Extra damage at night | +1 | `Monster.js`, `NIGHT_DAMAGE` |
 | Attack speed | ×1.25 | `config.js`, `MONSTERS.attackSpeed` |
+| Magic points when defeated (with a magic conduit) | (health + damage) / 4, at least 1 | `Monster.js`, `magicPoints()` |
 
 Notes:
 
@@ -308,7 +309,7 @@ Notes:
 
 -
 
-### The Vine (jungle boss)
+### The Viniac (jungle boss)
 
 `src/entities/JungleMonsters.js`, `Vine`. It's rooted in place and slams its arms down where you are.
 
@@ -322,6 +323,26 @@ Notes:
 | Warning before a slam | 1.3 s | `timer: 1.3` |
 | Time between slams | 1.3 s | `attackTime(1.6)` |
 | Most slams at once | 2 | `this.slams.length < 2` |
+
+Notes:
+
+-
+
+### Master Jackson (in the duel)
+
+`src/entities/JacksonFighter.js`. He dodges every sword swing, arrow and Sky Strike; only a spin attack hits him. He doesn't flinch.
+
+| Stat | Value | Code |
+| --- | --- | --- |
+| Health | 6 | `config.js`, `JACKSON.health` |
+| Jab damage | 2 | `config.js`, `JACKSON.damage` |
+| Coins | 60 (from the quest) | `config.js`, `JACKSON.reward` |
+| Circles you at | 2.8 | `CIRCLE_DISTANCE` |
+| Circling speed | 2.4 | `CIRCLE_SPEED` |
+| Warning before a jab | 0.45 s | `WINDUP` |
+| Jab reach | 1.5 | `JAB_REACH` |
+| Rests after a jab for | 0.5 s | `RECOVER` |
+| Dodge leap speed | 9 | `DODGE_SPEED` |
 
 Notes:
 

@@ -31,14 +31,14 @@ export const DAY = {
   startAt: 0.05, // where in the day the game starts (0 = sunrise, 0.5 = sunset)
 };
 
-// The camera always looks down from overhead: you can turn it and zoom, and tilt it between
-// minPitch and maxPitch (radians above the horizon; 1.57 is straight down).
+// The camera: you can turn it, zoom and tilt it between minPitch and maxPitch (radians above the
+// horizon). Where you go never changes it by itself.
 export const CAMERA = {
   yaw: 0.9, // starting angle around the player (radians)
-  pitch: 1.0,
-  minPitch: 0.85,
-  maxPitch: 1.4,
-  distance: 16,
+  pitch: 0.35,
+  minPitch: 0.05,
+  maxPitch: 1.35,
+  distance: 13,
 };
 
 export const VILLAGE = {
@@ -205,35 +205,78 @@ export const GRAYSON = {
   awaySeconds: 60,
 };
 
-// Master Jackson, Oak's old friend, and the Sky Strike he teaches.
-export const JACKSON = {
-  island: { x: 190, z: -80 }, // he trains on this little island
-  posts: 3, // training posts to smash with a Sky Strike
-  skyStrikeDamage: 3,
-  skyStrikeRadius: 3.5,
-  skyStrikeSpeed: 32, // how fast you dive down
+// The Sky Strike: Master Oak teaches it after the spin attack (jump, then swing in mid-air).
+export const SKY_STRIKE = {
+  posts: 3, // training posts to smash with it in Oak's clearing
+  damage: 3,
+  radius: 3.5,
+  speed: 32, // how fast you dive down
 };
 
-// Dream abilities, bought at the dream shrine with dream points.
+// Master Jackson, Oak's old friend: he dodges every attack except a spin attack. Beat him in a
+// duel and he teaches you to dodge.
+export const JACKSON = {
+  island: { x: 190, z: -80 }, // he trains on this little island
+  health: 6, // spin attacks it takes to beat him (each spin does at least 2)
+  damage: 2, // his quick jabs
+  reward: 60,
+};
+
+// Dodging (Master Jackson teaches it): press X to leap out of the way. Nothing can hurt you mid-leap.
+export const DODGE = {
+  speed: 13,
+  time: 0.28, // seconds of leaping
+  cooldown: 0.7,
+};
+
+// The dream dimension. Each Dream Keeper quest teaches two dream abilities. Using them takes magic
+// points (see MAGIC). These are the abilities' own settings.
 export const DREAM = {
-  dashCost: 4,
-  invisibleCost: 4,
-  doubleJumpCost: 3,
-  speedBootsCost: 3,
-  healCost: 4,
-  starShieldCost: 5,
   speedBoost: 1.35, // Speed Boots: run and swim this much faster
   healCooldown: 60, // Dream Heal: seconds before you can heal again
   starShieldHits: 3, // Star Shield: blocks this many hits...
   starShieldTime: 12, // ...or until this many seconds pass
   starShieldCooldown: 30,
-  wispDreamPoints: 1, // each wandering wisp you pop in the dream gives this many dream points
-  wispRespawn: 25, // seconds before a popped wisp floats back
+  wispRespawn: 25, // seconds before a popped wandering wisp floats back
   dashSpeed: 24,
   dashTime: 0.22, // seconds of dashing
   dashCooldown: 1.2,
   invisibleTime: 6, // seconds you stay invisible...
   invisibleCooldown: 18, // ...and how long before you can do it again
+};
+
+// The dream abilities. Each one is taught by a Dream Keeper quest (see sideQuests.js), and using
+// it costs magic points (MAGIC.cost has the same names).
+export const DREAM_ABILITIES = {
+  doubleJump: { flag: 'hasDoubleJump', name: 'Double Jump', icon: '🦘', how: 'press Space again in mid-air to jump a second time' },
+  speedBoots: { flag: 'hasSpeedBoots', name: 'Speed Boots', icon: '👟', how: 'run and swim much faster' },
+  dash: { flag: 'hasDash', name: 'Dash', icon: '💨', how: 'press L to dash forward in a flash' },
+  invisible: { flag: 'hasInvisibility', name: 'Invisibility', icon: '👻', how: "press I to turn invisible, so monsters can't see you" },
+  dreamHeal: { flag: 'hasDreamHeal', name: 'Dream Heal', icon: '🌈', how: 'press U to heal all the way' },
+  starShield: { flag: 'hasStarShield', name: 'Star Shield', icon: '🔮', how: 'press O for a starlight bubble that blocks the next 3 hits' },
+};
+
+// Magic points power the dream abilities. You need a magic conduit (Luma sells it at the dream
+// shrine) to hold them. Defeating a monster gives (its health + its damage) / 4 magic points,
+// at least 1.
+export const MAGIC = {
+  conduitPrice: 60, // coins
+  max: 100,
+  starting: 20, // magic points a new conduit comes with
+  cost: {
+    dash: 5,
+    invisible: 20,
+    doubleJump: 3,
+    speedBoots: 1, // per second while you're moving
+    dreamHeal: 25,
+    starShield: 20,
+  },
+};
+
+// Pip's crystal shop (it opens once you show Pip the mystery crystal).
+export const CRYSTALS = {
+  heart: { price: 80, most: 2 }, // +1 max health each, up to `most` of them
+  magic: { price: 15, points: 30 }, // fills up 30 magic points (needs a magic conduit)
 };
 
 // The sailboat: unlocked once you've been to the jungle, built at the dock.

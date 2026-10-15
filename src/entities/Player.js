@@ -6,7 +6,7 @@ import { createSword, createShield, createBow, addArmor, createAxe, createPickax
 import { Arrow } from './Arrow.js';
 import { SwordTrail } from './SwordTrail.js';
 import { MOVES, poseAt } from './swordMoves.js';
-import { PLAYER, SWORDS, FORGE, FOOD, BOW, SEA, DREAM, BUFFS, JACKSON } from '../config.js';
+import { PLAYER, SWORDS, FORGE, FOOD, BOW, SEA, DREAM, BUFFS, SKY_STRIKE, DODGE, MAGIC } from '../config.js';
 
 const WALK_SPEED = 6;
 const RUN_SPEED = 11;
@@ -85,9 +85,14 @@ export class Player extends Entity {
     this.health = this.maxHealth;
     this.tempHealth = 0;
     this.coins = 0;
-    this.dreamPoints = 0;
+    this.heartCrystals = 0; // from Pip's crystal shop: +1 max health each
+    this.hasConduit = false; // the magic conduit (from the dream shrine) holds magic points...
+    this.magic = 0; // ...which you get by defeating monsters, and spend on dream abilities
     this.buffs = {}; // buff id (see BUFFS) -> seconds left
-    this.knowsSkyStrike = false; // Master Jackson teaches it: swing in mid-air to dive and slam
+    this.knowsSkyStrike = false; // Master Oak teaches it: swing in mid-air to dive and slam
+    this.knowsDodge = false; // Master Jackson teaches it: leap out of the way
+    this.dodgeTimer = 0;
+    this.dodgeCooldown = 0;
     this.skyStriking = false;
     this.hasDash = false; // dream abilities
     this.hasInvisibility = false;
@@ -140,6 +145,7 @@ export class Player extends Entity {
 
   onAdd(game) {
     game.player = this;
+    this.game = game;
     this.trail = game.add(new SwordTrail());
   }
 
@@ -204,8 +210,37 @@ export class Player extends Entity {
     return (dx * Math.sin(facing) + dz * Math.cos(facing)) / dist > SLASH_ARC;
   }
 
+  /** A heart crystal from Pip: one more health to your max. */
+  addHeartCrystal() {
+    this.heartCrystals++;
+    this.maxHealth++;
+    this.health = Math.min(this.maxHealth, this.health + 1);
+  }
+
+  /** Magic points (only if you have a magic conduit to hold them). */
+  addMagic(amount) {
+    if (!this.hasConduit) return;
+    this.magic = Math.min(MAGIC.max, this.magic + amount);
+  }
+
+  /** Spend magic points on a dream ability; says why not if you can't. */
+  useMagic(game, ability) {
+    const cost = MAGIC.cost[ability];
+    if (!this.hasConduit) {
+      game.questLog?.toast('You need a magic conduit to use dream abilities. Luma sells one at the dream shrine.');
+      return false;
+    }
+    if (this.magic < cost) {
+      game.questLog?.toast(`Not enough magic (that takes ${cost}). Defeat monsters to get more!`);
+      return false;
+    }
+    this.magic -= cost;
+    return true;
+  }
+
   addCoins(amount) {
     this.coins += amount;
+    if (amount > 0) this.game?.sound?.play('coin');
   }
 
   // ---- Gear from the shops ----
@@ -349,6 +384,7 @@ export class Player extends Entity {
       this.invulnerable = 0.5;
       game.particles?.burst(this.object3d.position.clone().setY(this.object3d.position.y + 1), { count: 18, colors: ['#ffe66b', '#ffffff'], speed: 5, size: 0.12, life: 0.5 });
       if (this.starShieldHits === 0) this.endStarShield(game);
+      game.sound?.play('block');
       return 'blocked';
     }
     const pos = this.object3d.position;
@@ -368,6 +404,7 @@ export class Player extends Entity {
         size: 0.1,
         life: 0.4,
       });
+      game.sound?.play('block');
       return 'blocked';
     }
 
@@ -380,6 +417,7 @@ export class Player extends Entity {
     this.sinceHurt = 0;
     this.knockback(dx, dz, 9);
     game.statusBar?.hurt();
+    game.sound?.play('hurt');
     if (this.health === 0) this.knockOut(game);
     return 'hurt';
   }
@@ -486,13 +524,15 @@ export class Player extends Entity {
     }
     let speed = fast ? RUN_SPEED : WALK_SPEED;
     if (this.swimming) speed = fast ? SWIM_FAST : SWIM_SPEED;
-    if (this.hasSpeedBoots) speed *= DREAM.speedBoost;
+    // Speed Boots use up a little magic while you're on the move.
+    this.speedBootsOn = this.hasSpeedBoots && this.magic > 0 && _move.lengthSq() > 0;
+    if (this.speedBootsOn) speed *= DREAM.speedBoost;
     else if (this.shielding) speed = this.shieldTier >= 1 ? WALK_SPEED : SHIELD_SPEED;
     if (this.drawing) speed = Math.min(speed, SHIELD_SPEED); // steady while aiming
     if (this.swimming && this.buffs.fastFins) speed *= BUFFS.fastFins.swim;
     if (!this.swimming && this.buffs.quickFeet) speed *= BUFFS.quickFeet.speed;
     this.updateAbilities(dt, game, controls);
-    if (this.stunTimer === 0 && this.dashTimer === 0) {
+    if (this.stunTimer === 0 && this.dashTimer === 0 && this.dodgeTimer === 0) {
       const grip = this.swimming ? 5 : this.onGround ? 14 : 4;
       const accel = 1 - Math.exp(-grip * dt);
       this.velocity.x += (_move.x * speed - this.velocity.x) * accel;
@@ -502,11 +542,13 @@ export class Player extends Entity {
     if (controls && this.onGround && !this.swimming && input.hit('jump')) {
       this.velocity.y = JUMP_SPEED;
       this.onGround = false;
-    } else if (controls && !this.onGround && !this.swimming && this.hasDoubleJump && !this.usedDoubleJump && input.hit('jump')) {
+      game.sound?.play('jump');
+    } else if (controls && !this.onGround && !this.swimming && this.hasDoubleJump && !this.usedDoubleJump && input.hit('jump') && this.useMagic(game, 'doubleJump')) {
       // Double jump (dream ability): a second jump in mid-air.
       this.velocity.y = JUMP_SPEED * 0.9;
       this.usedDoubleJump = true;
       game.particles?.burst(pos.clone(), { count: 12, colors: ['#c8a8ff', '#ffffff'], speed: 3, size: 0.12, life: 0.4 });
+      game.sound?.play('jump', { volume: 1.2 });
     }
     // No sword swings (or arrows) while the shield is up.
     const free = controls && !this.shielding && !this.isAttacking && !this.usingBow && this.toolTimer === 0;
@@ -572,6 +614,7 @@ export class Player extends Entity {
     } else {
       const ground = game.heightAt(pos.x, pos.z);
       if (pos.y <= ground) {
+        if (!this.onGround && this.velocity.y < -7) game.sound?.play('land', { volume: Math.min(1.5, -this.velocity.y / 14) });
         pos.y = ground;
         this.velocity.y = 0;
         this.onGround = true;
@@ -598,6 +641,7 @@ export class Player extends Entity {
     if (!this.swimming && !onLand) {
       this.swimming = true;
       this.splash(game, 30);
+      game.sound?.play('splash');
       game.questLog?.toast('Splash! To get out, swim back to the dock or a beach.');
     } else if (this.swimming && onLand) {
       this.swimming = false;
@@ -605,6 +649,7 @@ export class Player extends Entity {
       this.velocity.y = 0;
       this.onGround = true;
       this.splash(game, 12);
+      game.sound?.play('splash', { volume: 0.5 });
     }
   }
 
@@ -645,6 +690,7 @@ export class Player extends Entity {
     if (healed) parts.push(healed >= this.maxHealth - 1 ? 'you feel all better!' : 'you feel better!');
     if (extra) parts.push('you glow with golden health!');
     game.questLog?.toast(`Yum! ${item.icon} ${item.name}: ${parts.join(' And ')}`);
+    game.sound?.play('eat');
   }
 
   /** K: start pulling the bowstring back. The arrow flies after BOW.drawTime seconds. */
@@ -670,6 +716,7 @@ export class Player extends Entity {
 
   /** Fire an arrow, locking on to a monster that's roughly ahead of us. */
   shoot(game) {
+    game.sound?.play('bow');
     const damage = this.arrowDamage;
     this.drawing = false;
     this.charge = 0;
@@ -714,7 +761,7 @@ export class Player extends Entity {
   /** Sky Strike (Master Jackson's move): dive straight down with the overhead swing. */
   startSkyStrike(game) {
     this.skyStriking = true;
-    this.velocity.set(0, -JACKSON.skyStrikeSpeed, 0);
+    this.velocity.set(0, -SKY_STRIKE.speed, 0);
     this.comboStep = MOVES.length - 1; // the big overhead finisher
     this.move = MOVES[this.comboStep];
     this.attackDuration = this.attackTimer = this.move.duration;
@@ -727,14 +774,14 @@ export class Player extends Entity {
   skyStrikeLand(game) {
     this.skyStriking = false;
     const pos = this.object3d.position;
-    const r = JACKSON.skyStrikeRadius;
+    const r = SKY_STRIKE.radius;
     for (const m of [...game.monsters]) {
       const mp = m.object3d.position;
       const dx = pos.x - mp.x;
       const dz = pos.z - mp.z;
       const d = Math.hypot(dx, dz);
       if (d > r + m.radius || Math.abs(mp.y - pos.y) > 2.5 || m.health <= 0) continue;
-      m.hit(game, { x: dx / (d || 1), z: dz / (d || 1) }, JACKSON.skyStrikeDamage);
+      m.hit(game, { x: dx / (d || 1), z: dz / (d || 1) }, SKY_STRIKE.damage);
     }
     for (const e of [...game.entities]) e.onSkyStrike?.(game, pos, r);
     for (let i = 0; i < 16; i++) {
@@ -821,19 +868,22 @@ export class Player extends Entity {
   updateAbilities(dt, game, controls) {
     const { input } = game;
     this.dashTimer = Math.max(0, this.dashTimer - dt);
+    this.dodgeTimer = Math.max(0, this.dodgeTimer - dt);
+    this.dodgeCooldown = Math.max(0, this.dodgeCooldown - dt);
+    if (this.speedBootsOn) this.magic = Math.max(0, this.magic - MAGIC.cost.speedBoots * dt);
     this.dashCooldown = Math.max(0, this.dashCooldown - dt);
     this.invisibleCooldown = Math.max(0, this.invisibleCooldown - dt);
     this.healCooldown = Math.max(0, this.healCooldown - dt);
     this.starShieldCooldown = Math.max(0, this.starShieldCooldown - dt);
     if (this.starShieldHits > 0 && (this.starShieldTimer -= dt) <= 0) this.endStarShield(game);
     if (this.bubble.visible) this.bubble.scale.setScalar(1 + Math.sin(game.elapsed * 6) * 0.04);
-    if (controls && this.hasDreamHeal && this.healCooldown === 0 && game.input.hit('dreamHeal')) {
+    if (controls && this.hasDreamHeal && this.healCooldown === 0 && game.input.hit('dreamHeal') && this.useMagic(game, 'dreamHeal')) {
       this.health = this.maxHealth;
       this.healCooldown = DREAM.healCooldown;
       game.particles?.burst(this.object3d.position.clone().setY(this.object3d.position.y + 1.2), { count: 30, colors: ['#7dff8a', '#ffffff', '#ffe66b'], speed: 3, size: 0.14, gravity: -3 });
       game.questLog?.toast('Dream Heal! You feel all better.');
     }
-    if (controls && this.hasStarShield && this.starShieldCooldown === 0 && this.starShieldHits === 0 && game.input.hit('starShield')) {
+    if (controls && this.hasStarShield && this.starShieldCooldown === 0 && this.starShieldHits === 0 && game.input.hit('starShield') && this.useMagic(game, 'starShield')) {
       this.starShieldHits = DREAM.starShieldHits;
       this.starShieldTimer = DREAM.starShieldTime;
       this.starShieldCooldown = DREAM.starShieldCooldown;
@@ -852,7 +902,21 @@ export class Player extends Entity {
       game.questLog?.toast("You're visible again.");
     }
     if (!controls) return;
-    if (this.hasDash && this.dashCooldown === 0 && input.hit('dash')) {
+    // Dodge (Master Jackson's lesson): leap the way you're moving, or backwards if you're standing still.
+    if (this.knowsDodge && this.dodgeCooldown === 0 && this.onGround && !this.swimming && input.hit('dodge')) {
+      const f = this.model.root.rotation.y;
+      const len = Math.hypot(_move.x, _move.z);
+      const dx = len > 0.1 ? _move.x / len : -Math.sin(f);
+      const dz = len > 0.1 ? _move.z / len : -Math.cos(f);
+      this.velocity.set(dx * DODGE.speed, 4, dz * DODGE.speed);
+      this.onGround = false;
+      this.dodgeTimer = DODGE.time;
+      this.dodgeCooldown = DODGE.cooldown;
+      this.invulnerable = Math.max(this.invulnerable, DODGE.time + 0.1);
+      game.particles?.burst(this.object3d.position.clone().setY(this.object3d.position.y + 0.3), { count: 10, colors: ['#ffffff', '#c9a46b'], speed: 2.5, size: 0.14, life: 0.35 });
+      game.sound?.play('dodge');
+    }
+    if (this.hasDash && this.dashCooldown === 0 && input.hit('dash') && this.useMagic(game, 'dash')) {
       const f = this.model.root.rotation.y;
       const len = Math.hypot(_move.x, _move.z);
       const dx = len > 0.1 ? _move.x / len : Math.sin(f);
@@ -862,9 +926,10 @@ export class Player extends Entity {
       this.dashTimer = DREAM.dashTime;
       this.dashCooldown = DREAM.dashCooldown;
       this.invulnerable = Math.max(this.invulnerable, DREAM.dashTime + 0.1);
+      game.sound?.play('dash');
       game.particles?.burst(this.object3d.position.clone().setY(this.object3d.position.y + 1), { count: 14, colors: ['#ffffff', '#c8a8ff'], speed: 3, size: 0.14, life: 0.4 });
     }
-    if (this.hasInvisibility && this.invisibleCooldown === 0 && input.hit('invisible')) {
+    if (this.hasInvisibility && this.invisibleCooldown === 0 && input.hit('invisible') && this.useMagic(game, 'invisible')) {
       this.invisibleTimer = DREAM.invisibleTime;
       this.invisibleCooldown = DREAM.invisibleCooldown;
       this.setSeeThrough(true);
@@ -967,7 +1032,9 @@ export class Player extends Entity {
     root.position.set(-Math.sin(facing) * 0.85 * this.prone, 0.95 * this.prone, -Math.cos(facing) * 0.85 * this.prone);
 
     if (this.swimming) {
+      const lastStroke = Math.floor(this.swimPhase / Math.PI);
       this.swimPhase += dt * (stroking ? 4.2 : 2.5);
+      if (stroking && Math.floor(this.swimPhase / Math.PI) !== lastStroke) game.sound?.play('swim'); // one arm pulls through the water
       const p = this.swimPhase;
       if (stroking) {
         // Front crawl: each arm goes up over the water, reaches forward, pulls down and back

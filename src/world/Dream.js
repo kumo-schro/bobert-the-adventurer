@@ -15,7 +15,7 @@ const RAINBOW = ['#ff6b6b', '#ffb36b', '#ffe66b', '#7dff8a', '#6bc6ff', '#b47dff
 /**
  * The dream dimension: pastel floating islands high in a starry purple sky, joined by rainbow
  * bridges, with a staircase of cloud stones (you have to jump!) up to a summit. Reached through
- * the portal that opens in the jungle once the Vine is beaten. Registers as walkable land.
+ * the portal that opens in the jungle once the Viniac is beaten. Registers as walkable land.
  * Glowing bounce mushrooms launch you high into the air (the player asks `bounceAt`).
  * Exposes `arrive`, `keeperSpot`, `shrineSpot`, `wakeSpot`, `summitSpot`, `starSpots`, `wispSpots`.
  */
@@ -89,6 +89,7 @@ export class DreamWorld extends Entity {
 
   /** Squish the mushroom and puff some sparkles (call when someone bounces on it). */
   boing(pad, game) {
+    game.sound?.play('boing');
     pad.squash = 1;
     game.particles?.burst(new THREE.Vector3(pad.x, pad.h + 0.5, pad.z), { count: 14, colors: ['#ff8fe0', '#ffe66b', '#ffffff'], speed: 5, size: 0.16 });
     if (!this.toldAboutBouncing) {
@@ -218,10 +219,10 @@ export class DreamWorld extends Entity {
   }
 
   /**
-   * Wandering wisps float around the islands. Each one popped gives dream points, and comes
-   * back after a while, so you can always earn more for the shrine. `makeWisp(spot)` builds one.
+   * Wandering wisps float around the islands. Like any monster they give magic points when
+   * popped, and they come back after a while. `makeWisp(spot)` builds one.
    */
-  addWanderingWisps(game, makeWisp, { dreamPoints, respawnSeconds }) {
+  addWanderingWisps(game, makeWisp, { respawnSeconds }) {
     const spots = [
       ...this.satellites.map((s) => ({ x: s.x - 4, y: this.y + 3, z: s.z + 3 })),
       { x: this.center.x + 8, y: this.y + 3.5, z: this.center.z - 8 },
@@ -229,7 +230,6 @@ export class DreamWorld extends Entity {
     ];
     const spawn = (spot) => {
       const wisp = game.add(makeWisp(spot));
-      wisp.dreamPoints = dreamPoints;
       wisp.respawnSeconds = respawnSeconds;
       wisp.respawn = spawn;
       return wisp;
@@ -277,7 +277,7 @@ function createPortalModel(color) {
 }
 
 /**
- * The dream portal in the jungle. Hidden until the Vine is defeated; then press T next to it
+ * The dream portal in the jungle. Hidden until the Viniac is defeated; then press T next to it
  * to enter the dream dimension. Lives at game.dreamPortal.
  */
 export class DreamPortal extends Entity {
@@ -299,7 +299,7 @@ export class DreamPortal extends Entity {
     this.opened = true;
     this.object3d.visible = true;
     game.particles?.burst(this.object3d.position.clone().setY(1.8), { count: 60, colors: ['#b47dff', '#ff8fe0', '#ffffff'], speed: 6, size: 0.2 });
-    game.questLog?.toast('A shimmering portal opened where the Vine was! It leads to the dream dimension.', 5);
+    game.questLog?.toast('A shimmering portal opened where the Viniac was! It leads to the dream dimension.', 5);
   }
 
   enter(game) {

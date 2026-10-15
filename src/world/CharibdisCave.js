@@ -156,8 +156,7 @@ export class CharibdisCave extends Entity {
     if (inside !== this.inside) {
       this.inside = inside;
       roofMaterial.colorWrite = roofMaterial.depthWrite = !inside; // still casts its shadow
-      this.roof.userData.ignoreCamera = this.walls.userData.ignoreCamera = inside;
-      game.cameraMode = inside ? 'cave' : null;
+      this.roof.userData.ignoreCamera = inside; // the walls turn see-through when they're in the way
     }
   }
 }

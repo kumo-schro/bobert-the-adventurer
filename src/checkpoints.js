@@ -117,6 +117,7 @@ export const CHECKPOINTS = [
     id: 'keegan',
     label: "9. Old Man Keegan's cellar",
     setup(game) {
+      game.pip.crystalShown = true; // Pip told you about Keegan
       const trapdoor = game.quests.crystal.trapdoor;
       if (!trapdoor.open) trapdoor.unlock(game);
       game.questLog.complete('trapdoor');
@@ -212,11 +213,26 @@ export const CHECKPOINTS = [
     },
   },
   {
-    id: 'vine',
-    label: '17. Fight the Vine (knows the spin attack)',
+    id: 'sky-strike',
+    label: '17. Master Oak teaches the Sky Strike (knows the spin attack)',
     setup(game) {
       skipQuest(game, game.quests.oak);
       game.player.knowsSpin = true;
+      if (game.quests.skyStrike.stage === 'offer') game.quests.skyStrike.start();
+    },
+    place(game) {
+      const o = game.jungle.oakSpot;
+      go(game, o.x + 3, o.z, { facing: -Math.PI / 2 });
+    },
+  },
+  {
+    id: 'vine',
+    label: '18. Fight the Viniac (knows the spin attack and the Sky Strike)',
+    setup(game) {
+      const q = game.quests.skyStrike;
+      for (const post of q.posts ?? []) if (game.entities.includes(post)) game.remove(post);
+      skipQuest(game, q);
+      game.player.knowsSkyStrike = true;
       if (game.quests.vine.stage === 'offer') game.quests.vine.start();
     },
     place(game) {
@@ -226,7 +242,7 @@ export const CHECKPOINTS = [
   },
   {
     id: 'dream',
-    label: '18. The dream dimension',
+    label: '19. The dream dimension',
     setup(game) {
       const q = game.quests.vine;
       if (q.vine && game.monsters.includes(q.vine)) game.remove(q.vine);
@@ -238,10 +254,14 @@ export const CHECKPOINTS = [
   },
   {
     id: 'dream-powers',
-    label: '19. Dream points to spend at the shrine',
+    label: '20. All the dream powers, and a magic conduit full of magic',
     setup(game) {
-      for (const q of npc(game, 'Dream Keeper').quests) skipQuest(game, q);
-      game.player.dreamPoints += 8;
+      for (const q of npc(game, 'Dream Keeper').quests) {
+        skipQuest(game, q);
+        q.onFinish(); // learns its two abilities
+      }
+      game.player.hasConduit = true;
+      game.player.magic = 100;
     },
     place(game) {
       const s = game.dream.shrineSpot;
@@ -250,7 +270,7 @@ export const CHECKPOINTS = [
   },
   {
     id: 'jackson',
-    label: '20. Master Jackson teaches the Sky Strike',
+    label: "21. Master Jackson's duel (only a spin attack hits him)",
     setup(game) {
       skipQuest(game, game.quests.findJackson);
     },

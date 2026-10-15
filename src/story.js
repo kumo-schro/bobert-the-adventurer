@@ -206,7 +206,7 @@ Object.assign(SIDE_QUESTS, {
       offer: [
         'Hmm. A young adventurer, deep in my jungle. I am Master Oak.',
         'I know a secret sword move: the SPIN ATTACK. But I only teach those who can beat me in battle.',
-        'Be warned: my own spin attack hurts a LOT. But I must charge it up before every spin, even the first one.',
+        'Be warned: my own spin attack hurts a LOT.',
         'While my staff glows, strike fast! When it sparkles, it is ready, so stay out of reach or I will spin again. I may be old, but I do not flinch!',
         'Are you ready? Then let us begin!',
       ],
@@ -215,24 +215,24 @@ Object.assign(SIDE_QUESTS, {
         'Ha! You have beaten me, fair and square. Now, the spin attack:',
         'Hold down your sword button after a swing until your sword sparkles. Then let go, and spin round to hit everything near you!',
       ],
-      complete: ['Practice your spin, young one. It will serve you well against the Vine.'],
+      complete: ['Practice your spin, young one. You will need it.'],
     },
   },
   vine: {
     giver: 'Master Oak',
-    title: 'The Vine',
+    title: 'The Viniac',
     text: {
       offer: [
-        'Now hear me. To the east grows the Vine, the boss of this jungle. A giant plant with arms like a kraken.',
+        'Now hear me. To the east grows the Viniac, the boss of this jungle. A giant plant with arms like a kraken.',
         'Its arms SLAM down where you stand, and that hurts a lot! When you see a red circle under your feet, run!',
-        'Defeat the Vine and the jungle will be free. It takes many, many hits. Use everything you have learned.',
+        'Defeat the Viniac and the jungle will be free. It takes many, many hits. Use everything you have learned.',
       ],
-      active: ['The Vine grows to the east. Watch for the red circles, and keep hitting it!'],
+      active: ['The Viniac grows to the east. Watch for the red circles, and keep hitting it!'],
       turnIn: [
-        'You did it! The Vine is gone, and look... where it grew, a portal has opened!',
-        'They say it leads to the dream dimension, where the Dream Keeper gives out dream points. With enough of them, you can learn amazing powers.',
+        'You did it! The Viniac is gone, and look... where it grew, a portal has opened!',
+        'They say it leads to the dream dimension, where the Dream Keeper teaches amazing dream powers to those who help her.',
       ],
-      complete: ['The dream portal is to the east, where the Vine used to grow.'],
+      complete: ['The dream portal is to the east, where the Viniac used to grow.'],
     },
   },
   findJackson: {
@@ -240,8 +240,8 @@ Object.assign(SIDE_QUESTS, {
     title: 'The Second Master',
     text: {
       offer: [
-        'You beat me, and you beat the Vine. There is nothing left for me to teach you.',
-        'But I have an old friend: Master Jackson. We trained together when we were young. He knows a move even I never learned!',
+        'You beat me, and you beat the Viniac. There is nothing left for me to teach you.',
+        'But I have an old friend: Master Jackson. We trained together when we were young. Nobody has ever landed a hit on him!',
         'He lives alone on a little island far to the east of your village, out past the tower. Find him, and tell him Oak sent you.',
       ],
       active: ['Master Jackson lives on a little island far to the east of your village, past the tower island. Take the boat, or swim!'],
@@ -249,19 +249,35 @@ Object.assign(SIDE_QUESTS, {
     },
   },
   skyStrike: {
-    giver: 'Master Jackson',
+    giver: 'Master Oak',
     title: 'The Sky Strike',
+    text: {
+      offer: [
+        'You have the spin. Now my second secret: the SKY STRIKE. Jump high, then swing your sword while you are in the air.',
+        'You will dive straight down and SLAM the ground, hitting everything around you!',
+        'Show me you can do it: smash my three training posts. Only a Sky Strike can break them!',
+      ],
+      active: ['Jump, then swing in the air to Sky Strike! Smash all three of Master Oak\'s training posts.'],
+      turnIn: ['Ha! Look at those splinters! You have mastered the Sky Strike. Here, take these coins.'],
+      complete: ['Jump high and swing to Sky Strike. Bounce mushrooms and double jumps make it even stronger... or at least more fun!'],
+    },
+  },
+  jackson: {
+    giver: 'Master Jackson',
+    title: 'The Untouchable Master',
     text: {
       locked: ['Hm? Who are you? I only train the students of my old friend, Master Oak.'],
       offer: [
         'Oak sent you? That old tree! Welcome, welcome. I am Master Jackson.',
-        'I will teach you my move: the SKY STRIKE. Jump high, then swing your sword while you are in the air.',
-        'You will dive straight down and SLAM the ground, hitting everything around you!',
-        'Show me you can do it: smash my three training posts. Only a Sky Strike can break them!',
+        'I teach the art of DODGING. But first, you must land a hit on me... and nobody has ever hit Master Jackson!',
+        'Swing, shoot, slam: I will dodge them all. Well... almost all. Let us see what Oak taught you. Begin!',
       ],
-      active: ['Jump, then swing in the air to Sky Strike! Smash all three training posts.'],
-      turnIn: ['Ha! Look at those splinters! You have mastered the Sky Strike. Here, take these coins.'],
-      complete: ['Jump high and swing to Sky Strike. Bounce mushrooms and double jumps make it even stronger... or at least more fun!'],
+      active: ['Land hits on Master Jackson! He dodges almost everything... what did Master Oak teach you?'],
+      turnIn: [
+        'Oof! A spin attack! Nobody can dodge something that comes from every side at once. Well fought!',
+        'Now my secret: press X to DODGE. You leap out of the way, and nothing can touch you in the middle of a leap.',
+      ],
+      complete: ['Remember: X to dodge. Leap away just before a hit lands!'],
     },
   },
   stars: {
@@ -270,11 +286,11 @@ Object.assign(SIDE_QUESTS, {
     text: {
       offer: [
         'Welcome, dreamer. I am the Dream Keeper. This is where dreams are made.',
-        'Some of my stars have fallen onto the dream islands. Catch them all and I will give you dream points.',
-        'Spend dream points at the shrine, where Luma will teach you dream powers!',
+        'Some of my stars have fallen onto the dream islands. Catch them all and I will teach you two dream powers.',
+        'Dream powers run on magic. Luma at the shrine sells a magic conduit to hold it, and every monster you defeat fills it up.',
       ],
       active: ['The fallen stars are on the floating islands. Cross the rainbow bridges to find them.'],
-      turnIn: ['My stars! They shine so brightly again. Here are 3 dream points.'],
+      turnIn: ['My stars! They shine so brightly again. Now: DOUBLE JUMP (press Space again in the air) and SPEED BOOTS (you run faster while you have magic).'],
       complete: ['Every star you saved is a happy dream for someone.'],
     },
   },
@@ -287,7 +303,7 @@ Object.assign(SIDE_QUESTS, {
         'Chase them away! They sting a little, but two good hits will pop them.',
       ],
       active: ['Chase away the nightmare wisps on the floating islands.'],
-      turnIn: ['Sweet dreams have returned! Thank you. Here are 3 more dream points.'],
+      turnIn: ['Sweet dreams have returned! Thank you. Now: DASH (press L) and INVISIBILITY (press I).'],
       complete: ['No more nightmares. Well... not today.'],
     },
   },
@@ -300,11 +316,25 @@ Object.assign(SIDE_QUESTS, {
         'Jump from cloud to cloud (each one is higher than the last) and catch the star at the summit.',
       ],
       active: ['Jump up the cloud stones (press Space) to reach the summit.'],
-      turnIn: ['You reached the top of the dream! You are a true dreamer. Here are 2 dream points.'],
+      turnIn: ['You reached the top of the dream! You are a true dreamer. Now: DREAM HEAL (press U) and STAR SHIELD (press O).'],
       complete: ['Come back whenever you like, dreamer. The dream is always here.'],
     },
   },
 });
+
+// Pip, once you've got the mystery crystal: he tells you about Old Man Keegan, and opens a crystal shop.
+export const PIP_CRYSTAL = {
+  first: [
+    'Whoa! Is that... a MYSTERY CRYSTAL? I collect crystals, and I have never seen one that glows like that!',
+    'You know who would love to see it? Old Man Keegan. He lives under the old trapdoor outside of town, by the road to the dock.',
+    'Grown-ups say he knows all about the monsters out at sea. And there is a crystal-shaped hole in his trapdoor...',
+    'Hey, since you like crystals too: I can sell you some of mine! Come and look.',
+  ],
+  shop: {
+    title: "💎 Pip's Crystals",
+    greeting: 'Crystals from all over the island! Some are even magic.',
+  },
+};
 
 // What side-quest givers say before you've helped the merchant.
 export const QUEST_LOCKED = [

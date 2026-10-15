@@ -282,7 +282,7 @@ const VINE_GREEN = '#2e7d32';
 const VINE_DARK = '#1b5e20';
 const vineWarning = new THREE.MeshBasicMaterial({ color: '#ff3b3b', transparent: true, opacity: 0.4, depthWrite: false });
 
-/** One of the Vine's huge arms: a chain of thorny segments. */
+/** One of the Viniac's huge arms: a chain of thorny segments. */
 function vineArm(parent, length) {
   const root = new THREE.Group();
   parent.add(root);
@@ -303,7 +303,7 @@ function vineArm(parent, length) {
 }
 
 /**
- * The Vine: the boss of the jungle. A giant carnivorous plant rooted to the spot. Its huge thorny
+ * The Viniac: the boss of the jungle. A giant carnivorous plant rooted to the spot. Its huge thorny
  * arms rise up and SLAM down where you are (a red circle shows where), for 5 hearts. 50 hits.
  */
 export class Vine extends Monster {

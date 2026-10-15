@@ -36,7 +36,8 @@ function createMarker(rows) {
  *     wander: { x: 0, z: 0, radius: 14 },   // or null to stand still
  *     quest,                                // a Quest (see quest/Quest.js), or `quests: [a, b]`, or…
  *     lines: ['Hello!'],                    // …just something to say
- *     onInteract: (game) => {},             // …or something else entirely (like a shop)
+ *     onInteract: (game) => {},             // …or something else entirely (like a shop); return
+ *                                           //   false to fall back to the usual quest talk
  *     interactText: 'Press T to shop',
  *     home: { x, z },                       // their front door: they go to bed there at night
  *   })
@@ -109,11 +110,13 @@ export class Npc extends Entity {
 
   talk(game) {
     this.onTalk?.(game);
-    if (this.onInteract) {
-      this.onInteract(game);
-      return;
-    }
+    if (this.onInteract && this.onInteract(game) !== false) return;
     const { pages, onClose } = this.quest ? this.quest.dialogFor(this) : { pages: this.lines };
+    this.say(game, pages, onClose);
+  }
+
+  /** Show some lines from this person (turning to face you while you read). */
+  say(game, pages, onClose) {
     this.state = 'talking';
     game.dialog.show(this.name, pages, {
       focus: this,

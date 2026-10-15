@@ -1,5 +1,5 @@
 import { Entity } from '../core/Entity.js';
-import { FOOD, BUFFS } from '../config.js';
+import { FOOD, BUFFS, MAGIC } from '../config.js';
 import { keyName } from '../controls.js';
 
 /**
@@ -116,22 +116,25 @@ export class StatusBar extends Entity {
       this.arrowsEl.classList.toggle('hidden', arrows < 0);
       this.arrowsEl.classList.toggle('empty', arrows === 0);
     }
-    // Dream points and dream powers (dimmed while they recharge).
+    // Magic points and dream powers (dimmed while they recharge or there isn't enough magic).
     const p = game.player;
+    const magic = p.hasConduit ? Math.floor(p.magic) : null;
     const powers = [
-      [p.hasDash, p.dashCooldown === 0, 'dash', '💨'],
-      [p.hasInvisibility, p.invisibleCooldown === 0, 'invisible', '👻'],
-      [p.hasDreamHeal, p.healCooldown === 0, 'dreamHeal', '🌈'],
-      [p.hasStarShield, p.starShieldCooldown === 0 && p.starShieldHits === 0, 'starShield', '🔮'],
+      [p.hasDash, p.dashCooldown === 0 && magic >= MAGIC.cost.dash, 'dash', '💨'],
+      [p.hasInvisibility, p.invisibleCooldown === 0 && magic >= MAGIC.cost.invisible, 'invisible', '👻'],
+      [p.hasDreamHeal, p.healCooldown === 0 && magic >= MAGIC.cost.dreamHeal, 'dreamHeal', '🌈'],
+      [p.hasStarShield, p.starShieldCooldown === 0 && p.starShieldHits === 0 && magic >= MAGIC.cost.starShield, 'starShield', '🛡️'],
     ];
-    const passives = `${p.hasDoubleJump ? '🦘' : ''}${p.hasSpeedBoots ? '👟' : ''}`;
-    const dream = `${p.dreamPoints},${powers.map(([has, ready]) => `${has}${ready}`).join()},${passives}`;
+    const passive = (has, icon) => (has ? `<span class="${magic > 0 ? '' : 'cooling'}">${icon}</span>` : '');
+    const passives = `${passive(p.hasDoubleJump, '🦘')}${passive(p.hasSpeedBoots, '👟')}`;
+    const dream = `${magic},${powers.map(([has, ready]) => `${has}${ready}`).join()},${passives}`;
     if (dream !== this.shown.dream) {
       const key = (action) => keyName(game.input.bindings[action][0] ?? '?');
       const power = (has, ready, action, icon) => (has ? `<span class="${ready ? '' : 'cooling'}"><kbd>${key(action)}</kbd>${icon}</span>` : '');
-      this.dreamEl.innerHTML = `✨ ${p.dreamPoints} ${powers.map(([has, ready, action, icon]) => power(has, ready, action, icon)).join(' ')} ${passives}`;
+      const meter = magic === null ? '' : `🔮 ${magic}/${MAGIC.max}`;
+      this.dreamEl.innerHTML = `${meter} ${powers.map(([has, ready, action, icon]) => power(has, ready, action, icon)).join(' ')} ${passives}`;
       const anyPower = powers.some(([has]) => has) || passives;
-      this.dreamEl.classList.toggle('hidden', !p.dreamPoints && !anyPower && !game.dream?.contains(p.object3d.position.x, p.object3d.position.y, p.object3d.position.z));
+      this.dreamEl.classList.toggle('hidden', magic === null && !anyPower);
     }
     // Buffs from Barrett and Grayson, with the minutes (or seconds) they have left.
     const left = (s) => (s >= 60 ? `${Math.ceil(s / 60)}m` : `${Math.ceil(s)}s`);
