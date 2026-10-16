@@ -6,7 +6,7 @@ const RANGE = 2.6;
 
 /**
  * The old trapdoor outside of town. It's locked until you have the mystery crystal; the crystal
- * fits the lock. Once open, press T to climb down to Old Man Keegan's cellar (`cellar.arrive`).
+ * fits the lock. Once open, press T to climb down to Old Man Ward's cellar (`cellar.arrive`).
  * Set `onOpen()` to react when it's unlocked.
  */
 export class Trapdoor extends Entity {

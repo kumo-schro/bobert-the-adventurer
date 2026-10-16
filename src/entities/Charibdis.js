@@ -61,7 +61,6 @@ export class Charibdis extends Monster {
       z,
       health: CHARIBDIS.health,
       damage: CHARIBDIS.damage,
-      coins: 50,
       radius: 2.4,
       barHeight: 4.2,
       colors: [TEAL, '#ffffff', '#d9293f'],

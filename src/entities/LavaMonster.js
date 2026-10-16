@@ -13,7 +13,7 @@ const RISE_TIME = 1.4; // seconds to climb out of the lava
  */
 export class LavaMonster extends Monster {
   constructor({ x, z }) {
-    super({ x, z, health: 4, damage: 2, coins: 6, radius: 0.7, barHeight: 2, colors: ['#ff5a1f', '#ffd23f', '#3b2a2a'], hitSound: 'stone' });
+    super({ x, z, health: 4, damage: 2, radius: 0.7, barHeight: 2, colors: ['#ff5a1f', '#ffd23f', '#3b2a2a'], hitSound: 'stone' });
     this.isLavaMonster = true;
     this.rising = RISE_TIME;
     this.walkPhase = 0;

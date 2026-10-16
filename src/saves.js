@@ -43,6 +43,7 @@ export function saveGame(game, name) {
     data: collect(game),
   };
   writeSaves([save, ...saves.filter((s) => s !== old)]);
+  game.saveName = name; // the adventure you're playing now: save points save to it
   return save;
 }
 
@@ -69,6 +70,7 @@ export function applyPendingLoad(game) {
   const save = id && listSaves().find((s) => s.id === id);
   if (!save || !canLoad(save)) return null;
   apply(game, save.data);
+  game.saveName = save.name;
   return save;
 }
 
@@ -205,7 +207,7 @@ function applyWorld(game, world) {
     game.pip.openShop();
     if (game.quests.crystal.stage === 'complete') game.quests.crystal.pointToTrapdoor();
   }
-  // The trapdoor's quest-log line is done once you've met Old Man Keegan.
+  // The trapdoor's quest-log line is done once you've met Old Man Ward.
   if (game.quests.keegan.stage !== 'offer') game.questLog.complete('trapdoor');
 }
 

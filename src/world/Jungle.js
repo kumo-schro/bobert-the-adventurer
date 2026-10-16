@@ -15,10 +15,10 @@ const leafMaterial = texturedVoxelMaterial(leafTexture);
 const stoneMaterial = texturedVoxelMaterial(stoneTexture);
 
 /**
- * The jungle island, far across the sea. Captain Finn brings you here after Charibdis is
+ * The jungle island, far across the sea. Captain Max brings you here after Charibdis is
  * slain. Huge trees with vines, ferns, an old temple with treasure, and monsters: giant Venus
  * fly traps, snakes and gorillas. You can't swim away (the currents are too strong); talk to
- * Finn on the beach to go home. Master Oak lives in a clearing to the west, and the Vine (the
+ * Max on the beach to go home. Master Oak lives in a clearing to the west, and the Vine (the
  * jungle's boss) grows to the east. Exposes `arrive`, `finnSpot`, `oakSpot`, `vineSpot`,
  * `portalSpot`, `barrettSpot`; `travel(game)` takes you there.
  */
@@ -71,12 +71,12 @@ export class Jungle extends Entity {
     this.spawnMonsters(game);
   }
 
-  /** Captain Finn takes you here. */
+  /** Captain Max takes you here. */
   travel(game) {
     game.player.boat = null;
     game.teleport(this.arrive.x, this.arrive.z, { facing: this.arrive.facing });
     game.player.visitedJungle = true; // now a boat can be built at the dock
-    game.questLog?.toast('Captain Finn takes you to the jungle island!');
+    game.questLog?.toast('Captain Max takes you to the jungle island!');
   }
 
   buildGround() {
@@ -206,25 +206,12 @@ export class Jungle extends Entity {
       }
       return null;
     };
-    for (let i = 0; i < 6; i++) {
-      const s = pick(14);
-      if (s) game.add(new FlyTrap(s));
-    }
-    for (let i = 0; i < 8; i++) {
-      const s = pick(16);
-      if (s) game.add(new Snake(s));
-    }
-    for (let i = 0; i < 3; i++) {
-      const s = pick(22);
-      if (s) game.add(new Gorilla(s));
-    }
-    for (let i = 0; i < 5; i++) {
-      const s = pick(14);
-      if (s) game.add(new Frog(s));
-    }
-    for (let i = 0; i < 3; i++) {
-      const s = pick(24);
-      if (s) game.add(new Panther(s));
+    // The jungle is big: lots of monsters, spread out.
+    for (const [Kind, count, from] of [[FlyTrap, 8, 14], [Snake, 12, 16], [Gorilla, 4, 22], [Frog, 7, 14], [Panther, 4, 24]]) {
+      for (let i = 0; i < count; i++) {
+        const s = pick(from);
+        if (s) game.add(new Kind(s));
+      }
     }
   }
 }

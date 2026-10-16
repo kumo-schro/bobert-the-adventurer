@@ -10,18 +10,26 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 - **The Blacksmith**: sells gear and upgrades at the forge.
 - **Hana**: the baker. Sells food that heals you.
 - **Pip**: a kid who loses things (gems, seashells) and collects crystals.
-- **Bram**: a farmer with a slime problem and a broken fence.
+- **Jonah**: a farmer with a slime problem and a broken fence.
 - **Elda**: an old lady who knows the riddle of the rainbow stones.
-- **Tomas**: a friendly villager who gives handy tips.
-- **Captain Finn**: a sailor with an eye patch who lives by the dock.
-- **Old Man Keegan**: lives under an old trapdoor. Knows the secrets of the sea.
-- **Rosa, Milo, Greta, Juno, Wren**: villagers who live in the outer houses and love to chat.
+- **Julian**: a friendly villager who gives handy tips.
+- **Captain Max**: a sailor with an eye patch who lives by the dock.
+- **Old Man Ward**: lives under an old trapdoor. Knows the secrets of the sea.
+- **Clara, Emi, Hatty, Eve, Evie**: villagers who live in the outer houses and love to chat.
 - **Master Oak**: an old jungle master with a leafy beard and a glowing staff.
 - **The Dream Keeper**: guards the dream dimension and its stars.
-- **Luma**: a little star sprite who runs the dream shrine.
+- **Aleli**: a little star sprite who runs the dream shrine.
 - **Barrett**: a gecko who loves coins if you give them coins the will give you slight buffs for 5 minutes they are found in the jungle
 - **Grayson**: a friendly fish found in various water areas that will give you buffs
 - **Master Jackson**: the 2nd master that Oak will tell you about and send you on a quest to find. Nobody has ever landed a hit on him.
+- **Master Zach**: the old grandmaster who taught both Master Oak and Master Jackson. He lives alone on the little island toward the sunset (north-west of the village).
+- **Ani**: studies the volcano on the fire island (from a safe distance).
+- **Ollie**: a kid who looks after the save stones, by the one in the village.
+
+## Things that are true everywhere
+- Every monster Bobert defeats drops coins: its health plus its attack damage (at least 1). Barrett's Lucky Tail doubles them, and Pip's Lucky Crystal adds 2 more.
+- There's a **save point** (a glowing crystal on a stone stand) on every island: the village, the tower island, every little island, the jungle, the fire island and the dream dimension. Walking up to one saves the game straight away, under the name of the adventure you're playing (the first one asks you to name it).
+- Characters give clues rather than directions. The quest panel and its arrow always show what to do next.
 
 ## Chapter 1: The village in danger
 *Checkpoint: `start`*
@@ -41,9 +49,9 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 *Checkpoints: `merchant-done`, `geared-up`*
 - Now the villagers ask for help, and come up with new jobs over time:
   - Pip: find 6 lost gems, then 5 seashells on the beaches.
-  - Bram: defeat 5 blue slimes in his meadow, then bring 10 wood for his fence.
+  - Jonah: defeat 5 blue slimes in his meadow, then bring 10 wood for his fence.
   - Elda: step on the rainbow stones in order, then backwards.
-  - Tomas: bring 8 stone to fix the well.
+  - Julian: bring 8 stone to fix the well.
 - The blacksmith sells a shield, a bow and arrows, an axe and a pickaxe.
 - Chop wood and mine stone to build a bigger forge (it unlocks the Knight's Sword, Power Bow, Iron Shield, armor and steel tools) and a bigger oven for Hana (special food with golden hearts).
 - Every five minutes day turns to night. At night everyone in town (even the shopkeepers) goes to bed and monsters get stronger.
@@ -51,13 +59,13 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 
 ## Chapter 4: The mystery crystal
 *Checkpoints: `crystal-quest`, `tower-top`*
-- A road leads from town to Captain Finn's dock.
-- Finn asks Bobert to fetch the mystery crystal from the top of a huge tower on an island out at sea.
+- A road leads from town to Captain Max's dock.
+- Max asks Bobert to fetch the mystery crystal from the top of a huge tower on an island out at sea.
 - Bobert jumps off the dock and swims there, underwater, past lots of sharks and a few electric eels.
-- After talking to Finn once, Bobert can swim from any beach.
+- After talking to Max once, Bobert can swim from any beach.
 - Stone gargoyles guard the tower's spiral stairs.
-- Bobert brings the crystal back, and Finn lets him keep it.
-- Pip, who collects crystals, gasps when he sees it. He tells Bobert about Old Man Keegan, who lives under the old trapdoor by the road, and opens a crystal shop: a little stall on the plaza, where he works from then on.
+- Bobert brings the crystal back, and Max lets him keep it.
+- Pip, who collects crystals, gasps when he sees it. He tells Bobert about Old Man Ward, who lives under the old trapdoor by the road, and opens a crystal shop: a little stall on the plaza, where he works from then on.
   - **Heart Crystal** (80 coins): 1 more max health, up to 2 of them.
   - **Magic Crystal** (15 coins): fills up 30 magic points. **Big Magic Crystal** (40 coins): fills it all the way. (Both need a magic conduit, see chapter 11.)
   - **Frost Crystal** (30 coins): Frosty Feet for five minutes, so lava can't burn you (see chapter 12).
@@ -65,11 +73,11 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
   - **Sea Crystal** (90 coins): swim much faster, for good.
   - **Lucky Crystal** (150 coins): every monster drops 1 more coin, for good.
 
-## Chapter 5: Old Man Keegan
+## Chapter 5: Old Man Ward
 *Checkpoints: `crystal-done`, `keegan`*
 - The crystal opens the trapdoor outside town.
-- Down the ladder is Old Man Keegan's cozy cellar.
-- Keegan tells of Charibdis: a fish with a huge mouth, covered in eyes, whose whirlpool sinks ships.
+- Down the ladder is Old Man Ward's cozy cellar.
+- Ward tells of Charibdis: a fish with a huge mouth, covered in eyes, whose whirlpool sinks ships.
 - Charibdis lives in a flooded sea cave, locked with a key.
 
 ## Chapter 6: The key
@@ -86,14 +94,14 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 - The whirlpool spins for 5 seconds, then stops for 9, then starts again.
 - While it spins, the water shields Charibdis, and it spits water balls at anyone outside.
 - While it's stopped, Bobert can attack, but Charibdis bites anyone who gets too close (3 hearts).
-- Bobert slays Charibdis and tells Keegan, who gives him his treasure (150 coins).
+- Bobert slays Charibdis and tells Ward, who gives him his treasure (150 coins).
 
 ## Chapter 8: The jungle island
 *Checkpoint: `jungle`*
-- Captain Finn takes Bobert through the sea currents to a wild jungle island.
+- Captain Max takes Bobert through the sea currents to a wild jungle island.
 - Giant Venus fly traps can't move and bite slowly, but each bite is 5 hearts. One hit defeats them.
 - Snakes and gorillas roam the jungle. An old temple hides treasure.
-- Bobert defeats all the fly traps and Finn brings him home a hero.
+- Bobert defeats all the fly traps and Max brings him home a hero.
 - Now that Bobert has seen the jungle, he can build a boat at the dock (40 wood) to sail the ocean or go back to the jungle any time.
 - *Checkpoint: `boat`*
 
@@ -108,7 +116,7 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 
 ## Chapter 10: The Viniac
 *Checkpoint: `vine`*
-- The Viniac, the boss of the jungle, grows to the east: a giant carnivorous plant (50 HP).
+- The Viniac, the boss of the jungle, grows to the east: a giant carnivorous plant (70 health). Up to three of its arms can be coming down at once.
 - Its thorny arms slam down like the Kraken's (5 hearts). A red circle shows where.
 - When the Viniac is beaten, a shimmering portal opens where it grew.
 
@@ -121,7 +129,7 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 ## Chapter 11: The dream dimension
 *Checkpoints: `dream`, `dream-powers`*
 - The portal leads to floating pastel islands in a starry purple sky, joined by rainbow bridges.
-- Luma at the shrine sells a **magic conduit** (60 coins). It holds up to 100 magic points (it comes with 20), and dream powers run on magic.
+- Aleli at the shrine sells a **magic conduit** (60 coins). It holds up to 100 magic points (it comes with 20), and dream powers run on magic.
 - Every monster Bobert defeats (once he has the conduit) gives magic points: its health plus its damage, divided by 4, and at least 1.
 - The Dream Keeper's quests each teach two dream powers:
   - Catch the fallen stars: **Double Jump** (press Space again in mid-air, 3 magic) and **Speed Boots** (faster while you have magic, 1 magic a second while moving).
@@ -131,11 +139,12 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 
 ## Chapter 12: The fire island
 *Checkpoints: `fire-island`, `velizar`*
-- When the Viniac falls, the old volcano across the sea wakes up. Captain Finn on the jungle beach can now take Bobert to the fire island (or he can sail his boat there).
+- When the Viniac falls, the old volcano across the sea wakes up. Captain Max on the jungle beach can now take Bobert to the fire island (or he can sail his boat there).
 - The island is dark rock and black sand, with a smoking volcano and rivers of lava. Walking on lava burns (1 damage at a time, and it pushes you back out). Jump over the rivers, or use Pip's Frost Crystal.
 - Now and then (it's rare), a **lava monster** climbs out of a lava flow: a lump of rock with glowing cracks (4 health, 2 damage). Never more than two at a time.
-- **Ember**, who studies the volcano, asks Bobert to defeat **Velizar**, the dragon who lives in the lair beside the volcano.
-- **Velizar** (30 health) sleeps until Bobert comes close. He stomps after you (but never leaves his lair) and breathes fire: first he rears up and the ground in front of him glows red, then flames pour out (4 damage). Step out of the red, then hit him while he catches his breath. Ember pays 200 coins.
+- Other fire monsters live on the island too: **ember bats** (swoop and nip, 2 health), **magma slimes** (hopping molten blobs, 3 health, 2 damage) and **obsidian golems** (slow and tough, 8 health; they pound the ground around them for 3 after a red circle shows).
+- **Ani**, who studies the volcano, asks Bobert to defeat **Velizar**, the dragon who lives in the lair beside the volcano.
+- **Velizar** (30 health) sleeps until Bobert comes close. He stomps after you (but never leaves his lair) and breathes fire: first he rears up and the ground in front of him glows red, then flames pour out (4 damage). Step out of the red, then hit him while he catches his breath. Get too close in front of him and he bites (2 damage). Ani pays 200 coins.
 
 ## What happens next?
 

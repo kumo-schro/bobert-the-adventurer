@@ -5,6 +5,7 @@ import { stoneTexture, texturedVoxelMaterial } from '../core/textures.js';
 import { createRng, createNoise2D } from '../utils/random.js';
 import { vary } from '../utils/color.js';
 import { LavaMonster } from '../entities/LavaMonster.js';
+import { EmberBat, MagmaSlime, ObsidianGolem } from '../entities/FireMonsters.js';
 import { SEED, PLACES, SEA, FIRE } from '../config.js';
 
 const BASALT = ['#3a3533', '#433d3a', '#352f2d', '#4a4240'];
@@ -16,7 +17,7 @@ const lavaMaterial = new THREE.MeshLambertMaterial({ color: '#ffffff', emissive:
 
 /**
  * The fire island: a volcano island far across the sea, open once the Viniac is beaten. Captain
- * Finn (on the jungle beach) takes you here, or you can sail your boat. Rivers of lava run down
+ * Max (on the jungle beach) takes you here, or you can sail your boat. Rivers of lava run down
  * from the volcano: walking on them burns (Frosty Feet from Pip's Frost Crystal stops that), and
  * now and then a lava monster climbs out of one. Velizar the dragon lives in the lair beside the
  * volcano. Exposes `arrive`, `finnSpot`, `emberSpot`, `lairSpot`; `travel(game)` takes you there.
@@ -88,9 +89,38 @@ export class FireIsland extends Entity {
     this.buildVolcano(game);
     this.buildLair(game);
     this.buildRocks(game);
+    this.spawnMonsters(game);
   }
 
-  /** Captain Finn (or your boat) brings you here. */
+  /** Ember bats, magma slimes and obsidian golems around the island (not on the landing beach). */
+  spawnMonsters(game) {
+    const rng = createRng(SEED + 137);
+    const { x: X, z: Z } = this.center;
+    const spots = [];
+    const pick = (from) => {
+      for (let attempt = 0; attempt < 200; attempt++) {
+        const x = X + rng.range(-this.radius, this.radius);
+        const z = Z + rng.range(-this.radius, this.radius);
+        if (!this.isInside(x, z, 4) || this.isLava(x, z) || this.nearLava(x, z, 2)) continue;
+        if (Math.hypot(x - this.arrive.x, z - this.arrive.z) < from) continue;
+        if (Math.hypot(x - this.volcano.x, z - this.volcano.z) < this.volcano.r + 3) continue;
+        if (Math.hypot(x - this.lairSpot.x, z - this.lairSpot.z) < 14) continue;
+        if (spots.some((s) => Math.hypot(s.x - x, s.z - z) < 7)) continue;
+        const spot = { x, z };
+        spots.push(spot);
+        return spot;
+      }
+      return null;
+    };
+    for (const [Kind, count, from] of [[EmberBat, 7, 16], [MagmaSlime, 8, 14], [ObsidianGolem, 3, 24]]) {
+      for (let i = 0; i < count; i++) {
+        const s = pick(from);
+        if (s) game.add(new Kind(s));
+      }
+    }
+  }
+
+  /** Captain Max (or your boat) brings you here. */
   travel(game) {
     game.player.boat = null;
     game.teleport(this.arrive.x, this.arrive.z, { facing: this.arrive.facing });

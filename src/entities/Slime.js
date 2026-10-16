@@ -12,12 +12,11 @@ const HOP_SPEED = 3.2; // slowed down so slimes are easier to dodge
  * With `artifact: true` the stolen artifact is stuck inside it.
  */
 export class Slime extends Monster {
-  constructor({ x, z }, { size = 1, color = '#5fe36a', glow = '#2a8f30', health = 2, coins = 3, artifact = false, chaseRange = 12 } = {}) {
+  constructor({ x, z }, { size = 1, color = '#5fe36a', glow = '#2a8f30', health = 2, artifact = false, chaseRange = 12 } = {}) {
     super({
       x,
       z,
       health,
-      coins,
       radius: 1.3 * size,
       barHeight: 3.1 * size,
       hitSound: 'squish',
@@ -32,7 +31,7 @@ export class Slime extends Monster {
 
   /** The Gelationus Slime from the merchant's quest: big, tough, and carrying the artifact. */
   static boss(position) {
-    return new Slime(position, { size: 0.7, health: QUEST.slimeHealth, coins: 0, artifact: true, chaseRange: 11 });
+    return new Slime(position, { size: 0.7, health: QUEST.slimeHealth, artifact: true, chaseRange: 11 });
   }
 
   buildModel(color, glow, hasArtifact) {

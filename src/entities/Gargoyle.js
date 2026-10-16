@@ -22,7 +22,6 @@ export class Gargoyle extends Monster {
       z,
       health: 1,
       damage: 1,
-      coins: 2,
       radius: 0.5,
       barHeight: 1.3,
       colors: [STONE, DARK, '#ff4d4d'],

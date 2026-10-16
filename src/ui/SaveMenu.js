@@ -76,7 +76,7 @@ export class SaveMenu extends Entity {
   open() {
     this.isOpen = true;
     this.confirming = null;
-    this.nameEl.value = listSaves().find(canLoad)?.name ?? '';
+    this.nameEl.value = this.game.saveName ?? listSaves().find(canLoad)?.name ?? '';
     this.show(this.game.player.dead ? "You can save once you're back on your feet." : 'Type a name and press Save. Using the same name again saves over it.');
     this.el.classList.remove('hidden');
     this.nameEl.focus();

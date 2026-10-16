@@ -50,7 +50,7 @@ function facing(dx, dz) {
 export class Village extends Entity {
   constructor() {
     super();
-    this.builder = new VoxelBuilder();
+    this.buildingBuilders = []; // one per building, so each can turn see-through on its own
     this.floor = new VoxelBuilder(); // flat paving, doesn't cast shadows
     this.glow = new VoxelBuilder(); // lanterns and oven fires
     this.chimneys = []; // where smoke comes out
@@ -140,7 +140,8 @@ export class Village extends Entity {
     this.pipShopSpot = { x: crystals.center.x + crystals.front.x * 2.1, z: crystals.center.z + crystals.front.z * 2.1 };
     this.pipShopFacing = Math.atan2(crystals.front.x, crystals.front.z);
 
-    this.object3d.add(this.builder.build({ material: blockMaterial }));
+    this.buildingMeshes = this.buildingBuilders.map((b) => b.build({ material: blockMaterial }));
+    this.object3d.add(...this.buildingMeshes);
     this.object3d.add(this.floor.build({ castShadow: false, material: dirtMaterial }));
     this.object3d.add(this.glow.build({ material: glowMaterial, castShadow: false }));
     this.smokeTimer = 0;
@@ -159,7 +160,9 @@ export class Village extends Entity {
       const [w, d] = k % 2 ? [sz, sx] : [sx, sz];
       builder.box(cx + rx, y, cz + rz, w, sy, d, color);
     };
-    const put = into(this.builder);
+    const builder = new VoxelBuilder();
+    this.buildingBuilders.push(builder);
+    const put = into(builder);
     put.glow = into(this.glow); // glowing parts (lanterns, fires)
     const { halfX, halfZ, smoke } = recipe(put, this.rng, options);
     if (smoke) {
@@ -264,7 +267,9 @@ export class Village extends Entity {
     const put = into(builder);
     put.glow = into(glow);
     const wing = forgeWing(put, this.rng);
-    this.object3d.add(builder.build({ material: blockMaterial }), glow.build({ material: glowMaterial, castShadow: false }));
+    const wingMesh = builder.build({ material: blockMaterial });
+    this.object3d.add(wingMesh, glow.build({ material: glowMaterial, castShadow: false }));
+    game.cameraBlockers.push(wingMesh);
     const [wx, wz] = rotate(wing.center[0], wing.center[1], k);
     const [hx, hz] = k % 2 ? [wing.halfZ, wing.halfX] : [wing.halfX, wing.halfZ];
     game.colliders.push({ x: center.x + wx, z: center.z + wz, halfX: hx, halfZ: hz });
@@ -306,7 +311,7 @@ export class Village extends Entity {
     game.village = this;
     game.colliders.push(...this.colliders);
     game.reservedAreas.push(...this.reserved);
-    game.cameraBlockers.push(this.object3d.children[0]);
+    game.cameraBlockers.push(...this.buildingMeshes); // each building turns see-through when it's in the way
   }
 
   update(dt, game) {

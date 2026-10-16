@@ -27,6 +27,7 @@ These apply to every monster unless a monster below says otherwise.
 | Speed at night | ×1.2 | `Monster.js`, `NIGHT_SPEED` |
 | Extra damage at night | +1 | `Monster.js`, `NIGHT_DAMAGE` |
 | Attack speed | ×1.25 | `config.js`, `MONSTERS.attackSpeed` |
+| Coins when defeated | health + damage, at least 1 (+2 with Pip's Lucky Crystal) | `Monster.js`, `coinsFor()` |
 | Magic points when defeated (with a magic conduit) | (health + damage) / 4, at least 1 | `Monster.js`, `magicPoints()` |
 
 Notes:
@@ -60,7 +61,6 @@ Notes:
 | --- | --- | --- |
 | Health | 2 | `health` in the constructor |
 | Damage | 1 | Monster default |
-| Coins | 4 | `coins` in the constructor |
 | Speed | 2.3 | `SPEED` |
 | Notices you at | 8 | `CHASE_RANGE` |
 
@@ -76,7 +76,6 @@ Notes:
 | --- | --- | --- |
 | Health | 3 | `health` in `onStart()` |
 | Damage | 1 | Monster default |
-| Coins | 3 | `coins` in `onStart()` |
 | Hop speed | about 2.4 | `Slime.js` `HOP_SPEED`, and `size` 0.38 |
 | Notices you at | 10 | `chaseRange` in `onStart()` |
 
@@ -94,7 +93,6 @@ Notes:
 | --- | --- | --- |
 | Health | 3 | `health` in the constructor |
 | Damage | 1 | `damage` in the constructor |
-| Coins | 5 | `coins` in the constructor |
 | Swimming speed | 1.8 | `PATROL_SPEED` |
 | Chasing speed | 2.9 | `CHASE_SPEED` |
 | Notices you at | 13 | `CHASE_RANGE` |
@@ -112,7 +110,6 @@ Notes:
 | --- | --- | --- |
 | Health | 5 | `health` |
 | Damage | 3 | `damage` |
-| Coins | 8 | `coins` |
 | Swimming speed | 2 | `swim` |
 | Lunge speed | 5 | `lunge` |
 | Lunges when you're within | 3.5 | `3.5 * scale` in `think()` |
@@ -131,7 +128,6 @@ Notes:
 | --- | --- | --- |
 | Health | 10 | `health` |
 | Damage | 3 | `damage` |
-| Coins | 25 | `coins` |
 | Swimming speed | 4 | `swim` |
 | Lunge speed | 7 | `lunge` |
 | Lunges when you're within | 7 | `3.5 * scale` |
@@ -151,7 +147,6 @@ Notes:
 | --- | --- | --- |
 | Health | 10 | `health` in the constructor |
 | Damage | 5 | `damage` in the constructor |
-| Coins | 30 | `coins` in the constructor |
 | Speed | 1.2 | `DRIFT_SPEED` |
 | Notices you at | 20 | `NOTICE_RANGE` |
 | Slams when you're within | 7 | `SLAM_RANGE` |
@@ -171,7 +166,6 @@ Notes:
 | --- | --- | --- |
 | Health | 1 | `health` in the constructor |
 | Damage | 1 | `damage` in the constructor |
-| Coins | 2 | `coins` in the constructor |
 | Flying speed | 3.2 | `FLY_SPEED` |
 | Wakes up when you're within | 9 | `WAKE_RANGE` |
 | Flies back after hitting you for | 1 s | `attackTime(1.2)` |
@@ -200,7 +194,6 @@ Notes:
 | Spits a water ball every | 1.6 s | `spitEvery` (sped up) |
 | Spits at you from up to | 22 | `spitRange` |
 | Calls sharks and eels for help | no | `summonsHelpers`, `maxHelpers` |
-| Coins | 50 | `coins` in `Charibdis.js` |
 | Wakes up when you're within | 16 | `WAKE_RANGE` in `Charibdis.js` |
 
 Notes:
@@ -217,7 +210,6 @@ Notes:
 | --- | --- | --- |
 | Health | 1 | `health` in the constructor |
 | Damage | 5 | `damage` in the constructor |
-| Coins | 6 | `coins` in the constructor |
 | Opens its mouth when you're within | 5 | `TRAP_NOTICE` |
 | Bite reaches | 2.8 | `TRAP_BITE_RANGE` |
 | Mouth stays open before it snaps | 1.4 s | `TRAP_WINDUP` |
@@ -235,7 +227,6 @@ Notes:
 | --- | --- | --- |
 | Health | 2 | `health` in the constructor |
 | Damage | 1 | `damage` in the constructor |
-| Coins | 3 | `coins` in the constructor |
 | Speed | 2.6 | `speed` in `think()` |
 | Notices you at | 9 | `chasing(toPlayer, 9, ...)` |
 
@@ -251,7 +242,6 @@ Notes:
 | --- | --- | --- |
 | Health | 4 | `health` in the constructor |
 | Damage | 2 | `damage` in the constructor |
-| Coins | 8 | `coins` in the constructor |
 | Speed | 2.4 | `speed` in `think()` |
 | Notices you at | 10 | `chasing(toPlayer, 10, ...)` |
 
@@ -267,7 +257,6 @@ Notes:
 | --- | --- | --- |
 | Health | 2 | `health` in the constructor |
 | Damage | 1 | `damage` in the constructor |
-| Coins | 2 | `coins` in the constructor |
 | Hop speed | 3.2 | `velocity.set(dirX * 3.2, ...)` in `think()` |
 | Time between hops while chasing | 0.9 s | `hopTimer` in `think()` |
 | Notices you at | 8 | `chasing(toPlayer, 8, ...)` |
@@ -284,7 +273,6 @@ Notes:
 | --- | --- | --- |
 | Health | 3 | `health` in the constructor |
 | Damage | 2 | `damage` in the constructor |
-| Coins | 6 | `coins` in the constructor |
 | Speed | 3.4 | `speed` in `think()` |
 | Notices you at | 11 | `chasing(toPlayer, 11, ...)` |
 
@@ -315,14 +303,13 @@ Notes:
 
 | Stat | Value | Code |
 | --- | --- | --- |
-| Health | 50 | `health` in the constructor |
+| Health | 70 | `health` in the constructor |
 | Damage | 5 | `damage` in the constructor |
-| Coins | 80 | `coins` in the constructor |
 | Wakes up when you're within | 20 | `chasing(toPlayer, 20, ...)` |
-| Slam hits everything within | 2.4 | `CircleGeometry(2.4)` and `< 2.4` |
-| Warning before a slam | 1.3 s | `timer: 1.3` |
-| Time between slams | 1.3 s | `attackTime(1.6)` |
-| Most slams at once | 2 | `this.slams.length < 2` |
+| Slam hits everything within | 2.6 | `VINE_SLAM_RADIUS` |
+| Warning before a slam | 1.1 s | `VINE_WARNING` |
+| Time between slams | 0.6 s | `VINE_SLAM_EVERY` |
+| Most slams at once | 3 | `VINE_SLAMS` |
 
 Notes:
 
@@ -358,12 +345,61 @@ Notes:
 | --- | --- | --- |
 | Health | 4 | `health` in the constructor |
 | Damage | 2 | `damage` in the constructor |
-| Coins | 6 | `coins` in the constructor |
 | Speed | 2.6 | `SPEED` |
 | Notices you at | 16 | `CHASE_RANGE` |
 | Time to climb out of the lava | 1.4 s | `RISE_TIME` |
 | Most at once | 2 | `config.js`, `FIRE.lavaMonsters.most` |
 | Climbs out every | 12-28 s | `config.js`, `FIRE.lavaMonsters.every` |
+
+Notes:
+
+-
+
+### Ember Bat
+
+`src/entities/FireMonsters.js`, `EmberBat`. There are 7. It flies, swoops at you, nips, then flies off.
+
+| Stat | Value | Code |
+| --- | --- | --- |
+| Health | 2 | `health` in the constructor |
+| Damage | 1 | `damage` in the constructor |
+| Flying speed | 4.5 | `Math.min(4.5, ...)` in `think()` |
+| Notices you at | 12 | `chasing(..., 12)` |
+| Flies off after biting for | 1.3 s | `attackTime(1.6)` in `bitPlayer()` |
+
+Notes:
+
+-
+
+### Magma Slime
+
+`src/entities/FireMonsters.js`, `MagmaSlime`. There are 8. It hops after you.
+
+| Stat | Value | Code |
+| --- | --- | --- |
+| Health | 3 | `health` in the constructor |
+| Damage | 2 | `damage` in the constructor |
+| Hop speed | 3.4 | `velocity.set(dirX * 3.4, ...)` |
+| Time between hops while chasing | 0.8 s | `hopTimer` in `think()` |
+| Notices you at | 10 | `chasing(toPlayer, 10, ...)` |
+
+Notes:
+
+-
+
+### Obsidian Golem
+
+`src/entities/FireMonsters.js`, `ObsidianGolem`. There are 3. Slow and tough; it pounds the ground around it.
+
+| Stat | Value | Code |
+| --- | --- | --- |
+| Health | 8 | `health` in the constructor |
+| Pound damage | 3 | `damage` in the constructor |
+| Pound hits everything within | 2.8 | `POUND_RADIUS` |
+| Warning before a pound (red circle) | 0.8 s | `POUND_WINDUP` |
+| Time between pounds | 1.8 s | `attackTime(2.2)` |
+| Walking speed | 1.4 | `speed` in `think()` |
+| Notices you at | 12 | `chasing(toPlayer, 12, ...)` |
 
 Notes:
 
@@ -377,10 +413,14 @@ Notes:
 | --- | --- | --- |
 | Health | 30 | `health` |
 | Flame damage | 4 | `flameDamage` |
+| Bite damage (close in front of him) | 2 | `biteDamage` |
+| Bite reaches | 3.8 | `biteRange` |
+| Warning before a bite (jaws open) | 0.35 s | `BITE_WINDUP` in `Velizar.js` |
+| Time between bites | 1.3 s | `BITE_COOLDOWN` |
 | Bumping into him | 2 | `damage` |
 | Flames reach | 9 | `flameRange` |
 | Flame width (half the angle) | 0.55 (about 30°) | `flameWidth` |
-| Coins | 200 (from Ember's quest) | `reward` |
+| Coins | 200 (from Ani's quest) | `reward` |
 | Wakes up when you're within | 20 | `WAKE_RANGE` in `Velizar.js` |
 | Walking speed | 1.8 | `WALK_SPEED` |
 | Warning before the flames | 1 s | `WINDUP` |

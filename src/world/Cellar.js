@@ -15,7 +15,7 @@ const EARTH = 36; // dirt all around, so it looks like a room dug into the groun
 const stoneMaterial = texturedVoxelMaterial(stoneTexture);
 
 /**
- * Old Man Keegan's cellar, down the trapdoor. It's built far away from the island (out of
+ * Old Man Ward's cellar, down the trapdoor. It's built far away from the island (out of
  * sight) and you get there by teleporting. Cozy: fireplace, bed, books, maps of the sea.
  * The ladder takes you back up to the trapdoor. Registers as walkable land.
  * Exposes `arrive` (where you land coming down), `keeganSpot`, and `trapdoor` (set by main.js).

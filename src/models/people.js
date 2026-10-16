@@ -127,7 +127,30 @@ export const LOOKS = {
     },
   },
 
-  // Ember, who studies the volcano on the fire island: a heat-proof coat and big goggles.
+  // Master Zach, who taught Master Oak and Master Jackson: a long white beard, a robe and a staff.
+  zach: {
+    colors: { skin: '#e8c29a', shirt: '#3b5f9e', pants: '#2b3a55', shoes: '#5e3b22', hair: '#f2f2f2' },
+    decorate({ head, root, handR }) {
+      part(head, [0.5, 0.42, 0.12], '#f2f2f2', [0, 0.02, 0.33]); // long white beard
+      part(head, [0.3, 0.3, 0.1], '#f2f2f2', [0, -0.3, 0.33]);
+      part(head, [0.66, 0.1, 0.66], '#ffd23f', [0, 0.5, 0]); // golden headband
+      part(root, [0.7, 0.75, 0.42], '#3b5f9e', [0, 0.5, 0]); // the robe reaches down to his feet
+      part(root, [0.72, 0.12, 0.44], '#ffd23f', [0, 0.86, 0]); // gold sash
+      part(handR, [0.1, 1.8, 0.1], '#8a5a35', [0, 0.35, 0.1]); // tall staff
+    },
+  },
+
+  // Ollie, who looks after the save stones: a kid in a big blue cap and a crystal on a string.
+  ollie: {
+    colors: { skin: '#f0c8a0', shirt: '#2fb5a8', pants: '#2b3a55', shoes: '#e23b4a', hair: '#e0a030' },
+    decorate({ head, root }) {
+      part(head, [0.66, 0.14, 0.66], '#3f7fd9', [0, 0.66, 0]); // cap
+      part(head, [0.5, 0.06, 0.3], '#3f7fd9', [0, 0.6, 0.42]); // its peak
+      part(root, [0.12, 0.16, 0.06], '#7af0ff', [0, 1.25, 0.2], { emissive: '#3fd0ff' }); // a little crystal on a string
+    },
+  },
+
+  // Ani, who studies the volcano on the fire island: a heat-proof coat and big goggles.
   ember: {
     colors: { skin: '#e0ac69', shirt: '#d9732f', pants: '#4a3a28', shoes: '#2b2b2b', hair: '#ff6a1f' },
     decorate({ head, root }) {

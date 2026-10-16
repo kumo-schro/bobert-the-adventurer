@@ -48,7 +48,7 @@ export class DebugMenu extends Entity {
       { id: 'tp-village', label: 'Go: village', run: place(0, 0) },
       { id: 'tp-dock', label: 'Go: dock', run: place(game.dock.start + 4, game.dock.z) },
       { id: 'tp-tower', label: 'Go: tower top', run: place(tower.x + 2, tower.z, tower.y - 0.5) },
-      { id: 'tp-cellar', label: "Go: Keegan's cellar", run: place(game.cellar.arrive.x, game.cellar.arrive.z) },
+      { id: 'tp-cellar', label: "Go: Ward's cellar", run: place(game.cellar.arrive.x, game.cellar.arrive.z) },
       { id: 'tp-charibdis', label: "Go: Charibdis's cave", run: place(gate.x, gate.z - 3) },
       { id: 'tp-jungle', label: 'Go: jungle', run: () => game.jungle.travel(game) },
     ];

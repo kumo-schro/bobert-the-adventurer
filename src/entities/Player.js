@@ -230,7 +230,7 @@ export class Player extends Entity {
   useMagic(game, ability) {
     const cost = MAGIC.cost[ability];
     if (!this.hasConduit) {
-      game.questLog?.toast('You need a magic conduit to use dream abilities. Luma sells one at the dream shrine.');
+      game.questLog?.toast('You need a magic conduit to use dream abilities. Aleli sells one at the dream shrine.');
       return false;
     }
     if (this.magic < cost) {
@@ -463,7 +463,7 @@ export class Player extends Entity {
     if (game.towerIsland?.railingBlocks(pos, x, z)) return false;
     if (game.isWalkable(x, z)) return game.heightAt(x, z) <= pos.y + STEP_UP;
     // You get into the sea off the dock (or off the shore of an island out at sea). Once Captain
-    // Finn has shown you how, you can wade in from any beach of the home island too.
+    // Max has shown you how, you can wade in from any beach of the home island too.
     if (game.dock?.isInside(pos.x, pos.z)) return true;
     if (this.canSwimFromBeach && game.terrain.isInside(pos.x, pos.z) && Math.hypot(x, z) < SEA.radius) return true;
     return game.lands.some((land) => land.swimFromShore && land.isInside(pos.x, pos.z) && pos.y < 0.5);

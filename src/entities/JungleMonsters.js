@@ -21,7 +21,6 @@ export class FlyTrap extends Monster {
       z,
       health: 1,
       damage: 5,
-      coins: 6,
       radius: 0.9,
       barHeight: 3.6,
       colors: ['#3fae3a', '#d9293f', '#ffffff'],
@@ -99,7 +98,7 @@ export class FlyTrap extends Monster {
 /** A jungle snake: slithers after you and bites for 1 heart. Two hits. */
 export class Snake extends Monster {
   constructor({ x, z }) {
-    super({ x, z, health: 2, damage: 1, coins: 3, radius: 0.5, barHeight: 1, colors: ['#e0c22e', '#2f8f3a', '#1d1d1d'] });
+    super({ x, z, health: 2, damage: 1, radius: 0.5, barHeight: 1, colors: ['#e0c22e', '#2f8f3a', '#1d1d1d'] });
     this.segments = [];
     this.wanderAngle = Math.random() * Math.PI * 2;
     this.phase = Math.random() * 10;
@@ -147,7 +146,7 @@ export class Snake extends Monster {
 /** A big grumpy gorilla: lumbers after you, pounds its chest, and swats for 2 hearts. Four hits. */
 export class Gorilla extends Monster {
   constructor({ x, z }) {
-    super({ x, z, health: 4, damage: 2, coins: 8, radius: 0.8, barHeight: 2.6, colors: ['#3b3b3b', '#5a4a42', '#ffffff'] });
+    super({ x, z, health: 4, damage: 2, radius: 0.8, barHeight: 2.6, colors: ['#3b3b3b', '#5a4a42', '#ffffff'] });
     this.walkPhase = 0;
     const fur = '#3b3b3b';
     part(this.body, [1.1, 1.1, 0.8], fur, [0, 1.2, 0]); // chest
@@ -203,7 +202,7 @@ export class Gorilla extends Monster {
 /** A poison dart frog: hops after you like a little slime and nips for 1 heart. Two hits. */
 export class Frog extends Monster {
   constructor({ x, z }) {
-    super({ x, z, health: 2, damage: 1, coins: 2, radius: 0.45, barHeight: 1, colors: ['#3fd0ff', '#1d1d1d', '#ffd23f'], hitSound: 'squish' });
+    super({ x, z, health: 2, damage: 1, radius: 0.45, barHeight: 1, colors: ['#3fd0ff', '#1d1d1d', '#ffd23f'], hitSound: 'squish' });
     this.hopTimer = Math.random();
     const color = ['#3fd0ff', '#ff3b8d', '#ffd23f'][Math.floor(Math.random() * 3)];
     part(this.body, [0.6, 0.35, 0.7], color, [0, 0.25, 0]);
@@ -240,7 +239,7 @@ export class Frog extends Monster {
 /** A sleek black panther: prowls fast and swipes for 2 hearts. Three hits. */
 export class Panther extends Monster {
   constructor({ x, z }) {
-    super({ x, z, health: 3, damage: 2, coins: 6, radius: 0.7, barHeight: 1.6, colors: ['#1d1d1d', '#3b3b3b', '#ffd23f'] });
+    super({ x, z, health: 3, damage: 2, radius: 0.7, barHeight: 1.6, colors: ['#1d1d1d', '#3b3b3b', '#ffd23f'] });
     this.walkPhase = 0;
     const black = '#202028';
     part(this.body, [0.6, 0.6, 1.5], black, [0, 0.75, 0]); // body
@@ -302,9 +301,15 @@ function vineArm(parent, length) {
   return { root, joints };
 }
 
+const VINE_SLAMS = 3; // arms that can be coming down at once
+const VINE_SLAM_EVERY = attackTime(0.8);
+const VINE_WARNING = 1.1; // seconds the red circle shows before the arm lands
+const VINE_SLAM_RADIUS = 2.6;
+
 /**
  * The Viniac: the boss of the jungle. A giant carnivorous plant rooted to the spot. Its huge thorny
- * arms rise up and SLAM down where you are (a red circle shows where), for 5 hearts. 50 hits.
+ * arms rise up and SLAM down where you are (a red circle shows where), up to three at once, for 5.
+ * 70 health.
  */
 export class Vine extends Monster {
   constructor({ x, z }) {
@@ -312,9 +317,8 @@ export class Vine extends Monster {
       hitSound: 'wood',
       x,
       z,
-      health: 50,
+      health: 70,
       damage: 5,
-      coins: 80,
       radius: 2.6,
       barHeight: 7.5,
       colors: [VINE_GREEN, '#ff3b8d', '#ffd23f'],
@@ -366,14 +370,14 @@ export class Vine extends Monster {
     this.velocity.x = this.velocity.z = 0; // rooted
     const awake = this.chasing(toPlayer, 20, !game.player.swimming);
     this.slamTimer -= dt;
-    if (awake && this.slamTimer <= 0 && this.slams.length < 2 && toPlayer.dist < 22) {
-      this.slamTimer = attackTime(1.6);
+    if (awake && this.slamTimer <= 0 && this.slams.length < VINE_SLAMS && toPlayer.dist < 22) {
+      this.slamTimer = VINE_SLAM_EVERY;
       const p = game.player.object3d.position;
       const arm = vineArm(this.object3d, 8);
-      const warning = new THREE.Mesh(new THREE.CircleGeometry(2.4, 24), vineWarning);
+      const warning = new THREE.Mesh(new THREE.CircleGeometry(VINE_SLAM_RADIUS, 24), vineWarning);
       warning.rotation.x = -Math.PI / 2;
       this.object3d.add(warning);
-      this.slams.push({ x: p.x + (Math.random() - 0.5), z: p.z + (Math.random() - 0.5), timer: 1.3, arm, warning });
+      this.slams.push({ x: p.x + (Math.random() - 0.5), z: p.z + (Math.random() - 0.5), timer: VINE_WARNING, arm, warning });
     }
   }
 
@@ -396,7 +400,7 @@ export class Vine extends Monster {
         s.landed = true;
         game.particles?.burst(new THREE.Vector3(s.x, 0.3, s.z), { count: 30, colors: ['#5a4632', '#2e7d32', '#ffffff'], speed: 6, size: 0.2 });
         const p = player.object3d.position;
-        if (!player.dead && !player.swimming && Math.hypot(p.x - s.x, p.z - s.z) < 2.4) player.takeDamage(game, this.power, pos.x, pos.z);
+        if (!player.dead && !player.swimming && Math.hypot(p.x - s.x, p.z - s.z) < VINE_SLAM_RADIUS) player.takeDamage(game, this.power, pos.x, pos.z);
       }
       if (s.timer < -0.5) {
         this.object3d.remove(s.arm.root, s.warning);
@@ -429,10 +433,11 @@ const OAK_SPIN_REACH = 3.2;
 
 export class OakFighter extends Monster {
   constructor({ x, z }, model) {
-    super({ x, z, health: 8, damage: 10, coins: 0, radius: 0.6, barHeight: 2.6, colors: ['#3fae3a', '#8a5a35', '#ffd23f'], touchDamage: false });
+    super({ x, z, health: 8, damage: 10, radius: 0.6, barHeight: 2.6, colors: ['#3fae3a', '#8a5a35', '#ffd23f'], touchDamage: false });
     this.model = model;
     this.body.add(model.root);
     this.model.armR.rotation.order = 'YXZ';
+    this.noCoins = true; // a master, not a monster
     this.spinTimer = 0; // the duel starts with him charging up his first spin
     this.charge = 0;
     this.walkPhase = 0;

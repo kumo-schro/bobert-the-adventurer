@@ -27,7 +27,7 @@ const NOTICE = 10;
  */
 export class Wisp extends Monster {
   constructor({ x, y, z }) {
-    super({ x, y, z, health: 2, damage: 1, coins: 0, radius: 0.5, barHeight: 1.3, colors: ['#b47dff', '#ffffff', '#3b1d6e'], flying: true });
+    super({ x, y, z, health: 2, damage: 1, radius: 0.5, barHeight: 1.3, colors: ['#b47dff', '#ffffff', '#3b1d6e'], flying: true });
     this.phase = Math.random() * 10;
     this.retreatTimer = 0;
     const glow = part(this.body, [0.7, 0.8, 0.7], '#c8a8ff', [0, 0.5, 0], { emissive: '#b47dff' });

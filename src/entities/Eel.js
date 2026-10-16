@@ -4,8 +4,8 @@ import { part } from '../models/character.js';
 
 // The regular eel and its huge cousin, the sea serpent.
 const KINDS = {
-  eel: { health: 5, damage: 3, coins: 8, scale: 1, segments: 7, swim: 2, lunge: 5, notice: 7, green: '#2f8f5b' },
-  serpent: { health: 10, damage: 3, coins: 25, scale: 2, segments: 11, swim: 4, lunge: 7, notice: 16, green: '#2b6f8f' },
+  eel: { health: 5, damage: 3, scale: 1, segments: 7, swim: 2, lunge: 5, notice: 7, green: '#2f8f5b' },
+  serpent: { health: 10, damage: 3, scale: 2, segments: 11, swim: 4, lunge: 7, notice: 16, green: '#2b6f8f' },
 };
 
 /**
@@ -21,7 +21,6 @@ export class Eel extends Monster {
       z,
       health: k.health,
       damage: k.damage,
-      coins: k.coins,
       radius: 0.75 * k.scale,
       barHeight: 2.6 * k.scale,
       colors: [k.green, '#ffe94a', '#ffffff'],

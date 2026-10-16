@@ -114,3 +114,13 @@ Add new lines below.
 - the fire area should have lava monsters - they are rare and come out of lava flows
 - walking on lava deals damage
 - in the lava area you will fight a dragon boss called velizar who has 30 health and does a flame attack
+- make it so beating monsters gives you coins  equal to their  health plus their attack damage with a minimum of one. Pips crystal increases the coins you get from monsters by two.
+-  Branch out to a different style
+-  make the dialogue so you Can find out what to do but is still vague
+-  make the viniac harder
+-  give the dragon a bite that does two damage 
+-  make the areas bigger
+-  add more  fire world monsters
+-  make it so auto save points, which immediately save the game on the name you're playing on
+-  make the Auto save point at all the islands
+-  change, all the characters names to have these names if a character already has one of these names they can keep it.oak,julian,ollie,ward,hana,elda,hatty,ani,grayson,barrett,jackson, max, jonah,eve,aleli,evie,clara,emi,

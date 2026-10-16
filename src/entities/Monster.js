@@ -5,6 +5,9 @@ import { part } from '../models/character.js';
 import { SEA, BUFFS, MONSTERS, CRYSTALS } from '../config.js';
 
 const GRAVITY = 25;
+/** Coins a monster drops: its health plus its damage, at least 1. (Masters in a duel drop none: noCoins.) */
+export const coinsFor = (monster) => (monster.noCoins ? 0 : Math.max(1, monster.maxHealth + monster.damage));
+
 /** Magic points a monster gives when it's defeated: (its health + its damage) / 4, at least 1. */
 export const magicPoints = (monster) => Math.max(1, Math.round((monster.maxHealth + monster.damage) / 4));
 
@@ -25,7 +28,7 @@ const NIGHT_DAMAGE = 1; // ...and hit 1 heart harder
  *   think(dt, game, toPlayer)  - set this.velocity (x/z, and y to jump) to move
  *   animate(dt, game)          - wiggle, squash, etc.
  *
- * Options: { x, z, y, health, radius, coins, damage, barHeight, colors (death burst),
+ * Options: { x, z, y, health, radius, damage, barHeight, colors (death burst),
  *            aquatic, flying, touchDamage, hitSound }
  * hitSound: what our sword sounds like hitting it ('thwack', 'squish', 'stone' or 'wood', see core/Sound.js).
  * Aquatic monsters (sharks, eels) swim at the water surface, can't go on land, and only
@@ -46,7 +49,6 @@ export class Monster extends Entity {
     y = 0,
     health = 2,
     radius = 0.6,
-    coins = 3,
     damage = 1,
     barHeight = 1.6,
     colors = ['#ffffff'],
@@ -65,7 +67,6 @@ export class Monster extends Entity {
     this.maxHealth = health;
     this.health = health;
     this.radius = radius;
-    this.coins = coins;
     this.damage = damage;
     this.colors = colors;
     this.onDefeated = null;
@@ -278,9 +279,9 @@ export class Monster extends Entity {
       size: 0.25,
       life: 1.4,
     });
-    if (this.coins) {
-      // Barrett's Lucky Tail buff doubles them; Pip's Lucky Crystal adds one more.
-      const coins = this.coins * (game.player.buffs?.luckyTail ? BUFFS.luckyTail.coins : 1) + (game.player.luckyCrystal ? CRYSTALS.lucky.coins : 0);
+    if (coinsFor(this)) {
+      // Barrett's Lucky Tail buff doubles them; Pip's Lucky Crystal adds two more.
+      const coins = coinsFor(this) * (game.player.buffs?.luckyTail ? BUFFS.luckyTail.coins : 1) + (game.player.luckyCrystal ? CRYSTALS.lucky.coins : 0);
       game.player.addCoins(coins);
       game.particles?.burst(where.clone().setY(where.y + 1), { count: coins * 3, colors: ['#ffc93c', '#ffe08a'], speed: 5, size: 0.14 });
     }

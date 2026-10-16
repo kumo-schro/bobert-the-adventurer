@@ -28,6 +28,8 @@ import { Particles } from './entities/Particles.js';
 import { Player } from './entities/Player.js';
 import { Npc } from './entities/Npc.js';
 import { Grayson } from './entities/Grayson.js';
+import { SavePoint } from './entities/SavePoint.js';
+import { colliderAt } from './core/collision.js';
 import { Shark } from './entities/Shark.js';
 import { Eel } from './entities/Eel.js';
 import { Kraken } from './entities/Kraken.js';
@@ -67,7 +69,7 @@ import {
 import { createShell } from './models/gear.js';
 import { LOOKS } from './models/people.js';
 import { createGecko } from './models/critters.js';
-import { SIDE_QUESTS, BLACKSMITH, BAKER, VILLAGER_CHATTER, PIP_CRYSTAL } from './story.js';
+import { SIDE_QUESTS, BLACKSMITH, BAKER, VILLAGER_CHATTER, PIP_CRYSTAL, OLLIE, ZACH } from './story.js';
 import { FORGE_SHOP, BAKERY_SHOP, BOAT_MENU, DREAM_SHRINE, BARRETT_SHOP, PIP_SHOP, FINN_TRIPS } from './shops.js';
 import { VILLAGE, SEA, PLACES, DREAM, JACKSON } from './config.js';
 
@@ -98,7 +100,7 @@ game.add(new Forest());
 
 // Out at sea: the tower island, little islands to rest on, and Charibdis's locked cave.
 const towerIsland = game.add(new TowerIsland());
-SEA.islands.forEach((island, i) => game.add(new SmallIsland(island, i)));
+const smallIslands = SEA.islands.map((island, i) => game.add(new SmallIsland(island, i)));
 const charibdisCave = game.add(new CharibdisCave());
 const jungle = game.add(new Jungle());
 const fireIsland = game.add(new FireIsland()); // the volcano island, open once the Viniac is beaten
@@ -124,7 +126,7 @@ const pipShop = new Shop(PIP_SHOP);
 PIP_SHOP.game = game;
 const finnTrips = new Shop(FINN_TRIPS);
 FINN_TRIPS.game = game;
-/** Captain Finn's trip menu, from the jungle beach or the fire island. */
+/** Captain Max's trip menu, from the jungle beach or the fire island. */
 const tripsFrom = (here) => () => {
   FINN_TRIPS.here = here;
   finnTrips.open();
@@ -190,15 +192,15 @@ game.add(
     look: LOOKS.sailor,
     position: dock.keeperSpot,
     facing: -Math.PI / 2,
-    // After talking to Finn you can jump in the sea from any beach, not just the dock.
+    // After talking to Max you can jump in the sea from any beach, not just the dock.
     onTalk: (g) => {
       if (g.player.canSwimFromBeach) return;
       g.player.canSwimFromBeach = true;
-      g.questLog.toast('Captain Finn showed you how to swim from any beach!');
+      g.questLog.toast('Captain Max showed you how to swim from any beach!');
     },
     quests: [
       crystalQuest,
-      // After Charibdis is slain (and you've told Keegan), Finn takes you to the jungle.
+      // After Charibdis is slain (and you've told Ward), Max takes you to the jungle.
       jungleQuest,
     ],
   }),
@@ -212,32 +214,32 @@ game.add(
     quest: keeganQuest,
   }),
 );
-// Finn waits on the jungle beach to take you home (or, once the Viniac is beaten, to the fire island).
+// Max waits on the jungle beach to take you home (or, once the Viniac is beaten, to the fire island).
 game.jungleFinn = game.add(
   new Npc({
-    name: 'Captain Finn',
+    name: 'Captain Max',
     look: LOOKS.sailor,
     position: jungle.finnSpot,
     facing: Math.PI,
-    interactText: 'Press T to sail with Captain Finn',
+    interactText: 'Press T to sail with Captain Max',
     onInteract: tripsFrom('jungle'),
   }),
 );
 
-// The fire island: Finn waits on the beach, and Ember (who studies the volcano) asks you to
+// The fire island: Max waits on the beach, and Ani (who studies the volcano) asks you to
 // defeat Velizar the dragon.
 game.add(
   new Npc({
-    name: 'Captain Finn',
+    name: 'Captain Max',
     look: LOOKS.sailor,
     position: fireIsland.finnSpot,
     facing: Math.PI,
-    interactText: 'Press T to sail with Captain Finn',
+    interactText: 'Press T to sail with Captain Max',
     onInteract: tripsFrom('fire'),
   }),
 );
 const velizarQuest = new VelizarQuest(game, { island: fireIsland });
-game.add(new Npc({ name: 'Ember', look: LOOKS.ember, position: fireIsland.emberSpot, facing: Math.PI, quest: velizarQuest }));
+game.add(new Npc({ name: 'Ani', look: LOOKS.ember, position: fireIsland.emberSpot, facing: Math.PI, quest: velizarQuest }));
 
 // Master Oak, in his jungle clearing: beat him to learn the spin attack, then he teaches the Sky
 // Strike, then you take on the Viniac. After that he sends you to find his old friend Master
@@ -279,7 +281,7 @@ game.add(
   }),
 );
 
-// The dream dimension: each of the Dream Keeper's quests teaches two dream abilities. Luma's shrine
+// The dream dimension: each of the Dream Keeper's quests teaches two dream abilities. Aleli's shrine
 // sells the magic conduit they run on (defeating monsters fills it with magic).
 const starsQuest = new DreamStarsQuest(game, { dream });
 const wispsQuest = new DreamWispsQuest(game, { dream, makeWisp: (spot) => new Wisp(spot), after: starsQuest });
@@ -296,7 +298,7 @@ game.add(
 );
 game.add(
   new Npc({
-    name: 'Luma',
+    name: 'Aleli',
     look: LOOKS.sprite,
     position: dream.shrineSpot,
     facing: Math.PI,
@@ -356,7 +358,7 @@ const villagers = [
 villagers.forEach((v, i) => {
   game.add(new Npc({ ...v, position: { x: v.at[0], z: v.at[1] }, wander: strolling, home: houses[i].door }));
 });
-// Pip collects crystals. Show him the mystery crystal and he tells you about Old Man Keegan, then
+// Pip collects crystals. Show him the mystery crystal and he tells you about Old Man Ward, then
 // sells you crystals from his collection (after that, his shop opens unless he has a quest to talk about).
 const pip = game.entities.find((e) => e.name === SIDE_QUESTS.gems.giver);
 game.pip = pip;
@@ -383,11 +385,11 @@ pip.onInteract = (g) => {
 };
 // More villagers, living in the outer ring of houses.
 const neighbours = [
-  { name: 'Rosa', look: LOOKS.gardener },
-  { name: 'Milo', look: LOOKS.fisher },
-  { name: 'Greta', look: LOOKS.grandma },
-  { name: 'Juno', look: LOOKS.guard },
-  { name: 'Wren', look: LOOKS.painter },
+  { name: 'Clara', look: LOOKS.gardener },
+  { name: 'Emi', look: LOOKS.fisher },
+  { name: 'Hatty', look: LOOKS.grandma },
+  { name: 'Eve', look: LOOKS.guard },
+  { name: 'Evie', look: LOOKS.painter },
 ];
 houses
   .filter((h) => h.outer)
@@ -396,6 +398,38 @@ houses
     const at = { x: house.door.x + house.front.x * 2, z: house.door.z + house.front.z * 2 };
     game.add(new Npc({ ...v, lines: VILLAGER_CHATTER[v.name], position: at, wander: strolling, home: house.door }));
   });
+
+// Save points: one on every island. Walk up to one and it saves your adventure straight away.
+const freeSpotNear = (x, z, y = null) => {
+  for (let r = 0; r <= 6; r += 1.5) {
+    for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+      const sx = x + Math.cos(a) * r;
+      const sz = z + Math.sin(a) * r;
+      if (game.isWalkable(sx, sz, 1) && !colliderAt(sx, sz, game.colliders) && !colliderAt(sx + 1, sz, game.colliders) && !colliderAt(sx - 1, sz, game.colliders)) {
+        return { x: sx, y: y ?? game.heightAt(sx, sz), z: sz };
+      }
+      if (r === 0) break;
+    }
+  }
+  return { x, y: y ?? game.heightAt(x, z), z };
+};
+const towerSide = PLACES.towerIsland;
+const villageSave = freeSpotNear(-4, 4);
+for (const [spot, name] of [
+  [villageSave, 'the village save point'],
+  [freeSpotNear(towerSide.x - towerSide.radius + 6, towerSide.z), 'the tower island save point'],
+  ...smallIslands.map((s) => [freeSpotNear(s.center.x - 2, s.center.z + 2), 'a little island save point']),
+  [freeSpotNear(jungle.arrive.x + 5, jungle.arrive.z - 3), 'the jungle save point'],
+  [freeSpotNear(fireIsland.arrive.x - 5, fireIsland.arrive.z + 3), 'the fire island save point'],
+  [freeSpotNear(dream.arrive.x + 3, dream.arrive.z - 2, dream.y), 'the dream save point'],
+]) {
+  game.add(new SavePoint(spot, name));
+}
+// Master Zach, who taught Master Oak and Master Jackson, lives on the island toward the sunset.
+const zachIsland = smallIslands.find((s) => s.center.x < 0 && s.center.z > 0) ?? smallIslands[0];
+game.add(new Npc({ name: 'Master Zach', look: LOOKS.zach, lines: ZACH, position: freeSpotNear(zachIsland.center.x + 2, zachIsland.center.z - 1), facing: Math.PI / 2 }));
+// Ollie (new in town) stands by the village save point and tells you how it works.
+game.add(new Npc({ name: 'Ollie', look: LOOKS.ollie, lines: OLLIE, position: freeSpotNear(villageSave.x + 2.2, villageSave.z), facing: Math.PI }));
 
 // UI after the characters, so the key that closes a dialog doesn't also swing the sword.
 game.add(new Dialog());

@@ -14,7 +14,7 @@ const BANDS = [
 
 /** A ring of big chunky voxel mountains on the horizon. Purely background. */
 export class Mountains extends Entity {
-  constructor({ innerRadius = 320, outerRadius = 520, cell = 8 } = {}) {
+  constructor({ innerRadius = 420, outerRadius = 650, cell = 8 } = {}) {
     super();
     const noise = createNoise2D(SEED + 7);
     const builder = new VoxelBuilder();

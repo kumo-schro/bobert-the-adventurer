@@ -18,6 +18,8 @@ npm run build    # production build into dist/
 
 **🔊 Sound:** swinging the sword swishes, and hits sound different for monsters (squishy slimes, stony gargoyles), trees, chests and posts (a wooden knock) and rocks and walls (a clink). The sounds are made in code (`src/core/Sound.js`), no sound files. **M** turns them off.
 
+**💎 Save points:** there's a glowing save crystal on every island. Walk up to one and it saves straight away, under the name of the adventure you're playing (the first time, it asks for a name).
+
 **💾 Saved games:** press **Esc** (or click 💾 in the corner), type a name and press Save. Saves are kept in this browser; load or delete them from the same menu. After a big update to the game (`SAVES.version` in `src/config.js`), older saves can't be loaded any more.
 
 **💡 Suggest a change:** press **/** (or click the button in the corner), click on anything in the game, and type how you'd like it changed. It's saved with where you were, what you clicked, your quest and a small screenshot. Nothing happens automatically; the ideas are just collected for later:
@@ -47,7 +49,7 @@ src/
                        Cave (mountain + tunnels), StoneCircle (puzzle), Forest, Flowers,
                        Dock (where you jump in to swim), Road (town to dock), TowerIsland (tower +
                        spiral stairs), SmallIsland, CharibdisCave (locked sea cave), Cellar
-                       (Keegan's room under the trapdoor), DayNight (lighting cycle),
+                       (Ward's room under the trapdoor), DayNight (lighting cycle),
                        Gathering (trees and boulders for wood and stone), Jungle (the jungle island), FireIsland (volcano, lava, Velizar's lair),
                        Underwater (seabed + underwater/dream look), Dream (dream dimension + portal)
   entities/            Player, Npc (townsfolk), Monster (base) -> Slime, Spider, Shark, Eel (and

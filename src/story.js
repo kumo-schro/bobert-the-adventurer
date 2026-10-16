@@ -10,9 +10,9 @@ export const MAIN_QUEST = {
       'The village as we know it is in imminent danger you must slay a Gelationus Slime to retrieve our villages precious artifact. you will be rewarded handsomely',
     ],
     active: [
-      'The Gelationus Slime hides in the cave inside the mountain. Follow the arrow at the top of the screen!',
-      'Watch out for spiders in the tunnel. The blacksmith sells shields, swords, bows and armor, if you have the coins.',
-      'And take some food from Hana the baker. Press F to eat it when you get hurt!',
+      'The slime crawled away into the dark, where the mountain keeps its secrets.',
+      'Others lurk in there too. The blacksmith may have something to help, if you have the coins.',
+      'And Hana the baker makes food that mends a hero. Press F to eat it.',
     ],
     turnIn: [
       'You did it! Our precious artifact is safe once more.',
@@ -41,22 +41,22 @@ export const SIDE_QUESTS = {
     text: {
       offer: [
         'Oh no, oh no! I was juggling my shiny gems and they flew all over the island!',
-        'Can you find all 6 of them? They glow, so look for beams of light! Some went really far.',
+        'There were six. They glow when the light catches them... and some flew really, REALLY far.',
       ],
-      active: ['Look for the beams of light around the island. The arrow points to the closest gem!'],
+      active: ['Six gems, all glowing somewhere out there. Keep your eyes open!'],
       turnIn: ['My gems! All of them! You are the best gem finder ever. Here, take some coins!'],
       complete: ['I am never juggling gems again. Probably.'],
     },
   },
   hunt: {
-    giver: 'Bram',
+    giver: 'Jonah',
     title: 'Slime Trouble',
     text: {
       offer: [
-        'Howdy! Some blue slimes are hopping around the meadow and squishing my cabbages.',
-        'Could you shoo them away with that sword of yours? There are 5 of them, and they are tougher than they look!',
+        'Howdy! Somethin\' blue and bouncy keeps squishin\' my cabbages, out where the flowers grow thick.',
+        'A whole gang of \'em, and they\'re tougher than they look. Could you shoo them off for good?',
       ],
-      active: ['Those blue slimes are in the meadow. Follow the arrow, and swing that sword!'],
+      active: ['Out where the flowers grow thick. Listen for the squish-squish!'],
       turnIn: ['My cabbages are saved! Thank you kindly. Here is a little something for your trouble.'],
       complete: ['The cabbages are growing big and happy now.'],
     },
@@ -67,50 +67,50 @@ export const SIDE_QUESTS = {
     text: {
       offer: [
         'Hello, dearie. Out past the trees there is a ring of old standing stones.',
-        'Legend says if you step on the colored stones in rainbow order, a treasure appears!',
-        'Red, orange, yellow, green, blue, then purple. Step on a wrong one and you must start over.',
+        'Each stone is a different color. Step on them in the right order and a treasure appears!',
+        'The old rhyme says: "After the storm, follow the bow that bends across the sky." Step wrong, and you start again.',
       ],
-      active: ['Remember: red, orange, yellow, green, blue, purple. Just like a rainbow!'],
+      active: ['"After the storm, follow the bow that bends across the sky." That is all the rhyme says, dearie.'],
       turnIn: ['You solved the riddle of the stones! I knew you could do it. Keep the treasure, dearie.'],
       complete: ['Those old stones have not glowed like that in a hundred years.'],
     },
   },
   crystal: {
-    giver: 'Captain Finn',
+    giver: 'Captain Max',
     title: 'The Mystery Crystal',
     text: {
       offer: [
-        'Ahoy there! See that little island out at sea, with the old tower on it?',
-        'Folks say a mystery crystal glows at the very top. I would fetch it myself, but my knees are too creaky for all those stairs.',
-        'Walk off the end of my dock to jump in and swim there. Mind the sharks, and watch out for the zappy eels by the rocks!',
+        'Ahoy there! Ever looked out to sea, toward the sunrise? There is an old tower out there.',
+        'Folks say something glows at the very top. I would fetch it myself, but my knees are too creaky for all those stairs.',
+        'There is no bridge, matey. My dock is as good a place as any to start a swim. And the sea has teeth!',
       ],
       active: [
-        'Swim out to the tower island and climb the stairs to the top. Sharks bite, but eels zap even harder, so keep away from the rocks!',
-        'To swim home, just walk off the island beach. If you get hurt, eat some food with F.',
+        'The tower stands toward the sunrise. Whatever glows up there is waiting at the very top.',
+        'Sharks bite, and something by the rocks zaps. Keep moving, and keep some food handy.',
       ],
       turnIn: [
         'Shiver me timbers, you found it! Look how it sparkles...',
-        'Wait a moment. I know that shape! It fits the lock on the old trapdoor outside of town, by the road.',
-        'Keep the crystal, matey, and take these coins too. Old Man Keegan lives down there. He knows the secrets of the sea.',
+        'Hmm. I have seen a lock that shape somewhere... I just cannot remember where. Somebody who collects crystals might know!',
+        'Keep it, matey, and take these coins too.',
       ],
-      complete: ['Have you opened the old trapdoor yet? It is just off the road to my dock.'],
+      complete: ['Found where that crystal belongs yet? A crystal collector would know. They always do.'],
     },
   },
   charibdis: {
-    giver: 'Old Man Keegan',
+    giver: 'Old Man Ward',
     title: 'Slay Charibdis',
     text: {
       offer: [
         'Well, well! A visitor! Nobody has opened that trapdoor in fifty years.',
         'Listen close. Far out at sea there is a rocky cave full of water, and in it lives Charibdis: a fish with a huge mouth, covered in eyes!',
-        'Its whirlpool sinks ships. Anyone caught in it gets hurt every few seconds, so wait until the whirlpool stops, then strike!',
-        'The cave is locked. The key was swallowed by either the Kraken or the Sea Serpent. Defeat one of them to get it.',
-        'The Kraken slams its tentacles down: when you see the red circle, swim away! The Sea Serpent is a huge, fast eel.',
+        'Its whirlpool sinks ships. But even a whirlpool has to rest sometimes...',
+        'The cave is locked tight. Its key was swallowed long ago by one of the two great beasts of the deep: one with many arms, and one long and quick.',
+        'Watch the water around them. It will warn you before they strike.',
         'Go now, and slay Charibdis!',
       ],
       active: [
-        'Defeat the Kraken or the Sea Serpent for the key, then unlock the cave and slay Charibdis.',
-        'Remember: stay out of the whirlpool! Strike when it stops. Food from Hana will help.',
+        'One of the two great beasts of the deep has the key. The cave waits beyond.',
+        'And remember: even a whirlpool must rest.',
       ],
       turnIn: ['You... you slew Charibdis?! The seas are safe at last! Take my treasure, hero. You have earned every coin.'],
       complete: ['Ahh, I can finally sleep without hearing that whirlpool. Thank you, hero.'],
@@ -126,22 +126,22 @@ Object.assign(SIDE_QUESTS, {
     text: {
       offer: [
         'Guess what? I am starting a seashell collection! But the waves keep washing them away.',
-        'Can you find 5 pretty seashells on the beaches around the island? Look for the beams of light!',
+        'Can you find five pretty ones for me? They wash up where the sand meets the waves.',
       ],
-      active: ['The seashells are on the sandy beaches all around the island. Follow the arrow!'],
+      active: ['Where the sand meets the waves. Five of them!'],
       turnIn: ['Ooh, they are SO pretty! This one sounds like the sea. Thank you, here are some coins!'],
       complete: ['My seashell collection is the best in the whole village.'],
     },
   },
   wood: {
-    giver: 'Bram',
+    giver: 'Jonah',
     title: 'Fence Mending',
     text: {
       offer: [
         'Those slimes squashed my fence flat! I need wood to build a new one.',
-        'Could you bring me 10 wood? Chop trees with an axe: the blacksmith sells them. Just press T next to a tree.',
+        'Could you bring me 10 wood? Trees don\'t chop themselves... but the blacksmith sells just the thing.',
       ],
-      active: ['I need 10 wood for my fence. Chop trees with an axe (press T next to a tree).'],
+      active: ['10 wood for my fence, please. There\'s no shortage of trees around here!'],
       turnIn: ['That is plenty of wood! My fence will be stronger than ever. Thank you, partner!'],
       complete: ['Not a single slime has gotten through my new fence.'],
     },
@@ -152,43 +152,43 @@ Object.assign(SIDE_QUESTS, {
     text: {
       offer: [
         'The stones are humming again, dearie. I found another riddle in my old book.',
-        'This time the rainbow goes BACKWARDS: purple, blue, green, yellow, orange, then red.',
+        'This time it says: "Walk the bow home, from its end back to its start."',
         'Solve it and the stones will give you another treasure!',
       ],
-      active: ['Backwards this time: purple, blue, green, yellow, orange, red.'],
+      active: ['"Walk the bow home, from its end back to its start."'],
       turnIn: ['Backwards and all! You are cleverer than I was at your age. Keep the treasure, dearie.'],
       complete: ['I wonder what other secrets those old stones are hiding...'],
     },
   },
   stone: {
-    giver: 'Tomas',
+    giver: 'Julian',
     title: 'Stones for the Well',
     text: {
       offer: [
         'Lovely day! Say, the old well is getting a bit wobbly.',
-        'Could you bring me 8 stone to fix it? Mine the big boulders with a pickaxe (press T next to one). The blacksmith sells pickaxes.',
+        'Could you bring me 8 stone to fix it? Big rocks hold good stone, if you have the right tool.',
         `And a tip: press ${MENU_KEYS.panels} to see your quests and controls, and ${MENU_KEYS.controls} to change the keys!`,
       ],
-      active: ['8 stone for the well, please! Mine the boulders around the island with a pickaxe.'],
+      active: ['8 stone for the well, please! The big rocks around the island are full of it.'],
       turnIn: ['Wonderful! The well will be good as new. Here, take these coins.'],
       complete: [
         'Lovely day for a walk! Drag the mouse, or press Q and E to turn the camera. C puts it right behind you.',
-        'Captain Finn at the dock on the east beach is looking for a brave swimmer.',
+        'I heard an old sailor down by the water is looking for a brave swimmer.',
       ],
     },
   },
   jungle: {
-    giver: 'Captain Finn',
+    giver: 'Captain Max',
     title: 'The Jungle Island',
     text: {
       offer: [
-        'Ahoy, hero! Old Keegan told me you slew Charibdis! Now the sea is safe, I can show you something.',
+        'Ahoy, hero! Old Ward told me you slew Charibdis! Now the sea is safe, I can show you something.',
         'Far away there is a wild jungle island. I know a secret way there through the sea currents.',
-        'But beware: giant Venus fly traps grow there. They cannot move and they bite slowly, but one bite really hurts! One good hit and they are done for.',
+        'But beware: some of the plants there BITE. They are slow, but you do not want to find out how hard.',
         'Hold on tight... here we go!',
       ],
       active: [
-        'Defeat the giant Venus fly traps in the jungle. Strike when their mouth is closed, and step back when it opens!',
+        'The biting plants have to go. Watch their mouths!',
         'Talk to me on the jungle beach when you want to go home.',
       ],
       turnIn: ['You cleared out the fly traps! You are the bravest explorer on the seven seas. Here is your reward!'],
@@ -207,10 +207,10 @@ Object.assign(SIDE_QUESTS, {
         'Hmm. A young adventurer, deep in my jungle. I am Master Oak.',
         'I know a secret sword move: the SPIN ATTACK. But I only teach those who can beat me in battle.',
         'Be warned: my own spin attack hurts a LOT.',
-        'While my staff glows, strike fast! When it sparkles, it is ready, so stay out of reach or I will spin again. I may be old, but I do not flinch!',
+        'Watch my staff. It will tell you when to strike, and when to run. I may be old, but I do not flinch!',
         'Are you ready? Then let us begin!',
       ],
-      active: ['Defeat Master Oak in battle! Strike while his staff charges, and keep away when it sparkles.'],
+      active: ['Defeat Master Oak in battle! Watch his staff closely.'],
       turnIn: [
         'Ha! You have beaten me, fair and square. Now, the spin attack:',
         'Hold down your sword button after a swing until your sword sparkles. Then let go, and spin round to hit everything near you!',
@@ -223,17 +223,17 @@ Object.assign(SIDE_QUESTS, {
     title: 'The Viniac',
     text: {
       offer: [
-        'Now hear me. To the east grows the Viniac, the boss of this jungle. A giant plant with arms like a kraken.',
-        'Its arms SLAM down where you stand, and that hurts a lot! When you see a red circle under your feet, run!',
-        'Defeat the Viniac and the jungle will be free. It takes many, many hits. Use everything you have learned.',
+        'Now hear me. Where the morning sun first touches this jungle, something huge has taken root: the Viniac.',
+        'Its arms fall like trees. When the ground beneath you turns red, do not stand there admiring it!',
+        'Defeat the Viniac and the jungle will be free. Use everything you have learned.',
       ],
-      active: ['The Viniac grows to the east. Watch for the red circles, and keep hitting it!'],
+      active: ['The Viniac grows where the morning sun first touches the jungle. Mind the red.'],
       turnIn: [
         'You did it! The Viniac is gone, and look... where it grew, a portal has opened!',
         'They say it leads to the dream dimension, where the Dream Keeper teaches amazing dream powers to those who help her.',
-        'And listen... do you feel the ground rumble? Across the sea, the old volcano has woken up. Captain Finn on the beach can take you to the fire island, if you dare.',
+        'And listen... do you feel the ground rumble? Somewhere across the sea, an old volcano has woken up. Sailors always know the way.',
       ],
-      complete: ['The dream portal is to the east, where the Viniac used to grow.'],
+      complete: ['The portal shimmers where the Viniac used to grow.'],
     },
   },
   findJackson: {
@@ -243,10 +243,13 @@ Object.assign(SIDE_QUESTS, {
       offer: [
         'You beat me, and you beat the Viniac. There is nothing left for me to teach you.',
         'But I have an old friend: Master Jackson. We trained together when we were young. Nobody has ever landed a hit on him!',
-        'He lives alone on a little island far to the east of your village, out past the tower. Find him, and tell him Oak sent you.',
+        'He lives alone on a speck of sand, far beyond the old tower, toward the sunrise. Find him, and tell him Oak sent you.',
       ],
-      active: ['Master Jackson lives on a little island far to the east of your village, past the tower island. Take the boat, or swim!'],
-      complete: ['Did you find Jackson? Ha! I bet he is still doing push-ups on that beach.'],
+      active: ['Beyond the old tower, toward the sunrise. A speck of sand with a stubborn man on it.'],
+      complete: [
+        'Did you find Jackson? Ha! I bet he is still doing push-ups on that beach.',
+        'We both learned from the same teacher, long ago: Master Zach. He lives out where the sun sets over the sea... north of it, I think.',
+      ],
     },
   },
   skyStrike: {
@@ -278,21 +281,24 @@ Object.assign(SIDE_QUESTS, {
         'Oof! A spin attack! Nobody can dodge something that comes from every side at once. Well fought!',
         'Now my secret: press X to DODGE. You leap out of the way, and nothing can touch you in the middle of a leap.',
       ],
-      complete: ['Remember: X to dodge. Leap away just before a hit lands!'],
+      complete: [
+        'Remember: X to dodge. Leap away just before a hit lands!',
+        'Oak and I learned everything from old Master Zach. They say he could dodge raindrops. He went to live on an island toward the sunset.',
+      ],
     },
   },
   velizar: {
-    giver: 'Ember',
+    giver: 'Ani',
     title: 'Velizar the Dragon',
     text: {
       offer: [
-        'An adventurer! On the fire island! I am Ember. I study volcanoes... from a safe distance.',
+        'An adventurer! On the fire island! I am Ani. I study volcanoes... from a safe distance.',
         'When the Viniac fell, the volcano woke up, and so did VELIZAR, the dragon who sleeps in the lair beside it.',
-        'He breathes fire! When he rears up and the ground in front of him glows red, get out of the way. Then hit him while he catches his breath.',
-        'Oh, and do not walk on the lava. It burns! Jump over the rivers, or get a Frost Crystal from Pip back in the village.',
-        'Will you defeat Velizar? His lair is to the west of the volcano.',
+        'He breathes fire! Watch the ground: it always knows where the fire is going before he does. And even dragons get out of breath.',
+        'Oh, and do not walk on the lava. It burns! Some say crystals can keep your feet cool...',
+        'Will you defeat Velizar? He sleeps in the volcano\'s shadow, inside a ring of black stones.',
       ],
-      active: ['Velizar\'s lair is west of the volcano. When the ground glows red in front of him, MOVE!'],
+      active: ['A ring of black stones, in the volcano\'s shadow. When the ground glows, MOVE!'],
       turnIn: ['You did it! Velizar is beaten, and the island is safe again. You are the bravest adventurer I have ever met! Take this treasure.'],
       complete: ['Lava monsters still climb out of the lava now and then. Be careful out there!'],
     },
@@ -304,9 +310,9 @@ Object.assign(SIDE_QUESTS, {
       offer: [
         'Welcome, dreamer. I am the Dream Keeper. This is where dreams are made.',
         'Some of my stars have fallen onto the dream islands. Catch them all and I will teach you two dream powers.',
-        'Dream powers run on magic. Luma at the shrine sells a magic conduit to hold it, and every monster you defeat fills it up.',
+        'Dream powers run on magic. Aleli at the shrine sells a magic conduit to hold it, and every monster you defeat fills it up.',
       ],
-      active: ['The fallen stars are on the floating islands. Cross the rainbow bridges to find them.'],
+      active: ['My stars fell wherever the rainbows lead.'],
       turnIn: ['My stars! They shine so brightly again. Now: DOUBLE JUMP (press Space again in the air) and SPEED BOOTS (you run faster while you have magic).'],
       complete: ['Every star you saved is a happy dream for someone.'],
     },
@@ -330,21 +336,21 @@ Object.assign(SIDE_QUESTS, {
     text: {
       offer: [
         'One last thing. A staircase of clouds climbs to the very top of the dream.',
-        'Jump from cloud to cloud (each one is higher than the last) and catch the star at the summit.',
+        'A star waits at the very top, for anyone brave enough to jump that high.',
       ],
-      active: ['Jump up the cloud stones (press Space) to reach the summit.'],
+      active: ['Up, up, up the clouds. The star is waiting at the top.'],
       turnIn: ['You reached the top of the dream! You are a true dreamer. Now: DREAM HEAL (press U) and STAR SHIELD (press O).'],
       complete: ['Come back whenever you like, dreamer. The dream is always here.'],
     },
   },
 });
 
-// Pip, once you've got the mystery crystal: he tells you about Old Man Keegan, and opens a crystal shop.
+// Pip, once you've got the mystery crystal: he tells you about Old Man Ward, and opens a crystal shop.
 export const PIP_CRYSTAL = {
   first: [
     'Whoa! Is that... a MYSTERY CRYSTAL? I collect crystals, and I have never seen one that glows like that!',
-    'You know who would love to see it? Old Man Keegan. He lives under the old trapdoor outside of town, by the road to the dock.',
-    'Grown-ups say he knows all about the monsters out at sea. And there is a crystal-shaped hole in his trapdoor...',
+    'You know who would love to see it? Old Man Ward. Nobody ever sees him. They say he lives UNDER the ground, below an old trapdoor near a road.',
+    'Grown-ups say he knows all about the monsters out at sea. And I bet his trapdoor has a crystal-shaped lock...',
     'Hey, since you like crystals too: I am opening a crystal shop! You will find me at my stall on the plaza from now on.',
   ],
   shop: {
@@ -352,6 +358,21 @@ export const PIP_CRYSTAL = {
     greeting: 'Crystals from all over the island! Some are even magic.',
   },
 };
+
+// Master Zach, who taught Master Oak and Master Jackson, lives on the island toward the sunset.
+export const ZACH = [
+  'Oh! A visitor. Not many people find this island. I am Zach.',
+  'Long ago, two young students came to me: a quiet one who loved trees, and one who could not stand still for a single second.',
+  'Oak and Jackson! Ha! I taught them everything they know. Well... almost everything.',
+  'If you have learned from both of them, then you are my student too. Keep practicing: spin, strike from the sky, and dodge.',
+];
+
+// Ollie looks after the save stones.
+export const OLLIE = [
+  "Hi! I'm Ollie. I look after the save stones. Well... I polish them.",
+  'See the glowing crystal? Walk up to it, and it remembers your whole adventure. Every time!',
+  "There's one on every island. Even the far-away ones. Even the ones up in the clouds, I heard.",
+];
 
 // What side-quest givers say before you've helped the merchant.
 export const QUEST_LOCKED = [
@@ -363,30 +384,30 @@ export const QUEST_LOCKED = [
 export const COME_BACK_LATER = ['Come back a little later. I might need your help again!'];
 
 export const VILLAGER_CHATTER = {
-  Rosa: [
+  Clara: [
     'Hello! I grow all the flowers you see around the island.',
     'My secret? Talk to them every morning. And keep the slimes away!',
   ],
-  Milo: [
+  Emi: [
     'I am going to be a famous fisherman one day!',
-    'Have you seen the sharks out there? Captain Finn says the water is safe if you keep swimming. I am not so sure.',
+    'Have you seen the sharks out there? Captain Max says the water is safe if you keep swimming. I am not so sure.',
   ],
-  Greta: [
+  Hatty: [
     'Back in my day we did not have fancy iron shields. We had a stick! And we liked it!',
     'If you are hungry, Hana bakes the best berry pie on the island.',
   ],
-  Juno: [
+  Eve: [
     'I keep watch over the village, day and night. Well... mostly day.',
     'Be careful after dark. Monsters get stronger at night.',
   ],
-  Wren: [
+  Evie: [
     'I am painting the sea tower! It is so tall I need a very long brush.',
     'Have you been all the way to the top? I hear there are gargoyles.',
   ],
-  Tomas: [
+  Julian: [
     'Lovely day for a walk! If you want to look around, drag with the mouse, or press Q and E to turn the camera.',
     'Press C to put the camera right behind you. Handy when you get turned around!',
-    'Captain Finn at the dock on the east beach is looking for a brave swimmer.',
+    'Captain Max at the dock on the east beach is looking for a brave swimmer.',
   ],
 };
 

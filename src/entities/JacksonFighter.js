@@ -23,7 +23,6 @@ export class JacksonFighter extends Monster {
       z,
       health: JACKSON.health,
       damage: JACKSON.damage,
-      coins: 0,
       radius: 0.6,
       barHeight: 2.6,
       colors: ['#ff8a1f', '#d9293f', '#ffffff'],
@@ -31,6 +30,7 @@ export class JacksonFighter extends Monster {
     });
     this.model = model;
     this.body.add(model.root);
+    this.noCoins = true; // a master, not a monster
     this.state = 'circle';
     this.timer = 1.5;
     this.circleDir = 1;

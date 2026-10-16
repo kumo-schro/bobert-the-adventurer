@@ -3,7 +3,7 @@ import { Entity } from '../core/Entity.js';
 import { VoxelBuilder } from '../core/VoxelBuilder.js';
 import { createRng } from '../utils/random.js';
 import { vary } from '../utils/color.js';
-import { SEED, SEA, FOG } from '../config.js';
+import { SEED, SEA, FOG, WORLD } from '../config.js';
 
 const DEEP = new THREE.Color('#14608f');
 const DREAMY = new THREE.Color('#3a2470');
@@ -34,7 +34,7 @@ export class Underwater extends Entity {
     const plants = new VoxelBuilder();
     for (let i = 0; i < 900; i++) {
       const a = rng.range(0, Math.PI * 2);
-      const d = rng.range(105, SEA.radius + 30);
+      const d = rng.range(WORLD.islandRadius + 5, SEA.radius + 30);
       const x = Math.cos(a) * d;
       const z = Math.sin(a) * d;
       const roll = rng.next();

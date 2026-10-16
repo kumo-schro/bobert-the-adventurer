@@ -17,7 +17,6 @@ export class Shark extends Monster {
       z,
       health: 3,
       damage: 1,
-      coins: 5,
       radius: 0.9,
       barHeight: 1.5,
       colors: ['#6f8fa8', '#ffffff', '#3cc6ea'],

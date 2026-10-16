@@ -46,7 +46,6 @@ export class Kraken extends Monster {
       z,
       health: 10,
       damage: 5,
-      coins: 30,
       radius: 2.2,
       barHeight: 4.6,
       colors: [PURPLE, DARK, SUCKER],

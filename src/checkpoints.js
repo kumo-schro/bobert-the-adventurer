@@ -64,7 +64,7 @@ export const CHECKPOINTS = [
     id: 'geared-up',
     label: '5. Side quests done, basic gear',
     setup(game) {
-      for (const name of ['Pip', 'Bram', 'Elda', 'Tomas']) skipQuest(game, npc(game, name).quests[0]);
+      for (const name of ['Pip', 'Jonah', 'Elda', 'Julian']) skipQuest(game, npc(game, name).quests[0]);
       const p = game.player;
       p.giveShield();
       p.giveBow();
@@ -82,7 +82,7 @@ export const CHECKPOINTS = [
   },
   {
     id: 'crystal-quest',
-    label: "6. Captain Finn's mystery crystal",
+    label: "6. Captain Max's mystery crystal",
     setup(game) {
       if (game.quests.crystal.stage === 'offer') game.quests.crystal.start();
     },
@@ -106,7 +106,7 @@ export const CHECKPOINTS = [
     setup(game) {
       const q = game.quests.crystal;
       if (q.crystal && game.entities.includes(q.crystal)) game.remove(q.crystal);
-      if (q.stage !== 'complete') q.finish(); // Finn lets you keep the crystal
+      if (q.stage !== 'complete') q.finish(); // Max lets you keep the crystal
     },
     place(game) {
       const t = game.quests.crystal.trapdoor.object3d.position;
@@ -115,9 +115,9 @@ export const CHECKPOINTS = [
   },
   {
     id: 'keegan',
-    label: "9. Old Man Keegan's cellar",
+    label: "9. Old Man Ward's cellar",
     setup(game) {
-      game.pip.openShop(); // Pip told you about Keegan, and opened his crystal shop
+      game.pip.openShop(); // Pip told you about Ward, and opened his crystal shop
       const trapdoor = game.quests.crystal.trapdoor;
       if (!trapdoor.open) trapdoor.unlock(game);
       game.questLog.complete('trapdoor');
@@ -172,7 +172,7 @@ export const CHECKPOINTS = [
   },
   {
     id: 'charibdis-done',
-    label: '13. Charibdis slain: to the jungle with Finn',
+    label: '13. Charibdis slain: to the jungle with Max',
     setup(game) {
       const q = game.quests.keegan;
       if (q.charibdis && game.monsters.includes(q.charibdis)) game.remove(q.charibdis);
@@ -187,7 +187,7 @@ export const CHECKPOINTS = [
     id: 'jungle',
     label: '14. The jungle island',
     setup(game) {
-      if (game.quests.jungle.stage === 'offer') game.quests.jungle.start(); // Finn takes you there
+      if (game.quests.jungle.stage === 'offer') game.quests.jungle.start(); // Max takes you there
     },
     place() {},
   },

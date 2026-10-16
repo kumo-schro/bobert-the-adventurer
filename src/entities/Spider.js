@@ -8,7 +8,7 @@ const CHASE_RANGE = 8;
 /** A cave spider: scuttles toward you when you get close. Takes two hits. */
 export class Spider extends Monster {
   constructor({ x, z }) {
-    super({ x, z, health: 2, coins: 4, radius: 0.55, barHeight: 1.3, colors: ['#5b3a8c', '#2b1d40', '#ff4d6d'] });
+    super({ x, z, health: 2, radius: 0.55, barHeight: 1.3, colors: ['#5b3a8c', '#2b1d40', '#ff4d6d'] });
     this.legs = [];
     this.walkPhase = Math.random() * 10;
     this.wanderAngle = Math.random() * Math.PI * 2;

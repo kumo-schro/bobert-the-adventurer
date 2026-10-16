@@ -5,10 +5,10 @@ import * as THREE from 'three';
 export const SEED = 1337;
 
 export const WORLD = {
-  islandRadius: 100, // radius of the grassy island, in voxels
-  treeCount: 115,
+  islandRadius: 130, // radius of the grassy island, in voxels
+  treeCount: 190,
   treeSpacing: 9, // minimum distance between trees
-  flowerCount: 2400,
+  flowerCount: 3600,
   butterflyCount: 16,
 };
 
@@ -109,7 +109,7 @@ export const GATHER = {
   perNode: 3, // how many chops (or swings of the pickaxe) one tree or boulder takes before it needs a rest
   steelBonus: 2, // a steel axe / pickaxe gets this much per chop instead of 1
   regrowSeconds: 60,
-  boulderCount: 26,
+  boulderCount: 40,
 };
 
 export const BOW = {
@@ -126,56 +126,56 @@ export const BOW = {
 // The sea around the island. You can swim in it after jumping off the dock.
 export const SEA = {
   level: -0.4, // water surface height
-  radius: 260, // how far out you can swim
+  radius: 340, // how far out you can swim
   swimDepth: 3.4, // swimming is underwater: your feet are this far below the surface
   monsterDepth: 2.4, // sea monsters swim this far down too
   floor: -12, // the sandy seabed
   // Sharks are common, eels are rare (two live by the tower island).
   sharks: [
-    { x: 135, z: 2 },
-    { x: 140, z: 55 },
-    { x: 130, z: -45 },
-    { x: 50, z: 145 },
-    { x: -140, z: 60 },
-    { x: -100, z: -130 },
-    { x: 70, z: -140 },
-    { x: 200, z: -40 },
-    { x: 20, z: 175 },
-    { x: -65, z: 150 },
-    { x: -175, z: -40 },
-    { x: -40, z: -170 },
-    { x: 140, z: -140 },
-    { x: 215, z: 45 },
-    { x: 150, z: 160 },
-    { x: -200, z: 100 },
-    { x: 120, z: 110 },
-    { x: -130, z: -180 },
+    { x: 176, z: 3 },
+    { x: 182, z: 72 },
+    { x: 169, z: -58 },
+    { x: 65, z: 188 },
+    { x: -182, z: 78 },
+    { x: -130, z: -169 },
+    { x: 91, z: -182 },
+    { x: 260, z: -52 },
+    { x: 26, z: 228 },
+    { x: -84, z: 195 },
+    { x: -228, z: -52 },
+    { x: -52, z: -221 },
+    { x: 182, z: -182 },
+    { x: 280, z: 58 },
+    { x: 195, z: 208 },
+    { x: -260, z: 130 },
+    { x: 156, z: 143 },
+    { x: -169, z: -234 },
   ],
   // Little islands to rest on. `chest` puts a treasure chest on it.
   islands: [
-    { x: 85, z: 150, radius: 8, chest: 20 },
-    { x: -135, z: 105, radius: 9 },
-    { x: -150, z: -115, radius: 7, chest: 25 },
-    { x: 10, z: -160, radius: 8 },
-    { x: 190, z: -80, radius: 7 },
-    { x: 195, z: 115, radius: 6, chest: 30 },
+    { x: 110, z: 195, radius: 10, chest: 20 },
+    { x: -176, z: 136, radius: 12 },
+    { x: -195, z: -150, radius: 9, chest: 25 },
+    { x: 13, z: -208, radius: 10 },
+    { x: 247, z: -104, radius: 9 },
+    { x: 254, z: 150, radius: 8, chest: 30 },
   ],
 };
 
 // Where things are on the island.
 export const PLACES = {
-  cave: { x: 24, z: -48 }, // center of the mountain with the slime's cave
-  stoneCircle: { x: -44, z: -20 }, // the rainbow stones puzzle
-  slimeMeadow: { x: -36, z: 38 }, // where the farmer's slime problem is
+  cave: { x: 31, z: -62 }, // center of the mountain with the slime's cave
+  stoneCircle: { x: -57, z: -26 }, // the rainbow stones puzzle
+  slimeMeadow: { x: -47, z: 49 }, // where the farmer's slime problem is
   dockZ: 6, // the dock sticks out of the east beach at this z
-  towerIsland: { x: 170, z: 22, radius: 18 }, // island with the big tower and the mystery crystal
-  kraken: { x: 100, z: -185 },
-  seaSerpent: { x: -200, z: 10 },
-  charibdisCave: { x: -30, z: 205 }, // rocky sea cave, locked with the key
-  jungle: { x: 0, z: -1000, radius: 55 }, // the jungle island, far across the sea (Finn takes you)
-  cellar: { x: 900, z: 0 }, // Old Man Keegan's cellar, under the trapdoor (built far away, out of sight)
+  towerIsland: { x: 221, z: 29, radius: 23 }, // island with the big tower and the mystery crystal
+  kraken: { x: 130, z: -240 },
+  seaSerpent: { x: -260, z: 13 },
+  charibdisCave: { x: -39, z: 266 }, // rocky sea cave, locked with the key
+  jungle: { x: 0, z: -1000, radius: 77 }, // the jungle island, far across the sea (Max takes you)
+  cellar: { x: 900, z: 0 }, // Old Man Ward's cellar, under the trapdoor (built far away, out of sight)
   dream: { x: -1000, z: 0, y: 140 }, // the dream dimension, floating high in the sky far away
-  fireIsland: { x: 0, z: 1000, radius: 50 }, // the volcano island, far across the sea (after the Viniac)
+  fireIsland: { x: 0, z: 1000, radius: 70 }, // the volcano island, far across the sea (after the Viniac)
 };
 
 // All monsters attack this many times faster than their base timings below and in their files
@@ -198,11 +198,11 @@ export const BUFFS = {
 // Grayson the friendly fish: where he can turn up, and how long he's away after giving a gift.
 export const GRAYSON = {
   spots: [
-    { x: 125, z: 24 }, // off the beach just north of the dock
-    { x: -122, z: 92 }, // by the little island in the north-west
-    { x: 14, z: -145 }, // by the little island to the south
-    { x: 100, z: -90 }, // south-east, on the way to the kraken's rocks
-    { x: -124, z: -44 }, // off the west beach
+    { x: 162, z: 31 }, // off the beach just north of the dock
+    { x: -159, z: 120 }, // by the little island in the north-west
+    { x: 18, z: -188 }, // by the little island to the south
+    { x: 130, z: -117 }, // south-east, on the way to the kraken's rocks
+    { x: -161, z: -57 }, // off the west beach
   ], // (all well away from the sharks)
   awaySeconds: 60,
 };
@@ -218,7 +218,7 @@ export const SKY_STRIKE = {
 // Master Jackson, Oak's old friend: he dodges every attack except a spin attack. Beat him in a
 // duel and he teaches you to dodge.
 export const JACKSON = {
-  island: { x: 190, z: -80 }, // he trains on this little island
+  island: { x: 247, z: -104 }, // he trains on this little island
   health: 6, // spin attacks it takes to beat him (each spin does at least 2)
   damage: 2, // his quick jabs
   reward: 60,
@@ -258,7 +258,7 @@ export const DREAM_ABILITIES = {
   starShield: { flag: 'hasStarShield', name: 'Star Shield', icon: '🔮', how: 'press O for a starlight bubble that blocks the next 3 hits' },
 };
 
-// Magic points power the dream abilities. You need a magic conduit (Luma sells it at the dream
+// Magic points power the dream abilities. You need a magic conduit (Aleli sells it at the dream
 // shrine) to hold them. Defeating a monster gives (its health + its damage) / 4 magic points,
 // at least 1.
 export const MAGIC = {
@@ -282,11 +282,11 @@ export const CRYSTALS = {
   bigMagic: { price: 40, points: 100 }, // fills your magic all the way
   swift: { price: 120, speed: 1.1 }, // walk and run 10% faster, for good
   sea: { price: 90, swim: 1.25 }, // swim 25% faster, for good
-  lucky: { price: 150, coins: 1 }, // every monster drops 1 more coin, for good
+  lucky: { price: 150, coins: 2 }, // every monster drops 2 more coins, for good
   frost: { price: 30 }, // Frosty Feet for five minutes: lava doesn't burn you (see BUFFS.frostyFeet)
 };
 
-// The fire island: a volcano across the sea. You can go once the Viniac is beaten (Captain Finn
+// The fire island: a volcano across the sea. You can go once the Viniac is beaten (Captain Max
 // on the jungle beach takes you, or sail there). Lava hurts to walk on.
 export const FIRE = {
   lavaDamage: 1, // on lava, you get burned for this much...
@@ -298,6 +298,8 @@ export const FIRE = {
 export const VELIZAR = {
   health: 30,
   flameDamage: 4, // his fire breath, to anyone in front of him
+  biteDamage: 2, // a quick bite when you're close in front of him
+  biteRange: 3.8,
   damage: 2, // bumping into him
   flameRange: 9,
   flameWidth: 0.55, // half-angle of the flames (radians)

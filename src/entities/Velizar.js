@@ -9,6 +9,8 @@ const STAY_NEAR = 10; // he doesn't leave his lair
 const WINDUP = 1.0; // rears up (and the ground in front glows red) before the flames
 const BREATH = 1.3; // seconds of fire
 const BREATH_COOLDOWN = attackTime(3.2);
+const BITE_WINDUP = 0.35; // jaws open...
+const BITE_COOLDOWN = attackTime(1.6); // ...SNAP, then a rest before the next bite
 
 const RED = '#a3201c';
 const DARK = '#5c1310';
@@ -30,15 +32,17 @@ function flameCone(length, radius, material) {
  * Velizar, the dragon of the fire island. He sleeps in his lair beside the volcano until you
  * come close, then wakes with a roar. He stomps after you (never far from his lair) and breathes
  * fire: first he rears up and the ground in front of him glows red, then flames pour out in a
- * cone. Get out of the way, then hit him while he catches his breath! 30 health.
+ * cone. Get out of the way, then hit him while he catches his breath! Get too close in front of
+ * him and he bites. 30 health.
  */
 export class Velizar extends Monster {
   constructor({ x, z }) {
-    super({ x, z, health: VELIZAR.health, damage: VELIZAR.damage, coins: 0, radius: 2, barHeight: 5.2, colors: ['#ff5a1f', '#a3201c', '#ffd23f'] });
+    super({ x, z, health: VELIZAR.health, damage: VELIZAR.damage, radius: 2, barHeight: 5.2, colors: ['#ff5a1f', '#a3201c', '#ffd23f'] });
     this.isVelizar = true;
     this.awake = false;
     this.state = 'walk';
     this.timer = 2;
+    this.biteCooldown = 0;
     this.facing = Math.PI;
     this.walkPhase = 0;
     this.buildModel();
@@ -128,7 +132,25 @@ export class Velizar extends Monster {
     const wantFacing = Math.atan2(toPlayer.x, toPlayer.z);
     const turn = Math.atan2(Math.sin(wantFacing - this.facing), Math.cos(wantFacing - this.facing));
     this.timer -= dt;
+    this.biteCooldown -= dt;
     this.moving = 0;
+    const inFront = Math.abs(turn) < 0.8 && toPlayer.dist < VELIZAR.biteRange && !toPlayer.playerDown;
+    if (this.state === 'walk' && inFront && this.biteCooldown <= 0) {
+      this.state = 'bite';
+      this.timer = BITE_WINDUP;
+    }
+    if (this.state === 'bite') {
+      this.velocity.x = this.velocity.z = 0;
+      if (this.timer <= 0) {
+        // SNAP!
+        if (inFront && !game.player.dead) game.player.takeDamage(game, VELIZAR.biteDamage + (this.power - this.damage), pos.x, pos.z);
+        game.sound?.play('thwack', { volume: 1.5 });
+        this.biteCooldown = BITE_COOLDOWN;
+        this.state = 'walk';
+        this.timer = Math.max(this.timer, 0.8);
+      }
+      return;
+    }
     if (this.state === 'walk') {
       this.facing += turn * (1 - Math.exp(-3 * dt));
       const fromHome = Math.hypot(pos.x - this.home.x, pos.z - this.home.z);
@@ -225,7 +247,7 @@ export class Velizar extends Monster {
     this.tail.rotation.y = Math.sin(game.elapsed * 1.5) * 0.3;
     // Rear up before the flames; head down and mouth open while breathing.
     const rear = this.state === 'windup' ? 0.6 : 0;
-    const open = this.state === 'breathe' ? 0.6 : this.state === 'windup' ? 0.25 : 0.05;
+    const open = this.state === 'breathe' ? 0.6 : this.state === 'bite' ? 0.9 : this.state === 'windup' ? 0.25 : 0.05;
     this.neck.rotation.x += (-rear + (this.state === 'breathe' ? 0.25 : 0) - this.neck.rotation.x) * (1 - Math.exp(-8 * dt));
     this.jaw.rotation.x += (open - this.jaw.rotation.x) * (1 - Math.exp(-10 * dt));
     this.flames.visible = this.state === 'breathe';

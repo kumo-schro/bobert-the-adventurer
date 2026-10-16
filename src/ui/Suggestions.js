@@ -16,7 +16,7 @@ const NAMES = {
   TowerIsland: 'the sea tower',
   SmallIsland: 'a little island',
   CharibdisCave: "Charibdis's sea cave",
-  Cellar: "Keegan's cellar",
+  Cellar: "Ward's cellar",
   Jungle: 'the jungle',
   Flowers: 'the flowers',
   Mountains: 'the mountains far away',
@@ -178,7 +178,7 @@ export class Suggestions extends Entity {
   areaName(x, y, z) {
     const game = this.game;
     if (game.dream?.contains(x, y, z)) return 'the dream dimension';
-    if (game.cellar?.isInside(x, z, -2)) return "Keegan's cellar";
+    if (game.cellar?.isInside(x, z, -2)) return "Ward's cellar";
     if (game.jungle?.isInside(x, z, -6)) return 'the jungle island';
     if (game.charibdisCave?.isInsideCave(x, z)) return "inside Charibdis's sea cave";
     if (game.cave?.isUnderRoof(x, z)) return 'inside the mountain cave';

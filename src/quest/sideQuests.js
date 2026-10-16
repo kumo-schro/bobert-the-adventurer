@@ -189,7 +189,7 @@ export class SlimeHuntQuest extends Quest {
       const slime = game.add(
         new Slime(
           { x: this.where.x + Math.cos(a) * 5, z: this.where.z + Math.sin(a) * 5 },
-          { size: 0.38, color: '#4cc9f0', glow: '#1f6fa8', health: 3, coins: 3, chaseRange: 10 },
+          { size: 0.38, color: '#4cc9f0', glow: '#1f6fa8', health: 3, chaseRange: 10 },
         ),
       );
       slime.onDefeated = () => this.defeated(slime);
@@ -242,7 +242,7 @@ export class RainbowStonesQuest extends Quest {
 
 /**
  * Find something far away: swim to the tower island and fetch the mystery crystal from the top.
- * Captain Finn lets you keep it: it's the key to the old trapdoor outside of town.
+ * Captain Max lets you keep it: it's the key to the old trapdoor outside of town.
  */
 export class CrystalQuest extends Quest {
   constructor(game, { island, trapdoor, ...rest }) {
@@ -280,7 +280,7 @@ export class CrystalQuest extends Quest {
 }
 
 /**
- * Old Man Keegan's quest, "Slay Charibdis": defeat the kraken or the sea serpent for the key,
+ * Old Man Ward's quest, "Slay Charibdis": defeat the kraken or the sea serpent for the key,
  * unlock Charibdis's sea cave, and slay Charibdis.
  */
 export class CharibdisQuest extends Quest {
@@ -291,7 +291,7 @@ export class CharibdisQuest extends Quest {
     this.keyHolders = [];
   }
 
-  /** Talking to Keegan for the first time also finishes the trapdoor quest-log entry. */
+  /** Talking to Ward for the first time also finishes the trapdoor quest-log entry. */
   dialogFor(npc) {
     if (this.stage === 'offer') this.game.questLog.complete('trapdoor');
     return super.dialogFor(npc);
@@ -349,8 +349,8 @@ export class CharibdisQuest extends Quest {
 }
 
 /**
- * After Charibdis is slain, Captain Finn takes you to the jungle island. Defeat the giant
- * Venus fly traps there, then come back and tell Finn.
+ * After Charibdis is slain, Captain Max takes you to the jungle island. Defeat the giant
+ * Venus fly traps there, then come back and tell Max.
  */
 export class JungleQuest extends Quest {
   constructor(game, { jungle, ...rest }) {
@@ -372,7 +372,7 @@ export class JungleQuest extends Quest {
     this.updateObjective();
   }
 
-  /** After the quest, Finn will take you back to the jungle whenever you like. */
+  /** After the quest, Max will take you back to the jungle whenever you like. */
   dialogFor() {
     if (this.stage === 'complete') return { pages: this.text.complete, onClose: () => this.jungle.travel(this.game) };
     return super.dialogFor();
@@ -380,7 +380,7 @@ export class JungleQuest extends Quest {
 
   trapDefeated(trap) {
     this.traps = this.traps.filter((t) => t !== trap);
-    if (this.traps.length === 0) this.readyToTurnIn('All the giant fly traps are gone! Go back to Captain Finn.');
+    if (this.traps.length === 0) this.readyToTurnIn('All the giant fly traps are gone! Go back to Captain Max.');
     else this.updateObjective();
   }
 
@@ -505,11 +505,11 @@ export class VineQuest extends Quest {
   onFinish() {
     const { game } = this;
     game.dreamPortal?.open(game);
-    // The volcano across the sea wakes up too: Captain Finn can take you there now.
+    // The volcano across the sea wakes up too: Captain Max can take you there now.
     if (!game.player.visitedFire) {
       game.questLog.set('fireIsland', {
         title: 'The Fire Island',
-        objective: 'A volcano has woken up! Ask Captain Finn on the jungle beach to take you to the fire island.',
+        objective: 'A volcano has woken up! Ask Captain Max on the jungle beach to take you to the fire island.',
         target: game.jungleFinn ?? null,
       });
     }
@@ -678,7 +678,7 @@ export class SkyStrikeQuest extends Quest {
   }
 }
 
-/** Ember's quest on the fire island: defeat Velizar the dragon in his lair beside the volcano. */
+/** Ani's quest on the fire island: defeat Velizar the dragon in his lair beside the volcano. */
 export class VelizarQuest extends Quest {
   constructor(game, { island, ...rest }) {
     super(game, { id: 'velizar', title: SIDE_QUESTS.velizar.title, text: SIDE_QUESTS.velizar.text, reward: VELIZAR.reward, ...rest });

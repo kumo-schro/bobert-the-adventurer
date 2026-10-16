@@ -220,7 +220,7 @@ export const BOAT_MENU = {
       action: true,
       name: inJungleSea ? 'Sail home' : 'Sail back to the dock',
       icon: '⚓',
-      description: 'Back to Captain Finn\'s dock on the home island.',
+      description: 'Back to Captain Max\'s dock on the home island.',
       price: 0,
       buttonLabel: 'Set sail',
       buy: () => {
@@ -251,7 +251,7 @@ export const BOAT_MENU = {
 };
 
 /**
- * The dream shrine (Luma): sells the magic conduit, which holds the magic points that dream
+ * The dream shrine (Aleli): sells the magic conduit, which holds the magic points that dream
  * abilities run on. The abilities themselves are taught by the Dream Keeper's quests; the shrine
  * lists them so you can see which quest teaches which.
  */
@@ -358,7 +358,7 @@ export const PIP_SHOP = {
     {
       name: 'Lucky Crystal',
       icon: '🍀',
-      description: 'Every monster you defeat drops 1 more coin, for good.',
+      description: 'Every monster you defeat drops 2 more coins, for good.',
       price: CRYSTALS.lucky.price,
       owned: player.luckyCrystal,
       buy: () => (player.luckyCrystal = true),
@@ -369,11 +369,11 @@ export const PIP_SHOP = {
 };
 
 /**
- * Captain Finn's trips (on the jungle beach and the fire island): home to the dock, to the
+ * Captain Max's trips (on the jungle beach and the fire island): home to the dock, to the
  * jungle, or (once the Viniac is beaten) to the fire island.
  */
 export const FINN_TRIPS = {
-  title: '⚓ Captain Finn',
+  title: '⚓ Captain Max',
   greeting: 'Where to, adventurer?',
   game: null, // set in main.js
   here: null, // set by whoever opens it: 'jungle' or 'fire'
