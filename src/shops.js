@@ -187,6 +187,21 @@ export const BOAT_MENU = {
     const inJungleSea = Math.hypot(boat.object3d.position.x, boat.object3d.position.z) > 400;
     const jungle = game.jungle;
     const list = [];
+    if (game.quests.vine.stage === 'complete') {
+      const fire = game.fireIsland;
+      list.push({
+        action: true,
+        name: 'Sail to the fire island',
+        icon: '🌋',
+        description: 'Follow the warm currents to the volcano island.',
+        price: 0,
+        buttonLabel: 'Set sail',
+        buy: () => {
+          boat.sailTo(game, fire.center.x, fire.center.z - fire.edgeRadius(0, -1) - 8, 0);
+          game.questLog.toast('You sailed to the fire island! It is hot here...');
+        },
+      });
+    }
     if (!inJungleSea) {
       list.push({
         action: true,
@@ -303,7 +318,85 @@ export const PIP_SHOP = {
       buy: () => player.addMagic(CRYSTALS.magic.points),
       bought: 'Zing! Magic, right into your conduit.',
     },
+    {
+      name: 'Big Magic Crystal',
+      icon: '🔷',
+      description: 'Fills your magic all the way up.',
+      price: CRYSTALS.bigMagic.price,
+      locked: !player.hasConduit ? 'Needs a conduit' : player.magic >= MAGIC.max ? 'Magic full' : null,
+      lockedMessage: !player.hasConduit ? 'You need a magic conduit to hold this much magic!' : 'Your magic is already full!',
+      buy: () => player.addMagic(CRYSTALS.bigMagic.points),
+      bought: 'WHOOSH! That is a LOT of magic.',
+    },
+    {
+      name: 'Frost Crystal',
+      icon: '🧊',
+      description: "Frosty Feet for five minutes: lava can't burn you.",
+      price: CRYSTALS.frost.price,
+      locked: player.buffs.frostyFeet ? `${Math.ceil(player.buffs.frostyFeet / 60)} min left` : null,
+      buy: () => player.addBuff(PIP_SHOP.game, 'frostyFeet'),
+      bought: 'Brrr! Your feet are frosty. Go and stomp on some lava!',
+    },
+    {
+      name: 'Swift Crystal',
+      icon: '⚡',
+      description: 'Walk and run a little faster, for good.',
+      price: CRYSTALS.swift.price,
+      owned: player.swiftCrystal,
+      buy: () => (player.swiftCrystal = true),
+      bought: 'Zoom! Your feet feel lighter already.',
+    },
+    {
+      name: 'Sea Crystal',
+      icon: '🌊',
+      description: 'Swim much faster, for good.',
+      price: CRYSTALS.sea.price,
+      owned: player.seaCrystal,
+      buy: () => (player.seaCrystal = true),
+      bought: 'Now you swim like a fish! Well, almost.',
+    },
+    {
+      name: 'Lucky Crystal',
+      icon: '🍀',
+      description: 'Every monster you defeat drops 1 more coin, for good.',
+      price: CRYSTALS.lucky.price,
+      owned: player.luckyCrystal,
+      buy: () => (player.luckyCrystal = true),
+      bought: 'Lucky you! Coins will just love you now.',
+    },
   ],
+  game: null, // set in main.js
+};
+
+/**
+ * Captain Finn's trips (on the jungle beach and the fire island): home to the dock, to the
+ * jungle, or (once the Viniac is beaten) to the fire island.
+ */
+export const FINN_TRIPS = {
+  title: '⚓ Captain Finn',
+  greeting: 'Where to, adventurer?',
+  game: null, // set in main.js
+  here: null, // set by whoever opens it: 'jungle' or 'fire'
+  items() {
+    const game = this.game;
+    const fireOpen = game.quests.vine.stage === 'complete';
+    const trip = (name, icon, description, go) => ({ action: true, name, icon, description, price: 0, buttonLabel: 'Let\'s go', buy: go });
+    const list = [
+      trip('Home to the dock', '⚓', 'Back to the dock on the home island.', () => {
+        game.teleport(game.dock.keeperSpot.x - 1.5, game.dock.keeperSpot.z, { facing: -Math.PI / 2 });
+        game.questLog.toast('Back home at the dock!');
+      }),
+    ];
+    if (this.here !== 'jungle') list.push(trip('To the jungle', '🌴', 'Across the sea to the jungle island.', () => game.jungle.travel(game)));
+    if (this.here !== 'fire') {
+      list.push({
+        ...trip('To the fire island', '🌋', 'A volcano island, full of lava and fire monsters. Its dragon has woken up!', () => game.fireIsland.travel(game)),
+        locked: fireOpen ? null : 'Not yet',
+        lockedMessage: 'The fire island? Nobody goes there! Not while the Viniac still rules this jungle, anyway.',
+      });
+    }
+    return list;
+  },
 };
 
 /** Barrett the gecko loves coins: pay him and he gives you a little boost for five minutes. */

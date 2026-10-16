@@ -6,7 +6,7 @@ import { createSword, createShield, createBow, addArmor, createAxe, createPickax
 import { Arrow } from './Arrow.js';
 import { SwordTrail } from './SwordTrail.js';
 import { MOVES, poseAt } from './swordMoves.js';
-import { PLAYER, SWORDS, FORGE, FOOD, BOW, SEA, DREAM, BUFFS, SKY_STRIKE, DODGE, MAGIC } from '../config.js';
+import { PLAYER, SWORDS, FORGE, FOOD, BOW, SEA, DREAM, BUFFS, SKY_STRIKE, DODGE, MAGIC, CRYSTALS } from '../config.js';
 
 const WALK_SPEED = 6;
 const RUN_SPEED = 11;
@@ -86,6 +86,9 @@ export class Player extends Entity {
     this.tempHealth = 0;
     this.coins = 0;
     this.heartCrystals = 0; // from Pip's crystal shop: +1 max health each
+    this.swiftCrystal = false; // more of Pip's crystals: a little faster on foot...
+    this.seaCrystal = false; // ...faster swimming...
+    this.luckyCrystal = false; // ...and 1 more coin from every monster
     this.hasConduit = false; // the magic conduit (from the dream shrine) holds magic points...
     this.magic = 0; // ...which you get by defeating monsters, and spend on dream abilities
     this.buffs = {}; // buff id (see BUFFS) -> seconds left
@@ -530,6 +533,8 @@ export class Player extends Entity {
     else if (this.shielding) speed = this.shieldTier >= 1 ? WALK_SPEED : SHIELD_SPEED;
     if (this.drawing) speed = Math.min(speed, SHIELD_SPEED); // steady while aiming
     if (this.swimming && this.buffs.fastFins) speed *= BUFFS.fastFins.swim;
+    if (this.swimming && this.seaCrystal) speed *= CRYSTALS.sea.swim;
+    if (!this.swimming && this.swiftCrystal) speed *= CRYSTALS.swift.speed;
     if (!this.swimming && this.buffs.quickFeet) speed *= BUFFS.quickFeet.speed;
     this.updateAbilities(dt, game, controls);
     if (this.stunTimer === 0 && this.dashTimer === 0 && this.dodgeTimer === 0) {

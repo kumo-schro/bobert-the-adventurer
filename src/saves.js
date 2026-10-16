@@ -76,7 +76,7 @@ export function applyPendingLoad(game) {
 
 const PLAYER_FIELDS = [
   'coins', 'health', 'tempHealth', 'arrows', 'wood', 'stone', 'food', 'buffs', 'heartCrystals',
-  'hasConduit', 'magic', 'knowsSpin', 'knowsSkyStrike', 'knowsDodge', 'hasDash', 'hasInvisibility', 'hasDoubleJump', 'hasSpeedBoots',
+  'hasConduit', 'magic', 'swiftCrystal', 'seaCrystal', 'luckyCrystal', 'visitedFire', 'knowsSpin', 'knowsSkyStrike', 'knowsDodge', 'hasDash', 'hasInvisibility', 'hasDoubleJump', 'hasSpeedBoots',
   'hasDreamHeal', 'hasStarShield', 'hasCrystal', 'hasKey', 'visitedJungle', 'canSwimFromBeach',
 ];
 
@@ -202,7 +202,7 @@ function applyWorld(game, world) {
   const chests = worldChests(game);
   for (const i of world.chests) if (chests[i]) chests[i].opened = true;
   if (world.pipCrystalShown && game.pip) {
-    game.pip.crystalShown = true;
+    game.pip.openShop();
     if (game.quests.crystal.stage === 'complete') game.quests.crystal.pointToTrapdoor();
   }
   // The trapdoor's quest-log line is done once you've met Old Man Keegan.

@@ -48,14 +48,16 @@ src/
                        Dock (where you jump in to swim), Road (town to dock), TowerIsland (tower +
                        spiral stairs), SmallIsland, CharibdisCave (locked sea cave), Cellar
                        (Keegan's room under the trapdoor), DayNight (lighting cycle),
-                       Gathering (trees and boulders for wood and stone), Jungle (the jungle island),
+                       Gathering (trees and boulders for wood and stone), Jungle (the jungle island), FireIsland (volcano, lava, Velizar's lair),
                        Underwater (seabed + underwater/dream look), Dream (dream dimension + portal)
   entities/            Player, Npc (townsfolk), Monster (base) -> Slime, Spider, Shark, Eel (and
                        the sea serpent), Kraken, Gargoyle, Charibdis, JungleMonsters (FlyTrap,
-                       Snake, Gorilla, Frog, Panther, Vine, OakFighter), Wisp; Boat, Arrow, Trapdoor, Chest,
+                       Snake, Gorilla, Frog, Panther, Vine (the Viniac), OakFighter), JacksonFighter,
+                       LavaMonster, Velizar (the dragon), Wisp; Boat, Arrow, Trapdoor, Chest,
                        Collectible, Artifact, Particles, Butterflies, CameraRig
   quest/               Quest (base, with `requires` / `after` for quest chains), ArtifactQuest (main),
-                       sideQuests (find things, hunt, puzzle, deliveries, crystal, Charibdis, jungle)
+                       sideQuests (find things, hunt, puzzle, deliveries, crystal, Charibdis, jungle,
+                       the masters' duels, the Viniac, dream quests, Velizar)
   saves.js             Saved games in the browser (what's saved, and setting a fresh game up from a save)
   models/              Voxel model recipes: trees, buildings, character, people (outfits), gear
   ui/                  Dialog (+ "Press T" prompts), QuestLog, StatusBar (hearts/coins/food), Shop,

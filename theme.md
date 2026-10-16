@@ -108,3 +108,9 @@ Everything I've asked for in the game, in the order I asked for it.
 Add new lines below.
 
 - Add a dream boss called Thomage. It is a powerful mage that
+-  add more crystals to pip's crystal shop
+- pip should open a permanent shop in town
+- add a new fire area that you can access after you beat the viniac
+- the fire area should have lava monsters - they are rare and come out of lava flows
+- walking on lava deals damage
+- in the lava area you will fight a dragon boss called velizar who has 30 health and does a flame attack

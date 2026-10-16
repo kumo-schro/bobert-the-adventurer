@@ -247,6 +247,35 @@ export function marketStall(put, rng) {
   return { halfX: 2.7, halfZ: 1.2 };
 }
 
+/** Pip's crystal shop: a little stall with a purple and teal awning and glowing crystals. */
+export function crystalStall(put, rng) {
+  for (const x of [-1.4, 1.4]) {
+    for (const z of [-0.9, 0.5]) put(x, 1.2, z, DARK_WOOD, 0.2, 2.4, 0.2);
+  }
+  put(0, 0.5, 0.3, '#5b3f9e', 2.6, 1, 0.7); // counter
+  put(0, 1.05, 0.3, '#c58b52', 2.9, 0.1, 0.9);
+  for (let i = 0; i < 6; i++) {
+    const x = -1.4 + i * 0.56;
+    const color = i % 2 === 0 ? '#7a4fd1' : '#2fb5a8';
+    put(x, 2.55, -0.5, color, 0.56, 0.15, 1.2);
+    put(x, 2.35, 0.35, color, 0.56, 0.15, 0.9);
+    put(x, 2.12, 0.8, color, 0.56, 0.26, 0.06);
+  }
+  // Crystals on the counter (they glow)
+  const crystals = ['#ff6bb5', '#3fd0ff', '#7dff8a', '#c77dff', '#ffd23f', '#9df2ff'];
+  for (let i = 0; i < 6; i++) {
+    const h = 0.22 + rng.range(0, 0.22);
+    put.glow(-1.1 + i * 0.44, 1.1 + h / 2, 0.3 + rng.range(-0.15, 0.15), crystals[i], 0.18, h, 0.18);
+  }
+  // A big crystal on a little stand by the side, and a sign
+  put(1.9, 0.35, 0, DARK_WOOD, 0.6, 0.7, 0.6);
+  put.glow(1.9, 1.05, 0, '#3fd0ff', 0.35, 0.7, 0.35);
+  put(-1.9, 0.9, 0.6, DARK_WOOD, 0.1, 1.8, 0.1);
+  put(-1.9, 1.7, 0.6, '#f4ecd8', 0.8, 0.5, 0.08);
+  put.glow(-1.9, 1.7, 0.65, '#c77dff', 0.25, 0.25, 0.04);
+  return { halfX: 2.3, halfZ: 1.1 };
+}
+
 /** A stone well with a little roof and a bucket. */
 export function well(put, rng, { roof = '#3f7fd9' } = {}) {
   for (let x = -1; x <= 1; x++) {

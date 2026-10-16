@@ -348,6 +348,50 @@ Notes:
 
 -
 
+## The fire island
+
+### Lava Monster
+
+`src/entities/LavaMonster.js`. Rare: it climbs out of a lava flow when you're near one (`FIRE.lavaMonsters` in `config.js`).
+
+| Stat | Value | Code |
+| --- | --- | --- |
+| Health | 4 | `health` in the constructor |
+| Damage | 2 | `damage` in the constructor |
+| Coins | 6 | `coins` in the constructor |
+| Speed | 2.6 | `SPEED` |
+| Notices you at | 16 | `CHASE_RANGE` |
+| Time to climb out of the lava | 1.4 s | `RISE_TIME` |
+| Most at once | 2 | `config.js`, `FIRE.lavaMonsters.most` |
+| Climbs out every | 12-28 s | `config.js`, `FIRE.lavaMonsters.every` |
+
+Notes:
+
+-
+
+### Velizar (dragon boss)
+
+`src/entities/Velizar.js`. Most numbers are in `VELIZAR` in `src/config.js`. He doesn't leave his lair.
+
+| Stat | Value | Code |
+| --- | --- | --- |
+| Health | 30 | `health` |
+| Flame damage | 4 | `flameDamage` |
+| Bumping into him | 2 | `damage` |
+| Flames reach | 9 | `flameRange` |
+| Flame width (half the angle) | 0.55 (about 30°) | `flameWidth` |
+| Coins | 200 (from Ember's quest) | `reward` |
+| Wakes up when you're within | 20 | `WAKE_RANGE` in `Velizar.js` |
+| Walking speed | 1.8 | `WALK_SPEED` |
+| Warning before the flames | 1 s | `WINDUP` |
+| Flames last | 1.3 s | `BREATH` |
+| Catches his breath for | 1.3 s | `attackTime(1.6)` |
+| Time between flames | 2.6 s | `BREATH_COOLDOWN` |
+
+Notes:
+
+-
+
 ## The dream dimension
 
 ### Wisp

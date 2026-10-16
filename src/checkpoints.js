@@ -117,7 +117,7 @@ export const CHECKPOINTS = [
     id: 'keegan',
     label: "9. Old Man Keegan's cellar",
     setup(game) {
-      game.pip.crystalShown = true; // Pip told you about Keegan
+      game.pip.openShop(); // Pip told you about Keegan, and opened his crystal shop
       const trapdoor = game.quests.crystal.trapdoor;
       if (!trapdoor.open) trapdoor.unlock(game);
       game.questLog.complete('trapdoor');
@@ -277,6 +277,28 @@ export const CHECKPOINTS = [
     place(game) {
       const j = game.entities.find((e) => e.name === 'Master Jackson').object3d.position;
       go(game, j.x - 2.5, j.z, { facing: Math.PI / 2 });
+    },
+  },
+  {
+    id: 'fire-island',
+    label: '22. The fire island (after the Viniac)',
+    setup(game) {
+      game.player.visitedFire = true;
+      game.questLog.remove('fireIsland');
+    },
+    place(game) {
+      game.fireIsland.travel(game);
+    },
+  },
+  {
+    id: 'velizar',
+    label: '23. Fight Velizar the dragon',
+    setup(game) {
+      if (game.quests.velizar.stage === 'offer') game.quests.velizar.start();
+    },
+    place(game) {
+      const l = game.fireIsland.lairSpot;
+      go(game, l.x + 9, l.z - 6, { facing: -Math.PI * 0.7 });
     },
   },
 ];

@@ -231,6 +231,7 @@ Object.assign(SIDE_QUESTS, {
       turnIn: [
         'You did it! The Viniac is gone, and look... where it grew, a portal has opened!',
         'They say it leads to the dream dimension, where the Dream Keeper teaches amazing dream powers to those who help her.',
+        'And listen... do you feel the ground rumble? Across the sea, the old volcano has woken up. Captain Finn on the beach can take you to the fire island, if you dare.',
       ],
       complete: ['The dream portal is to the east, where the Viniac used to grow.'],
     },
@@ -278,6 +279,22 @@ Object.assign(SIDE_QUESTS, {
         'Now my secret: press X to DODGE. You leap out of the way, and nothing can touch you in the middle of a leap.',
       ],
       complete: ['Remember: X to dodge. Leap away just before a hit lands!'],
+    },
+  },
+  velizar: {
+    giver: 'Ember',
+    title: 'Velizar the Dragon',
+    text: {
+      offer: [
+        'An adventurer! On the fire island! I am Ember. I study volcanoes... from a safe distance.',
+        'When the Viniac fell, the volcano woke up, and so did VELIZAR, the dragon who sleeps in the lair beside it.',
+        'He breathes fire! When he rears up and the ground in front of him glows red, get out of the way. Then hit him while he catches his breath.',
+        'Oh, and do not walk on the lava. It burns! Jump over the rivers, or get a Frost Crystal from Pip back in the village.',
+        'Will you defeat Velizar? His lair is to the west of the volcano.',
+      ],
+      active: ['Velizar\'s lair is west of the volcano. When the ground glows red in front of him, MOVE!'],
+      turnIn: ['You did it! Velizar is beaten, and the island is safe again. You are the bravest adventurer I have ever met! Take this treasure.'],
+      complete: ['Lava monsters still climb out of the lava now and then. Be careful out there!'],
     },
   },
   stars: {
@@ -328,7 +345,7 @@ export const PIP_CRYSTAL = {
     'Whoa! Is that... a MYSTERY CRYSTAL? I collect crystals, and I have never seen one that glows like that!',
     'You know who would love to see it? Old Man Keegan. He lives under the old trapdoor outside of town, by the road to the dock.',
     'Grown-ups say he knows all about the monsters out at sea. And there is a crystal-shaped hole in his trapdoor...',
-    'Hey, since you like crystals too: I can sell you some of mine! Come and look.',
+    'Hey, since you like crystals too: I am opening a crystal shop! You will find me at my stall on the plaza from now on.',
   ],
   shop: {
     title: "💎 Pip's Crystals",

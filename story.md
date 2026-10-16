@@ -57,9 +57,13 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 - After talking to Finn once, Bobert can swim from any beach.
 - Stone gargoyles guard the tower's spiral stairs.
 - Bobert brings the crystal back, and Finn lets him keep it.
-- Pip, who collects crystals, gasps when he sees it. He tells Bobert about Old Man Keegan, who lives under the old trapdoor by the road, and from then on sells crystals of his own:
+- Pip, who collects crystals, gasps when he sees it. He tells Bobert about Old Man Keegan, who lives under the old trapdoor by the road, and opens a crystal shop: a little stall on the plaza, where he works from then on.
   - **Heart Crystal** (80 coins): 1 more max health, up to 2 of them.
-  - **Magic Crystal** (15 coins): fills up 30 magic points (needs a magic conduit, see chapter 11).
+  - **Magic Crystal** (15 coins): fills up 30 magic points. **Big Magic Crystal** (40 coins): fills it all the way. (Both need a magic conduit, see chapter 11.)
+  - **Frost Crystal** (30 coins): Frosty Feet for five minutes, so lava can't burn you (see chapter 12).
+  - **Swift Crystal** (120 coins): walk and run a little faster, for good.
+  - **Sea Crystal** (90 coins): swim much faster, for good.
+  - **Lucky Crystal** (150 coins): every monster drops 1 more coin, for good.
 
 ## Chapter 5: Old Man Keegan
 *Checkpoints: `crystal-done`, `keegan`*
@@ -124,6 +128,14 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
   - Chase away the nightmare wisps: **Dash** (press L, 5 magic) and **Invisibility** (press I, 20 magic).
   - Jump up the cloud stones to the summit: **Dream Heal** (press U to heal all the way, once a minute, 25 magic) and **Star Shield** (press O for a bubble that blocks the next 3 hits, 20 magic).
 - Wandering wisps float around the islands and come back after a while, so there's always a little magic to collect.
+
+## Chapter 12: The fire island
+*Checkpoints: `fire-island`, `velizar`*
+- When the Viniac falls, the old volcano across the sea wakes up. Captain Finn on the jungle beach can now take Bobert to the fire island (or he can sail his boat there).
+- The island is dark rock and black sand, with a smoking volcano and rivers of lava. Walking on lava burns (1 damage at a time, and it pushes you back out). Jump over the rivers, or use Pip's Frost Crystal.
+- Now and then (it's rare), a **lava monster** climbs out of a lava flow: a lump of rock with glowing cracks (4 health, 2 damage). Never more than two at a time.
+- **Ember**, who studies the volcano, asks Bobert to defeat **Velizar**, the dragon who lives in the lair beside the volcano.
+- **Velizar** (30 health) sleeps until Bobert comes close. He stomps after you (but never leaves his lair) and breathes fire: first he rears up and the ground in front of him glows red, then flames pour out (4 damage). Step out of the red, then hit him while he catches his breath. Ember pays 200 coins.
 
 ## What happens next?
 

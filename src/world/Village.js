@@ -4,7 +4,7 @@ import { VoxelBuilder } from '../core/VoxelBuilder.js';
 import { blockMaterial, dirtMaterial } from '../core/textures.js';
 import { createRng } from '../utils/random.js';
 import { vary } from '../utils/color.js';
-import { stoneHouse, marketStall, bakeryStall, well, forge, forgeWing } from '../models/buildings.js';
+import { stoneHouse, marketStall, bakeryStall, crystalStall, well, forge, forgeWing } from '../models/buildings.js';
 import { SEED, VILLAGE, CAMERA, PLACES, WORLD } from '../config.js';
 
 const ROOF_NAMES = {
@@ -131,6 +131,14 @@ export class Village extends Entity {
     this.reserved.push({ ...w.center, radius: 2.5 });
 
     this.buildOuterRing(bakeryAngle);
+
+    // Pip's crystal shop, between two houses on the right of the plaza. (Built last, so the
+    // rest of the village comes out the same as before it was added.)
+    const crystalAngle = stallAngle + THREE.MathUtils.degToRad(80);
+    const crystals = this.place(crystalStall, crystalAngle, VILLAGE.plazaRadius + 4, undefined, "Pip's crystal shop");
+    this.reserved.push({ ...crystals.center, radius: 3.5 });
+    this.pipShopSpot = { x: crystals.center.x + crystals.front.x * 2.1, z: crystals.center.z + crystals.front.z * 2.1 };
+    this.pipShopFacing = Math.atan2(crystals.front.x, crystals.front.z);
 
     this.object3d.add(this.builder.build({ material: blockMaterial }));
     this.object3d.add(this.floor.build({ castShadow: false, material: dirtMaterial }));
@@ -295,6 +303,7 @@ export class Village extends Entity {
   }
 
   onAdd(game) {
+    game.village = this;
     game.colliders.push(...this.colliders);
     game.reservedAreas.push(...this.reserved);
     game.cameraBlockers.push(this.object3d.children[0]);

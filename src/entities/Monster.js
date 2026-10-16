@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
 import { pushOut } from '../core/collision.js';
 import { part } from '../models/character.js';
-import { SEA, BUFFS, MONSTERS } from '../config.js';
+import { SEA, BUFFS, MONSTERS, CRYSTALS } from '../config.js';
 
 const GRAVITY = 25;
 /** Magic points a monster gives when it's defeated: (its health + its damage) / 4, at least 1. */
@@ -279,7 +279,8 @@ export class Monster extends Entity {
       life: 1.4,
     });
     if (this.coins) {
-      const coins = this.coins * (game.player.buffs?.luckyTail ? BUFFS.luckyTail.coins : 1); // Lucky Tail buff
+      // Barrett's Lucky Tail buff doubles them; Pip's Lucky Crystal adds one more.
+      const coins = this.coins * (game.player.buffs?.luckyTail ? BUFFS.luckyTail.coins : 1) + (game.player.luckyCrystal ? CRYSTALS.lucky.coins : 0);
       game.player.addCoins(coins);
       game.particles?.burst(where.clone().setY(where.y + 1), { count: coins * 3, colors: ['#ffc93c', '#ffe08a'], speed: 5, size: 0.14 });
     }

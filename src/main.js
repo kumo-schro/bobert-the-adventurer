@@ -13,6 +13,7 @@ import { Cellar } from './world/Cellar.js';
 import { DayNight } from './world/DayNight.js';
 import { Gathering } from './world/Gathering.js';
 import { Jungle } from './world/Jungle.js';
+import { FireIsland } from './world/FireIsland.js';
 import { Underwater } from './world/Underwater.js';
 import { DreamWorld, DreamPortal } from './world/Dream.js';
 import { Wisp } from './entities/Wisp.js';
@@ -61,12 +62,13 @@ import {
   FindJacksonQuest,
   SkyStrikeQuest,
   JacksonDuelQuest,
+  VelizarQuest,
 } from './quest/sideQuests.js';
 import { createShell } from './models/gear.js';
 import { LOOKS } from './models/people.js';
 import { createGecko } from './models/critters.js';
 import { SIDE_QUESTS, BLACKSMITH, BAKER, VILLAGER_CHATTER, PIP_CRYSTAL } from './story.js';
-import { FORGE_SHOP, BAKERY_SHOP, BOAT_MENU, DREAM_SHRINE, BARRETT_SHOP, PIP_SHOP } from './shops.js';
+import { FORGE_SHOP, BAKERY_SHOP, BOAT_MENU, DREAM_SHRINE, BARRETT_SHOP, PIP_SHOP, FINN_TRIPS } from './shops.js';
 import { VILLAGE, SEA, PLACES, DREAM, JACKSON } from './config.js';
 
 const game = new Game(document.getElementById('app'));
@@ -99,6 +101,7 @@ const towerIsland = game.add(new TowerIsland());
 SEA.islands.forEach((island, i) => game.add(new SmallIsland(island, i)));
 const charibdisCave = game.add(new CharibdisCave());
 const jungle = game.add(new Jungle());
+const fireIsland = game.add(new FireIsland()); // the volcano island, open once the Viniac is beaten
 game.add(new DreamPortal(jungle.portalSpot)); // opens once the Vine is beaten
 const dream = game.add(new DreamWorld());
 dream.addWanderingWisps(game, (spot) => new Wisp(spot), { respawnSeconds: DREAM.wispRespawn });
@@ -118,6 +121,14 @@ const boatMenu = new Shop(BOAT_MENU);
 const dreamShrine = new Shop(DREAM_SHRINE);
 const barrettShop = new Shop(BARRETT_SHOP);
 const pipShop = new Shop(PIP_SHOP);
+PIP_SHOP.game = game;
+const finnTrips = new Shop(FINN_TRIPS);
+FINN_TRIPS.game = game;
+/** Captain Finn's trip menu, from the jungle beach or the fire island. */
+const tripsFrom = (here) => () => {
+  FINN_TRIPS.here = here;
+  finnTrips.open();
+};
 BARRETT_SHOP.game = game;
 BOAT_MENU.game = game;
 game.add(new Boat(dock, boatMenu)); // built at the end of the dock once you've been to the jungle
@@ -201,20 +212,32 @@ game.add(
     quest: keeganQuest,
   }),
 );
-// Finn waits on the jungle beach to take you home.
-game.add(
+// Finn waits on the jungle beach to take you home (or, once the Viniac is beaten, to the fire island).
+game.jungleFinn = game.add(
   new Npc({
     name: 'Captain Finn',
     look: LOOKS.sailor,
     position: jungle.finnSpot,
     facing: Math.PI,
-    interactText: 'Press T to go home with Captain Finn',
-    onInteract: (g) => {
-      g.teleport(dock.keeperSpot.x - 1.5, dock.keeperSpot.z, { facing: -Math.PI / 2 });
-      g.questLog.toast('Back home at the dock!');
-    },
+    interactText: 'Press T to sail with Captain Finn',
+    onInteract: tripsFrom('jungle'),
   }),
 );
+
+// The fire island: Finn waits on the beach, and Ember (who studies the volcano) asks you to
+// defeat Velizar the dragon.
+game.add(
+  new Npc({
+    name: 'Captain Finn',
+    look: LOOKS.sailor,
+    position: fireIsland.finnSpot,
+    facing: Math.PI,
+    interactText: 'Press T to sail with Captain Finn',
+    onInteract: tripsFrom('fire'),
+  }),
+);
+const velizarQuest = new VelizarQuest(game, { island: fireIsland });
+game.add(new Npc({ name: 'Ember', look: LOOKS.ember, position: fireIsland.emberSpot, facing: Math.PI, quest: velizarQuest }));
 
 // Master Oak, in his jungle clearing: beat him to learn the spin attack, then he teaches the Sky
 // Strike, then you take on the Viniac. After that he sends you to find his old friend Master
@@ -338,11 +361,17 @@ villagers.forEach((v, i) => {
 const pip = game.entities.find((e) => e.name === SIDE_QUESTS.gems.giver);
 game.pip = pip;
 crystalQuest.pip = pip;
+/** Pip opens his crystal shop on the plaza for good: from now on he works at his stall. */
+pip.openShop = () => {
+  pip.crystalShown = true;
+  pip.wander = null;
+  pip.post = { x: village.pipShopSpot.x, z: village.pipShopSpot.z, facing: village.pipShopFacing };
+};
 pip.onInteract = (g) => {
   if (!g.player.hasCrystal) return false; // just his quests until then
   if (!pip.crystalShown) {
     pip.say(g, PIP_CRYSTAL.first, () => {
-      pip.crystalShown = true;
+      pip.openShop();
       crystalQuest.pointToTrapdoor();
       pipShop.open();
     });
@@ -376,6 +405,7 @@ game.add(boatMenu);
 game.add(dreamShrine);
 game.add(barrettShop);
 game.add(pipShop);
+game.add(finnTrips);
 game.add(new QuestLog());
 game.add(new StatusBar());
 game.add(new ControlsMenu());
@@ -395,6 +425,7 @@ game.quests.vine = vineQuest;
 game.quests.findJackson = findJackson;
 game.quests.skyStrike = skyStrike;
 game.quests.jacksonDuel = jacksonDuel;
+game.quests.velizar = velizarQuest;
 game.quests.stars = starsQuest;
 
 // Opened with ?checkpoint=... (from the debug menu)? Jump to that point in the story.

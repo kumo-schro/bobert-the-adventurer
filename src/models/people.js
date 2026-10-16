@@ -127,6 +127,17 @@ export const LOOKS = {
     },
   },
 
+  // Ember, who studies the volcano on the fire island: a heat-proof coat and big goggles.
+  ember: {
+    colors: { skin: '#e0ac69', shirt: '#d9732f', pants: '#4a3a28', shoes: '#2b2b2b', hair: '#ff6a1f' },
+    decorate({ head, root }) {
+      part(head, [0.66, 0.12, 0.66], '#4a3a28', [0, 0.45, 0]); // goggle strap
+      part(head, [0.18, 0.16, 0.06], '#7af0ff', [-0.14, 0.45, 0.33]); // goggles
+      part(head, [0.18, 0.16, 0.06], '#7af0ff', [0.14, 0.45, 0.33]);
+      part(root, [0.66, 0.5, 0.4], '#c9c2b8', [0, 0.7, 0]); // long heat-proof coat
+    },
+  },
+
   jackson: {
     colors: { skin: '#a8714a', shirt: '#ff8a1f', pants: '#2b2b4a', shoes: '#2b2b2b', hair: '#1d1d1d' },
     decorate({ head, root, handR }) {

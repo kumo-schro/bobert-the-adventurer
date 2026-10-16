@@ -3,13 +3,14 @@ import { Collectible } from '../entities/Collectible.js';
 import { Slime } from '../entities/Slime.js';
 import { OakFighter, Vine } from '../entities/JungleMonsters.js';
 import { JacksonFighter } from '../entities/JacksonFighter.js';
+import { Velizar } from '../entities/Velizar.js';
 import { TrainingPost } from '../entities/TrainingPost.js';
 import { createCharacter } from '../models/character.js';
 import { LOOKS } from '../models/people.js';
 import { createMysteryCrystal, createKey } from '../models/gear.js';
 import { RAINBOW } from '../world/StoneCircle.js';
 import { createRng } from '../utils/random.js';
-import { SEED, PLACES, JACKSON, SKY_STRIKE } from '../config.js';
+import { SEED, PLACES, JACKSON, SKY_STRIKE, VELIZAR } from '../config.js';
 import { keyName } from '../controls.js';
 import { SIDE_QUESTS } from '../story.js';
 
@@ -502,7 +503,16 @@ export class VineQuest extends Quest {
   }
 
   onFinish() {
-    this.game.dreamPortal?.open(this.game);
+    const { game } = this;
+    game.dreamPortal?.open(game);
+    // The volcano across the sea wakes up too: Captain Finn can take you there now.
+    if (!game.player.visitedFire) {
+      game.questLog.set('fireIsland', {
+        title: 'The Fire Island',
+        objective: 'A volcano has woken up! Ask Captain Finn on the jungle beach to take you to the fire island.',
+        target: game.jungleFinn ?? null,
+      });
+    }
   }
 }
 
@@ -665,5 +675,20 @@ export class SkyStrikeQuest extends Quest {
 
   onFinish() {
     this.game.player.knowsSkyStrike = true;
+  }
+}
+
+/** Ember's quest on the fire island: defeat Velizar the dragon in his lair beside the volcano. */
+export class VelizarQuest extends Quest {
+  constructor(game, { island, ...rest }) {
+    super(game, { id: 'velizar', title: SIDE_QUESTS.velizar.title, text: SIDE_QUESTS.velizar.text, reward: VELIZAR.reward, ...rest });
+    this.island = island;
+  }
+
+  onStart() {
+    const { game } = this;
+    this.dragon = game.add(new Velizar(this.island.lairSpot));
+    this.dragon.onDefeated = () => this.readyToTurnIn('You defeated Velizar the dragon!');
+    this.setObjective("Defeat Velizar in his lair beside the volcano. When the ground glows red, get out of the way!", this.dragon);
   }
 }

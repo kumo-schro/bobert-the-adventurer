@@ -173,8 +173,9 @@ export const PLACES = {
   seaSerpent: { x: -200, z: 10 },
   charibdisCave: { x: -30, z: 205 }, // rocky sea cave, locked with the key
   jungle: { x: 0, z: -1000, radius: 55 }, // the jungle island, far across the sea (Finn takes you)
-  cellar: { x: 900, z: 0 },
-  dream: { x: -1000, z: 0, y: 140 }, // the dream dimension, floating high in the sky far away // Old Man Keegan's cellar, under the trapdoor (built far away, out of sight)
+  cellar: { x: 900, z: 0 }, // Old Man Keegan's cellar, under the trapdoor (built far away, out of sight)
+  dream: { x: -1000, z: 0, y: 140 }, // the dream dimension, floating high in the sky far away
+  fireIsland: { x: 0, z: 1000, radius: 50 }, // the volcano island, far across the sea (after the Viniac)
 };
 
 // All monsters attack this many times faster than their base timings below and in their files
@@ -191,6 +192,7 @@ export const BUFFS = {
   toughScales: { name: 'Tough Scales', icon: '🛡️', price: 35, description: 'Every hit hurts 1 less (but always at least 1).' },
   luckyTail: { name: 'Lucky Tail', icon: '🍀', price: 30, coins: 2, description: 'Monsters drop twice as many coins.' },
   fastFins: { name: 'Fast Fins', icon: '🐟', price: 0, swim: 1.5, description: 'Swim much faster.' },
+  frostyFeet: { name: 'Frosty Feet', icon: '🧊', price: 0, description: "Lava can't burn you." },
 };
 
 // Grayson the friendly fish: where he can turn up, and how long he's away after giving a gift.
@@ -273,10 +275,33 @@ export const MAGIC = {
   },
 };
 
-// Pip's crystal shop (it opens once you show Pip the mystery crystal).
+// Pip's crystal shop: his stall on the plaza opens once you show him the mystery crystal.
 export const CRYSTALS = {
   heart: { price: 80, most: 2 }, // +1 max health each, up to `most` of them
   magic: { price: 15, points: 30 }, // fills up 30 magic points (needs a magic conduit)
+  bigMagic: { price: 40, points: 100 }, // fills your magic all the way
+  swift: { price: 120, speed: 1.1 }, // walk and run 10% faster, for good
+  sea: { price: 90, swim: 1.25 }, // swim 25% faster, for good
+  lucky: { price: 150, coins: 1 }, // every monster drops 1 more coin, for good
+  frost: { price: 30 }, // Frosty Feet for five minutes: lava doesn't burn you (see BUFFS.frostyFeet)
+};
+
+// The fire island: a volcano across the sea. You can go once the Viniac is beaten (Captain Finn
+// on the jungle beach takes you, or sail there). Lava hurts to walk on.
+export const FIRE = {
+  lavaDamage: 1, // on lava, you get burned for this much...
+  lavaEvery: 0.8, // ...every this many seconds
+  lavaMonsters: { most: 2, every: [12, 28] }, // at most 2 at a time, one every 12-28 s when you're near a lava flow
+};
+
+// Velizar, the dragon boss of the fire island.
+export const VELIZAR = {
+  health: 30,
+  flameDamage: 4, // his fire breath, to anyone in front of him
+  damage: 2, // bumping into him
+  flameRange: 9,
+  flameWidth: 0.55, // half-angle of the flames (radians)
+  reward: 200,
 };
 
 // The sailboat: unlocked once you've been to the jungle, built at the dock.
