@@ -432,6 +432,43 @@ Notes:
 
 -
 
+## Tulane Kingdom
+
+### King Stuart (the last boss)
+
+`src/entities/KingStuart.js`. Most numbers are in `KING` in `src/config.js`. His shield blocks hits from the front (spin attacks and Sky Strikes get round it).
+
+| Stat | Value | Code |
+| --- | --- | --- |
+| Health | 40 | `health` |
+| Sword sweep damage | 3 | `damage` |
+| Sweep reaches | 3.4 | `sweepRange` |
+| Warning before a sweep (red ground) | 0.7 s | `WINDUP` in `KingStuart.js` |
+| Rests after a sweep | 1 s | `REST` |
+| Time between sweeps | 1.3 s | `attackTime(1.6)` |
+| Walking speed | 2.1 | `WALK_SPEED` |
+| Shield covers (either side of straight ahead) | 1.2 (about 70°) | `SHIELD_ANGLE` |
+| Guards he calls at half health | 2 | `guards` |
+
+Notes:
+
+-
+
+### Tulane Guard
+
+`src/entities/KingStuart.js`, `TulaneGuard`. King Stuart calls them.
+
+| Stat | Value | Code |
+| --- | --- | --- |
+| Health | 4 | `health` in the constructor |
+| Damage | 2 | `damage` in the constructor |
+| Speed | 2.5 | `speed` in `think()` |
+| Notices you at | 18 | `chasing(toPlayer, 18, ...)` |
+
+Notes:
+
+-
+
 ## The dream dimension
 
 ### Wisp

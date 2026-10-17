@@ -303,6 +303,20 @@ Object.assign(SIDE_QUESTS, {
       complete: ['Lava monsters still climb out of the lava now and then. Be careful out there!'],
     },
   },
+  king: {
+    giver: 'King Stuart',
+    title: 'The King of Tulane',
+    text: {
+      offer: [
+        'So. The sword juggler returns.',
+        'I hear the people of Crestview sing your name now. Hmph! Fame will not bring back my son.',
+        'You came to do your duty? Then draw your sword. Let us end this!',
+      ],
+      active: ['Defeat King Stuart. His shield guards his front... but not every side at once.'],
+      turnIn: ['...'],
+      complete: ['...'],
+    },
+  },
   stars: {
     giver: 'Dream Keeper',
     title: 'Fallen Stars',
@@ -358,6 +372,38 @@ export const PIP_CRYSTAL = {
     greeting: 'Crystals from all over the island! Some are even magic.',
   },
 };
+
+// The intro: Bobert juggles swords for King Stuart of Tulane, an accident happens, and he is
+// banished to Crestview Village. The narration is the owner's words (from theme.md).
+export const INTRO = {
+  kingdom: 'Tulane Kingdom',
+  king: ['My son! MY SON!', 'GUARDS! Seize that juggler! You are BANISHED from Tulane Kingdom, forever!'],
+  narration: [
+    "After being banished from the Tulane Kingdom, Bobert is taken to Crestview Village as punishment for killing King Stuart's son in a sword juggling accident.",
+    'You must work your way to fame again through acts of kindness and helping others in the village.',
+    'Once more powerful, you must come and do your duty by killing the king of Tulane Kingdom.',
+    'So, are you ready? Because your story starts... NOW.',
+  ],
+  village: 'Crestview Village',
+  soldiers: ['This is Crestview Village. Your new home, juggler.', 'And keep your swords to yourself!'],
+};
+
+// Once Bobert is famous again, Tulane's herald comes to Crestview.
+export const HERALD = [
+  'Hear ye, hear ye! The tales of Bobert of Crestview have reached Tulane Kingdom!',
+  'Songs are sung of your kindness. They say you are not the boy who was banished... but a hero.',
+  'It is time to face King Stuart. My ship is ready. Shall we sail?',
+];
+
+export const TULANE_GUARD = ['Long live... um. Whoever is in charge.', 'Welcome to Tulane Kingdom.'];
+
+// The end of the story (after King Stuart).
+export const ENDING = [
+  'King Stuart is defeated!',
+  'The people of Tulane gather in the courtyard. They remember the Bobert they knew, before the banishment.',
+  'Tulane Kingdom is yours to protect now. Welcome home, Bobert!',
+  'THE END... but the adventure goes on!',
+];
 
 // Master Zach, who taught Master Oak and Master Jackson, lives on the island toward the sunset.
 export const ZACH = [

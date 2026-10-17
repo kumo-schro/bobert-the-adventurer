@@ -78,7 +78,7 @@ export function applyPendingLoad(game) {
 
 const PLAYER_FIELDS = [
   'coins', 'health', 'tempHealth', 'arrows', 'wood', 'stone', 'food', 'buffs', 'heartCrystals',
-  'hasConduit', 'magic', 'swiftCrystal', 'seaCrystal', 'luckyCrystal', 'visitedFire', 'knowsSpin', 'knowsSkyStrike', 'knowsDodge', 'hasDash', 'hasInvisibility', 'hasDoubleJump', 'hasSpeedBoots',
+  'hasConduit', 'magic', 'swiftCrystal', 'seaCrystal', 'luckyCrystal', 'visitedFire', 'fame', 'visitedTulane', 'knowsSpin', 'knowsSkyStrike', 'knowsDodge', 'hasDash', 'hasInvisibility', 'hasDoubleJump', 'hasSpeedBoots',
   'hasDreamHeal', 'hasStarShield', 'hasCrystal', 'hasKey', 'visitedJungle', 'canSwimFromBeach',
 ];
 

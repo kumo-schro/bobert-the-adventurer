@@ -1,5 +1,5 @@
 import { Entity } from '../core/Entity.js';
-import { FOOD, BUFFS, MAGIC } from '../config.js';
+import { FOOD, BUFFS, MAGIC, FAME } from '../config.js';
 import { keyName } from '../controls.js';
 
 /**
@@ -16,6 +16,7 @@ export class StatusBar extends Entity {
       <div class="hearts"></div>
       <div class="hp"></div>
       <div class="status-coins"><span class="coin"></span><span class="coin-count">0</span></div>
+      <div class="status-fame" title="Fame: help people to win back your name"></div>
       <div class="status-materials hidden"></div>
       <div class="status-arrows hidden"></div>
       <div class="status-dream hidden"></div>
@@ -24,6 +25,7 @@ export class StatusBar extends Entity {
     this.heartsEl = this.el.querySelector('.hearts');
     this.hpEl = this.el.querySelector('.hp');
     this.coinsEl = this.el.querySelector('.coin-count');
+    this.fameEl = this.el.querySelector('.status-fame');
     this.foodEl = this.el.querySelector('.status-food');
     this.arrowsEl = this.el.querySelector('.status-arrows');
     this.materialsEl = this.el.querySelector('.status-materials');
@@ -96,6 +98,12 @@ export class StatusBar extends Entity {
         this.chargeEl.querySelector('.charge-pips').innerHTML = Array.from({ length: 5 }, (_, i) => `<span class="${i < dmg ? 'on' : ''}"></span>`).join('');
       }
     }
+    // Fame (out of what's needed to be summoned back to Tulane, until you have it).
+    const fame = game.player.fame;
+    if (fame !== this.shown.fame) {
+      this.fameEl.textContent = fame < FAME.needed ? `⭐ ${fame}/${FAME.needed}` : `⭐ ${fame}`;
+      this.shown.fame = fame;
+    }
     if (coins !== this.shown.coins) {
       this.coinsEl.textContent = coins;
       if (this.shown.coins !== undefined) {
@@ -143,6 +151,6 @@ export class StatusBar extends Entity {
       this.buffsEl.textContent = buffs;
       this.buffsEl.classList.toggle('hidden', !buffs);
     }
-    this.shown = { health, maxHealth, coins, food, arrows, tempHealth, materials, dream, buffs, charge: charging ? game.player.arrowDamage : null };
+    this.shown = { fame, health, maxHealth, coins, food, arrows, tempHealth, materials, dream, buffs, charge: charging ? game.player.arrowDamage : null };
   }
 }

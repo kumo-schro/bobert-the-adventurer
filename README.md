@@ -18,6 +18,8 @@ npm run build    # production build into dist/
 
 **🔊 Sound:** swinging the sword swishes, and hits sound different for monsters (squishy slimes, stony gargoyles), trees, chests and posts (a wooden knock) and rocks and walls (a clink). The sounds are made in code (`src/core/Sound.js`), no sound files. **M** turns them off.
 
+**🏰 The story:** a new adventure starts with an intro in Tulane Kingdom: Bobert is banished after a sword juggling accident and marched to Crestview Village (Esc skips it). Finishing quests wins **fame** (⭐ in the status bar). At 120 fame, Tulane's herald comes for Bobert, and the last boss, King Stuart, waits on his throne. See `story.md`.
+
 **💎 Save points:** there's a glowing save crystal on every island. Walk up to one and it saves straight away, under the name of the adventure you're playing (the first time, it asks for a name).
 
 **💾 Saved games:** press **Esc** (or click 💾 in the corner), type a name and press Save. Saves are kept in this browser; load or delete them from the same menu. After a big update to the game (`SAVES.version` in `src/config.js`), older saves can't be loaded any more.
@@ -50,12 +52,12 @@ src/
                        Dock (where you jump in to swim), Road (town to dock), TowerIsland (tower +
                        spiral stairs), SmallIsland, CharibdisCave (locked sea cave), Cellar
                        (Ward's room under the trapdoor), DayNight (lighting cycle),
-                       Gathering (trees and boulders for wood and stone), Jungle (the jungle island), FireIsland (volcano, lava, Velizar's lair),
+                       Gathering (trees and boulders for wood and stone), Jungle (the jungle island), FireIsland (volcano, lava, Velizar's lair), Tulane (the castle: intro and last boss),
                        Underwater (seabed + underwater/dream look), Dream (dream dimension + portal)
   entities/            Player, Npc (townsfolk), Monster (base) -> Slime, Spider, Shark, Eel (and
                        the sea serpent), Kraken, Gargoyle, Charibdis, JungleMonsters (FlyTrap,
                        Snake, Gorilla, Frog, Panther, Vine (the Viniac), OakFighter), JacksonFighter,
-                       LavaMonster, Velizar (the dragon), Wisp; Boat, Arrow, Trapdoor, Chest,
+                       LavaMonster, Velizar (the dragon), FireMonsters, KingStuart (+ TulaneGuard), SavePoint, Wisp; Boat, Arrow, Trapdoor, Chest,
                        Collectible, Artifact, Particles, Butterflies, CameraRig
   quest/               Quest (base, with `requires` / `after` for quest chains), ArtifactQuest (main),
                        sideQuests (find things, hunt, puzzle, deliveries, crystal, Charibdis, jungle,
@@ -65,7 +67,7 @@ src/
   ui/                  Dialog (+ "Press T" prompts), QuestLog, StatusBar (hearts/coins/food), Shop,
                        ControlsMenu (Ctrl/Command to change keys, Option/Alt to show panels), DebugMenu (`),
                        Suggestions (💡 click on something and suggest a change), SaveMenu (💾 Esc: saved games),
-                       Customizer (👕 P: Bobert's look)
+                       Customizer (👕 P: Bobert's look), Cutscene (the intro and the ending)
 api/recommendations.js Vercel Function that saves suggestions (and lets the owner download them)
 server/                Code shared by that function and the local dev server (vite.config.js)
 scripts/               npm run recommendations: download everyone's suggestions (and build recommendations/index.html)

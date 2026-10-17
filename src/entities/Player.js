@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
 import { pushOut, colliderAt } from '../core/collision.js';
-import { createCharacter, poseWalk, turnToward } from '../models/character.js';
+import { createCharacter, poseWalk, turnToward, part } from '../models/character.js';
 import { createSword, createShield, createBow, addArmor, createAxe, createPickaxe } from '../models/gear.js';
 import { Arrow } from './Arrow.js';
 import { SwordTrail } from './SwordTrail.js';
 import { MOVES, poseAt } from './swordMoves.js';
-import { PLAYER, SWORDS, FORGE, FOOD, BOW, SEA, DREAM, BUFFS, SKY_STRIKE, DODGE, MAGIC, CRYSTALS } from '../config.js';
+import { PLAYER, SWORDS, FORGE, FOOD, BOW, SEA, DREAM, BUFFS, SKY_STRIKE, DODGE, MAGIC, CRYSTALS, FAME } from '../config.js';
 
 const WALK_SPEED = 6;
 const RUN_SPEED = 11;
@@ -85,6 +85,7 @@ export class Player extends Entity {
     this.health = this.maxHealth;
     this.tempHealth = 0;
     this.coins = 0;
+    this.fame = 0; // won back by helping people (see FAME): with enough, Tulane's herald comes for you
     this.heartCrystals = 0; // from Pip's crystal shop: +1 max health each
     this.swiftCrystal = false; // more of Pip's crystals: a little faster on foot...
     this.seaCrystal = false; // ...faster swimming...
@@ -211,6 +212,22 @@ export class Player extends Entity {
     if (dist < monster.radius + 0.4 || this.spinning) return true; // right on top of us, or spinning all the way round
     const facing = this.model.root.rotation.y;
     return (dx * Math.sin(facing) + dz * Math.cos(facing)) / dist > SLASH_ARC;
+  }
+
+  /** The ending: a gold circlet, for Bobert of Tulane. */
+  wearCrown() {
+    if (this.crown) return;
+    this.crowned = true;
+    this.crown = part(this.model.head, [0.66, 0.12, 0.66], '#ffcf3f', [0, 0.7, 0]);
+    part(this.crown, [0.12, 0.12, 0.06], '#3fd0ff', [0, 0.02, 0.34]);
+  }
+
+  /** Fame for a good deed. Once there's enough, Tulane Kingdom sends its herald. */
+  addFame(game, amount) {
+    const before = this.fame;
+    this.fame += amount;
+    game.questLog?.toast(`⭐ +${amount} fame`);
+    if (before < FAME.needed && this.fame >= FAME.needed) game.onFamous?.();
   }
 
   /** A heart crystal from Pip: one more health to your max. */
@@ -786,7 +803,7 @@ export class Player extends Entity {
       const dz = pos.z - mp.z;
       const d = Math.hypot(dx, dz);
       if (d > r + m.radius || Math.abs(mp.y - pos.y) > 2.5 || m.health <= 0) continue;
-      m.hit(game, { x: dx / (d || 1), z: dz / (d || 1) }, SKY_STRIKE.damage);
+      m.hit(game, { x: dx / (d || 1), z: dz / (d || 1) }, SKY_STRIKE.damage, { skyStrike: true });
     }
     for (const e of [...game.entities]) e.onSkyStrike?.(game, pos, r);
     for (let i = 0; i < 16; i++) {

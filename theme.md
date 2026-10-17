@@ -124,3 +124,5 @@ Add new lines below.
 -  make it so auto save points, which immediately save the game on the name you're playing on
 -  make the Auto save point at all the islands
 -  change, all the characters names to have these names if a character already has one of these names they can keep it.oak,julian,ollie,ward,hana,elda,hatty,ani,grayson,barrett,jackson, max, jonah,eve,aleli,evie,clara,emi,
+-  make an intro  where you start at Tulane Kingdom and get banished when you kill the prince and you are taken to Crestview village where you must work up your fame and kill the king to become the person you were before you got banished
+-  the words to the intro while you are getting taken to Crestview Village through the Tulane military  are after being banished from the Tulane kingdom Bobert is taken to the Crestview Village as pumishment for killing king stuart's son in an sword juggling accedent. You must work your way to fame again through acts of kindness and helping others in the village.  Once more powerful you must come and do your duty by   killing the king of Tulane Kingdom. So are you ready? because your story starts. Now.

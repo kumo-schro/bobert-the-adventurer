@@ -5,7 +5,9 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 (press ` in the game) can jump you.
 
 ## Characters
-- **Bobert** (you): starts with a sword and 5 hearts, no shield.
+- **Bobert** (you): banished from Tulane Kingdom after a sword juggling accident. Starts with a sword and 5 hearts, no shield.
+- **King Stuart**: the king of Tulane Kingdom. His son, the prince, was hit by Bobert's juggling sword.
+- **The Tulane Herald**: comes to Crestview once Bobert is famous again.
 - **The Merchant**: purple robe, white beard, travels with a big backpack. Runs the market stall.
 - **The Blacksmith**: sells gear and upgrades at the forge.
 - **Hana**: the baker. Sells food that heals you.
@@ -30,6 +32,15 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 - Every monster Bobert defeats drops coins: its health plus its attack damage (at least 1). Barrett's Lucky Tail doubles them, and Pip's Lucky Crystal adds 2 more.
 - There's a **save point** (a glowing crystal on a stone stand) on every island: the village, the tower island, every little island, the jungle, the fire island and the dream dimension. Walking up to one saves the game straight away, under the name of the adventure you're playing (the first one asks you to name it).
 - Characters give clues rather than directions. The quest panel and its arrow always show what to do next.
+
+## Prologue: Banished from Tulane
+*Checkpoint: `intro`*
+- The game opens in **Tulane Kingdom**, Bobert's home: a white stone castle with blue and gold banners, far across the sea.
+- Bobert juggles swords for **King Stuart** and his son, the prince. One sword flies off... and hits the prince.
+- The king banishes Bobert forever. Tulane soldiers march him to **Crestview Village**, while the story is told:
+  > After being banished from the Tulane Kingdom, Bobert is taken to Crestview Village as punishment for killing King Stuart's son in a sword juggling accident. You must work your way to fame again through acts of kindness and helping others in the village. Once more powerful, you must come and do your duty by killing the king of Tulane Kingdom. So, are you ready? Because your story starts... NOW.
+- The intro plays once for a new adventure (after picking Bobert's look). Esc or the Skip button skips it.
+- **Fame:** every quest Bobert finishes gives 10 fame (shown as ⭐ in the status bar).
 
 ## Chapter 1: The village in danger
 *Checkpoint: `start`*
@@ -145,6 +156,15 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 - Other fire monsters live on the island too: **ember bats** (swoop and nip, 2 health), **magma slimes** (hopping molten blobs, 3 health, 2 damage) and **obsidian golems** (slow and tough, 8 health; they pound the ground around them for 3 after a red circle shows).
 - **Ani**, who studies the volcano, asks Bobert to defeat **Velizar**, the dragon who lives in the lair beside the volcano.
 - **Velizar** (30 health) sleeps until Bobert comes close. He stomps after you (but never leaves his lair) and breathes fire: first he rears up and the ground in front of him glows red, then flames pour out (4 damage). Step out of the red, then hit him while he catches his breath. Get too close in front of him and he bites (2 damage). Ani pays 200 coins.
+
+## The last chapter: The King of Tulane
+*Checkpoint: `tulane`*
+- At 120 fame, word of Bobert's kindness reaches Tulane, and a **herald** comes to Crestview Village to take him back by ship. (Captain Max can sail there too, from then on.)
+- **King Stuart** waits on his throne. Talk to him and he fights (40 health):
+  - his big shield blocks every hit from the front: get behind him, or use a spin attack or a Sky Strike;
+  - he raises his sword (the ground in front of him glows red), then sweeps it (3 damage);
+  - at half health he calls two Tulane guards (4 health, 2 damage).
+- When he's defeated, the ending plays: the people of Tulane remember who Bobert really was, and welcome him home. Bobert wears a gold circlet from then on. The adventure goes on.
 
 ## What happens next?
 

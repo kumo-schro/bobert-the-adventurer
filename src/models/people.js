@@ -127,6 +127,46 @@ export const LOOKS = {
     },
   },
 
+  // Tulane Kingdom: King Stuart, his son the prince, the herald and the soldiers.
+  king: {
+    colors: { skin: '#f0c8a0', shirt: '#8a1f3a', pants: '#3b2a5a', shoes: '#2b2b2b', hair: '#8a5a2b' },
+    decorate({ head, root }) {
+      part(head, [0.66, 0.16, 0.66], '#ffcf3f', [0, 0.66, 0]); // crown
+      for (const [x, z] of [[-0.25, 0.25], [0.25, 0.25], [0, 0.3], [-0.25, -0.25], [0.25, -0.25]]) part(head, [0.12, 0.2, 0.08], '#ffcf3f', [x, 0.82, z]);
+      part(head, [0.1, 0.1, 0.04], '#d9293f', [0, 0.68, 0.34]); // a ruby
+      part(head, [0.5, 0.3, 0.1], '#8a5a2b', [0, 0.06, 0.33]); // a big beard
+      part(root, [0.7, 1.3, 0.12], '#c0392b', [0, 0.85, -0.25]); // royal cape
+      part(root, [0.72, 0.16, 0.42], '#f2f2f2', [0, 1.45, 0]); // fur collar
+    },
+  },
+  prince: {
+    colors: { skin: '#f0c8a0', shirt: '#2f5fb8', pants: '#f2f2f2', shoes: '#5e3b22', hair: '#e0a030' },
+    decorate({ head, root }) {
+      part(head, [0.6, 0.12, 0.6], '#ffcf3f', [0, 0.64, 0]); // little crown
+      part(root, [0.66, 1.0, 0.1], '#ffcf3f', [0, 1.0, -0.24]); // short golden cape
+    },
+  },
+  soldier: {
+    colors: { skin: '#e0ac69', shirt: '#2f5fb8', pants: '#4a4a4a', shoes: '#2b2b2b', hair: '#3b2a1a' },
+    decorate({ head, root, handR }) {
+      part(head, [0.66, 0.34, 0.66], '#b0b6bd', [0, 0.62, 0]); // steel helmet
+      part(head, [0.1, 0.3, 0.1], '#c0392b', [0, 0.9, 0]); // plume
+      part(root, [0.64, 0.5, 0.38], '#ffcf3f', [0, 1.15, 0.02]); // gold Tulane crest on the tabard
+      part(root, [0.6, 0.46, 0.4], '#2f5fb8', [0, 1.15, 0.03]);
+      part(handR, [0.08, 2.2, 0.08], '#8a5a35', [0, 0.5, 0.1]); // spear
+      part(handR, [0.16, 0.3, 0.06], '#d9dde3', [0, 1.7, 0.1]);
+    },
+  },
+  herald: {
+    colors: { skin: '#f0c8a0', shirt: '#2f5fb8', pants: '#ffcf3f', shoes: '#2b2b2b', hair: '#5a3a1a' },
+    decorate({ head, handR }) {
+      part(head, [0.7, 0.14, 0.7], '#2f5fb8', [0, 0.64, 0]); // feathered hat
+      part(head, [0.08, 0.5, 0.16], '#ffffff', [0.25, 0.85, -0.1]);
+      part(handR, [0.1, 0.1, 0.9], '#ffcf3f', [0, 0, 0.4]); // a trumpet
+      part(handR, [0.26, 0.26, 0.1], '#ffcf3f', [0, 0, 0.85]);
+    },
+  },
+
   // Master Zach, who taught Master Oak and Master Jackson: a long white beard, a robe and a staff.
   zach: {
     colors: { skin: '#e8c29a', shirt: '#3b5f9e', pants: '#2b3a55', shoes: '#5e3b22', hair: '#f2f2f2' },

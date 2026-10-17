@@ -14,6 +14,8 @@ import { DayNight } from './world/DayNight.js';
 import { Gathering } from './world/Gathering.js';
 import { Jungle } from './world/Jungle.js';
 import { FireIsland } from './world/FireIsland.js';
+import { Tulane } from './world/Tulane.js';
+import { Intro, Ending, introSeen } from './ui/Cutscene.js';
 import { Underwater } from './world/Underwater.js';
 import { DreamWorld, DreamPortal } from './world/Dream.js';
 import { Wisp } from './entities/Wisp.js';
@@ -65,13 +67,14 @@ import {
   SkyStrikeQuest,
   JacksonDuelQuest,
   VelizarQuest,
+  KingQuest,
 } from './quest/sideQuests.js';
 import { createShell } from './models/gear.js';
 import { LOOKS } from './models/people.js';
 import { createGecko } from './models/critters.js';
-import { SIDE_QUESTS, BLACKSMITH, BAKER, VILLAGER_CHATTER, PIP_CRYSTAL, OLLIE, ZACH } from './story.js';
+import { SIDE_QUESTS, BLACKSMITH, BAKER, VILLAGER_CHATTER, PIP_CRYSTAL, OLLIE, ZACH, HERALD, TULANE_GUARD } from './story.js';
 import { FORGE_SHOP, BAKERY_SHOP, BOAT_MENU, DREAM_SHRINE, BARRETT_SHOP, PIP_SHOP, FINN_TRIPS } from './shops.js';
-import { VILLAGE, SEA, PLACES, DREAM, JACKSON } from './config.js';
+import { VILLAGE, SEA, PLACES, DREAM, JACKSON, FAME } from './config.js';
 
 const game = new Game(document.getElementById('app'));
 
@@ -104,6 +107,7 @@ const smallIslands = SEA.islands.map((island, i) => game.add(new SmallIsland(isl
 const charibdisCave = game.add(new CharibdisCave());
 const jungle = game.add(new Jungle());
 const fireIsland = game.add(new FireIsland()); // the volcano island, open once the Viniac is beaten
+const tulane = game.add(new Tulane()); // Tulane Kingdom: the intro starts here, and the story ends here
 game.add(new DreamPortal(jungle.portalSpot)); // opens once the Vine is beaten
 const dream = game.add(new DreamWorld());
 dream.addWanderingWisps(game, (spot) => new Wisp(spot), { respawnSeconds: DREAM.wispRespawn });
@@ -428,6 +432,42 @@ for (const [spot, name] of [
 // Master Zach, who taught Master Oak and Master Jackson, lives on the island toward the sunset.
 const zachIsland = smallIslands.find((s) => s.center.x < 0 && s.center.z > 0) ?? smallIslands[0];
 game.add(new Npc({ name: 'Master Zach', look: LOOKS.zach, lines: ZACH, position: freeSpotNear(zachIsland.center.x + 2, zachIsland.center.z - 1), facing: Math.PI / 2 }));
+// Tulane Kingdom: King Stuart on his throne (the last boss, once you're famous again), his guards,
+// and Captain Max at the pier to sail you home.
+const kingQuest = new KingQuest(game, { requires: () => player.fame >= FAME.needed });
+game.kingNpc = game.add(new Npc({ name: 'King Stuart', look: LOOKS.king, position: tulane.kingSpot, facing: Math.PI, quest: kingQuest }));
+for (const spot of tulane.guardSpots) game.add(new Npc({ name: 'Tulane Guard', look: LOOKS.soldier, lines: TULANE_GUARD, position: spot, facing: spot.facing }));
+game.add(
+  new Npc({
+    name: 'Captain Max',
+    look: LOOKS.sailor,
+    position: tulane.captainSpot,
+    facing: Math.PI,
+    interactText: 'Press T to sail with Captain Max',
+    onInteract: tripsFrom('tulane'),
+  }),
+);
+// Once Bobert is famous again, Tulane's herald waits in Crestview Village to take him back.
+const herald = game.add(new Npc({ name: 'Tulane Herald', look: LOOKS.herald, position: freeSpotNear(3, -3.5), facing: 0 }));
+herald.onInteract = (g) => {
+  herald.say(g, HERALD, () => {
+    tulane.travel(g);
+    g.questLog.set('tulane', { title: 'The King of Tulane', objective: 'Face King Stuart on his throne', target: g.kingNpc });
+    g.questLog.toast('Tulane Kingdom. Home... sort of.', 4);
+  });
+  return true;
+};
+const updateHerald = () => {
+  const famous = player.fame >= FAME.needed && kingQuest.stage !== 'complete';
+  herald.setHidden(!famous);
+  if (famous && kingQuest.stage === 'offer' && !game.questLog.entries.has('tulane')) {
+    game.questLog.set('tulane', { title: 'The King of Tulane', objective: 'Your fame has spread across the sea! A herald from Tulane is waiting in Crestview Village.', target: herald });
+  }
+};
+game.onFamous = () => {
+  updateHerald();
+  game.questLog.toast('Your fame has spread across the sea... A herald from Tulane Kingdom has come to Crestview!', 6);
+};
 // Ollie (new in town) stands by the village save point and tells you how it works.
 game.add(new Npc({ name: 'Ollie', look: LOOKS.ollie, lines: OLLIE, position: freeSpotNear(villageSave.x + 2.2, villageSave.z), facing: Math.PI }));
 
@@ -453,6 +493,8 @@ mainQuest.announce();
 // Camera last so it follows the player's final position each frame
 game.add(new CameraRig(player));
 game.add(new Underwater()); // after the camera: switches to the underwater look when it dips below the waves
+const intro = game.add(new Intro()); // after the camera, so it can move the camera during the cutscene
+game.add(new Ending());
 
 game.quests.oak = oakDuel;
 game.quests.vine = vineQuest;
@@ -460,6 +502,7 @@ game.quests.findJackson = findJackson;
 game.quests.skyStrike = skyStrike;
 game.quests.jacksonDuel = jacksonDuel;
 game.quests.velizar = velizarQuest;
+game.quests.king = kingQuest;
 game.quests.stars = starsQuest;
 
 // Opened with ?checkpoint=... (from the debug menu)? Jump to that point in the story.
@@ -470,6 +513,9 @@ const firstVisit = !storedLook() && !new URLSearchParams(location.search).has('c
 customizer.start();
 const loaded = saveMenu.start();
 if (firstVisit && !loaded) customizer.open();
+updateHerald();
+// A new adventure (not a saved game or a checkpoint) starts with the intro in Tulane Kingdom.
+if (!loaded && !new URLSearchParams(location.search).has('checkpoint') && !introSeen()) intro.queue();
 
 game.start();
 

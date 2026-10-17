@@ -1,7 +1,7 @@
 // What each shop sells. Each function gets the player and returns the items for the Shop menu
 // (see ui/Shop.js for the fields). Add a new item by adding an entry to a list.
 
-import { SWORDS, FORGE, FOOD, BOW, GATHER, BUFFS, MAGIC, CRYSTALS, DREAM_ABILITIES } from './config.js';
+import { SWORDS, FORGE, FOOD, BOW, GATHER, BUFFS, MAGIC, CRYSTALS, DREAM_ABILITIES, FAME } from './config.js';
 import { BLACKSMITH, BAKER, PIP_CRYSTAL } from './story.js';
 
 const U = FORGE.upgrades;
@@ -380,6 +380,7 @@ export const FINN_TRIPS = {
   items() {
     const game = this.game;
     const fireOpen = game.quests.vine.stage === 'complete';
+    const famous = game.player.fame >= FAME.needed;
     const trip = (name, icon, description, go) => ({ action: true, name, icon, description, price: 0, buttonLabel: 'Let\'s go', buy: go });
     const list = [
       trip('Home to the dock', '⚓', 'Back to the dock on the home island.', () => {
@@ -387,7 +388,7 @@ export const FINN_TRIPS = {
         game.questLog.toast('Back home at the dock!');
       }),
     ];
-    if (this.here !== 'jungle') list.push(trip('To the jungle', '🌴', 'Across the sea to the jungle island.', () => game.jungle.travel(game)));
+    if (this.here !== 'jungle' && game.player.visitedJungle) list.push(trip('To the jungle', '🌴', 'Across the sea to the jungle island.', () => game.jungle.travel(game)));
     if (this.here !== 'fire') {
       list.push({
         ...trip('To the fire island', '🌋', 'A volcano island, full of lava and fire monsters. Its dragon has woken up!', () => game.fireIsland.travel(game)),
@@ -395,6 +396,7 @@ export const FINN_TRIPS = {
         lockedMessage: 'The fire island? Nobody goes there! Not while the Viniac still rules this jungle, anyway.',
       });
     }
+    if (this.here !== 'tulane' && famous) list.push(trip('To Tulane Kingdom', '🏰', 'Back to where it all began.', () => game.tulane.travel(game)));
     return list;
   },
 };

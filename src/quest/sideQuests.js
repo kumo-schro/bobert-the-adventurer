@@ -4,6 +4,7 @@ import { Slime } from '../entities/Slime.js';
 import { OakFighter, Vine } from '../entities/JungleMonsters.js';
 import { JacksonFighter } from '../entities/JacksonFighter.js';
 import { Velizar } from '../entities/Velizar.js';
+import { KingStuart } from '../entities/KingStuart.js';
 import { TrainingPost } from '../entities/TrainingPost.js';
 import { createCharacter } from '../models/character.js';
 import { LOOKS } from '../models/people.js';
@@ -690,5 +691,47 @@ export class VelizarQuest extends Quest {
     this.dragon = game.add(new Velizar(this.island.lairSpot));
     this.dragon.onDefeated = () => this.readyToTurnIn('You defeated Velizar the dragon!');
     this.setObjective("Defeat Velizar in his lair beside the volcano. When the ground glows red, get out of the way!", this.dragon);
+  }
+}
+
+/**
+ * The last quest: back in Tulane Kingdom, King Stuart fights you (talk to him on his throne).
+ * Knocked out? Talk to him to try again. When he's beaten, the ending plays (game.ending).
+ */
+export class KingQuest extends Quest {
+  constructor(game, rest = {}) {
+    super(game, { id: 'king', title: SIDE_QUESTS.king.title, text: SIDE_QUESTS.king.text, fame: 0, ...rest });
+    this.restartsWhenLoaded = true; // saved mid-fight? He's back on his throne
+  }
+
+  onStart() {
+    const { game } = this;
+    this.giver.setHidden(true);
+    this.fighter = game.add(new KingStuart(this.giver.object3d.position));
+    this.fighter.onDefeated = () => {
+      this.fighter = null;
+      this.finish();
+      game.ending?.play();
+    };
+    this.setObjective('Defeat King Stuart!', this.fighter);
+    game.questLog.toast('King Stuart draws his sword!');
+  }
+
+  /** Knocked out? The fight's off; talk to the king to try again. */
+  update() {
+    const { game } = this;
+    if (this.stage !== 'active' || !game.player.dead || !this.fighter) return;
+    game.remove(this.fighter);
+    this.fighter = null;
+    this.giver.setHidden(false);
+    this.stage = 'offer';
+    game.questLog.remove(this.id);
+  }
+
+  /** The throne stands empty, and Bobert wears the circlet of Tulane. */
+  onFinish() {
+    this.giver.setHidden(true);
+    this.game.player.wearCrown();
+    this.game.questLog.remove('tulane');
   }
 }

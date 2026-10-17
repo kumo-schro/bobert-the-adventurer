@@ -44,6 +44,8 @@ export class Road extends Entity {
       points.push(a.lerp(b, t));
     }
 
+    this.path = points.map((p) => ({ x: p.x, z: p.y })); // from the plaza to the dock (the intro's march uses it)
+    game.road = this;
     const done = new Set();
     points.forEach((p, i) => {
       const next = points[Math.min(i + 1, points.length - 1)];

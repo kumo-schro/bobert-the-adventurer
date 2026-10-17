@@ -8,19 +8,30 @@
 //
 // Opening a checkpoint reloads the page with ?checkpoint=<id>, so it always starts fresh.
 
+import { FAME } from './config.js';
+
 const npc = (game, name) => game.entities.find((e) => e.name === name);
 
-/** Mark a quest finished without its side effects (nothing spawned, no reward). */
+/** Mark a quest finished without its side effects (nothing spawned, no reward; just its fame). */
 function skipQuest(game, quest) {
   if (quest.stage === 'complete') return;
   quest.stage = 'complete';
   quest.completedAt = game.elapsed - 9999; // long ago, so the next quest in a chain is ready
+  game.player.fame += quest.fame ?? 0; // the fame it would have given
   game.questLog.complete(quest.id);
 }
 
 const go = (game, x, z, extra) => game.teleport(x, z, extra);
 
 export const CHECKPOINTS = [
+  {
+    id: 'intro',
+    label: '0. The intro (Tulane Kingdom)',
+    setup() {},
+    place(game) {
+      game.intro.play();
+    },
+  },
   {
     id: 'start',
     label: '1. A new adventure (the start)',
@@ -299,6 +310,19 @@ export const CHECKPOINTS = [
     place(game) {
       const l = game.fireIsland.lairSpot;
       go(game, l.x + 9, l.z - 6, { facing: -Math.PI * 0.7 });
+    },
+  },
+  {
+    id: 'tulane',
+    label: '24. Back to Tulane Kingdom: King Stuart',
+    setup(game) {
+      game.player.fame = Math.max(game.player.fame, FAME.needed);
+      game.onFamous?.();
+    },
+    place(game) {
+      game.tulane.travel(game);
+      const k = game.tulane.kingSpot;
+      go(game, k.x, k.z - 5, { facing: 0 });
     },
   },
 ];

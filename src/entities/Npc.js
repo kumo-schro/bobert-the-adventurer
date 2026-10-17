@@ -108,6 +108,15 @@ export class Npc extends Entity {
     game.colliders.splice(game.colliders.indexOf(this.collider), 1);
   }
 
+  /** Hide (or bring back) this person: invisible, and you can't talk to them or bump into them. */
+  setHidden(hidden) {
+    this.hidden = hidden;
+    this.object3d.visible = !hidden;
+    const pos = this.object3d.position;
+    this.collider.x = hidden ? 1e6 : pos.x;
+    this.collider.z = hidden ? 1e6 : pos.z;
+  }
+
   talk(game) {
     this.onTalk?.(game);
     if (this.onInteract && this.onInteract(game) !== false) return;

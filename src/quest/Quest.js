@@ -1,5 +1,5 @@
 import { QUEST_LOCKED, COME_BACK_LATER } from '../story.js';
-import { DREAM_ABILITIES } from '../config.js';
+import { DREAM_ABILITIES, FAME } from '../config.js';
 
 /**
  * Base class for quests. A quest belongs to an Npc (its `giver`) and moves through stages:
@@ -23,9 +23,10 @@ import { DREAM_ABILITIES } from '../config.js';
  * active quest back to 'offer' instead.
  */
 export class Quest {
-  constructor(game, { id, title, text, reward = 0, abilities = [], seekDistance = 0, requires = null, after = null, delay = 0 }) {
+  constructor(game, { id, title, text, reward = 0, fame = FAME.perQuest, abilities = [], seekDistance = 0, requires = null, after = null, delay = 0 }) {
     this.game = game;
     this.abilities = abilities; // dream abilities it teaches (ids from DREAM_ABILITIES)
+    this.fame = fame; // helping people wins back Bobert's fame
     this.requires = requires;
     this.after = after;
     this.delay = delay;
@@ -118,6 +119,7 @@ export class Quest {
       const a = DREAM_ABILITIES[id];
       game.questLog.toast(`You learned ${a.icon} ${a.name}: ${a.how}! (It uses magic points.)`, 5);
     }
+    if (this.fame) game.player.addFame(game, this.fame);
     game.questLog.complete(this.id);
     this.onFinish();
   }

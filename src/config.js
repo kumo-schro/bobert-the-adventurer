@@ -176,6 +176,7 @@ export const PLACES = {
   cellar: { x: 900, z: 0 }, // Old Man Ward's cellar, under the trapdoor (built far away, out of sight)
   dream: { x: -1000, z: 0, y: 140 }, // the dream dimension, floating high in the sky far away
   fireIsland: { x: 0, z: 1000, radius: 70 }, // the volcano island, far across the sea (after the Viniac)
+  tulane: { x: -900, z: 900, radius: 46 }, // Tulane Kingdom, where Bobert comes from (the intro starts here)
 };
 
 // All monsters attack this many times faster than their base timings below and in their files
@@ -292,6 +293,23 @@ export const FIRE = {
   lavaDamage: 1, // on lava, you get burned for this much...
   lavaEvery: 0.8, // ...every this many seconds
   lavaMonsters: { most: 2, every: [12, 28] }, // at most 2 at a time, one every 12-28 s when you're near a lava flow
+};
+
+// Fame: Bobert was banished from Tulane Kingdom, and wins back his name by helping people.
+// Every quest you finish gives fame; with enough of it, Tulane's herald comes to Crestview Village.
+export const FAME = {
+  perQuest: 10,
+  needed: 120, // fame to be summoned back to Tulane Kingdom
+};
+
+// King Stuart of Tulane, the last boss. He blocks hits from the front with his shield (a spin
+// attack or a Sky Strike gets round it, or hit him from behind), sweeps his big sword, and calls
+// his guards when he's hurt.
+export const KING = {
+  health: 40,
+  damage: 3, // his sword sweep
+  sweepRange: 3.4,
+  guards: 2, // guards he calls (once, at half health)
 };
 
 // Velizar, the dragon boss of the fire island.

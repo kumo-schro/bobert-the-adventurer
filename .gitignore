@@ -6,3 +6,11 @@ dist
 # Players' suggestions (pulled with npm run recommendations)
 recommendations.json
 recommendations/
+
+# Claude Code worktrees (art explorations)
+.claude/
+
+# Codex and Blender logs (they contain local file paths), and Python caches
+art/logs/
+art/bobert/logs/
+__pycache__/
