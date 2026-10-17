@@ -1,0 +1,38 @@
+[
+  {
+    "id": "robot",
+    "name": "Steampunk Robot",
+    "description": "Bobert is a little wind-up clockwork robot made of shiny copper plates with sea-green patina, trimmed in polished brass and covered in rivets. He has big glowing amber goggle eyes, a glass dome on his head full of turning gears, a chimney puffing steam, a pressure gauge on his chest and a big brass wind-up key in his back. He bounces along on springy legs in huge copper boots, with a sword held tight in his brass claw.",
+    "world": "A world of workshops, pipes, gears and brass machines, which are quick to build from repeated parts but need a full set of metal, wood and leather textures. Shiny metal needs one shared reflection setup in the browser, and he would need a lighter version with the rivets and gears painted on."
+  },
+  {
+    "id": "fox",
+    "name": "Cloaked Fox",
+    "description": "Bobert is a young fox rogue: rusty orange fur, a white chest, clever amber eyes and a sly little smile. He wears a ragged blue-charcoal hooded cloak with a silver crescent-moon clasp (his big ears poke out through the hood), leather bracers, a belt of pouches and wrapped shins, with a huge white-tipped tail and a curved silver dagger. He stands on a mossy rock under a full moon, with fireflies all around: a cozy-spooky picture-book night.",
+    "world": "A moonlit world of misty forests, warm lanterns and fireflies, with animal characters built from the same fur, cloth and leather pieces. Very doable; enemies would need lighter versions than this hero, and the mist and glow would be faked with fog and glowing materials in the browser."
+  },
+  {
+    "id": "plush",
+    "name": "Knitted Plush",
+    "description": "A handmade knitted doll you could hug: soft and stuffed, with yarn hair, shiny button eyes and a smile sewn on in thread. His clothes are knitted, his boots and belt are felt, little cream stitches run along every edge, and even his sword is a soft felt toy.",
+    "world": "Cozy and very different from other games: cushion hills, felt trees and button flowers. The look depends on knit and felt textures with stitches on every model, so it's a lot of texture work, and the soft fuzzy lighting has to be faked in the browser."
+  },
+  {
+    "id": "spirit",
+    "name": "Forest Spirit",
+    "description": "Bobert is a little forest spirit: a round birch-bark creature with mossy patches, two big glowing green eyes and a huge creamy mushroom cap dotted with glowing teal spots. He wears a cloak of leaves pinned with a wooden button, fights with a branch whose blade is a giant leaf, and carries a tiny woven lantern with a firefly inside, in a sunny, misty forest glade.",
+    "world": "Lovely for a whole world of mushrooms, roots, moss and leaves sharing a few painted textures and glowing materials. This model is too heavy for the browser as it is, so the game version would be simpler (leaves on flat cards, moss painted on), and the glow, mist and sunbeams would need to be rebuilt as game effects."
+  },
+  {
+    "id": "anime",
+    "name": "Manga Hero",
+    "description": "Bobert jumps off a black-and-white manga page: a wild mop of spiky black hair, big determined eyes and a huge grin, a short open jacket, baggy rolled-up trousers and chunky high-tops, with a big sword over his shoulder. Everything is bold ink lines and printed dot shading, and his only color is a long red scarf whipping out behind him.",
+    "world": "Cheaper than most: the world needs almost no painted textures, just white-and-grey shapes with ink outlines, dot shading and a few red accents for important things. The work is one custom shader for the ink and dots plus an outline effect; the outlines double the triangles, so models should stay simple."
+  },
+  {
+    "id": "voxel",
+    "name": "Micro-Voxel HD",
+    "description": "Still made of cubes like the game is now, but from many tiny ones, about four times finer. That leaves room for real detail: a face drawn in little blocks with shiny eyes and rosy cheeks, curly cube hair, laces on his shirt, a round gold buckle and strapped boots. The same blocky world, just much richer up close.",
+    "world": "The closest to the game today, and the easiest to roll out, since the world is already built from boxes. The catch is speed: tiny cubes everywhere would be a lot for the browser, so the ground would stay a bit chunkier and the fine cubes would go on characters, props and close-up details."
+  }
+]
