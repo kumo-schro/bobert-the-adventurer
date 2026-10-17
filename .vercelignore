@@ -1,0 +1,9 @@
+# Not needed to build or run the game on Vercel
+art
+.claude
+recommendations
+recommendations.json
+node_modules
+dist
+.env*
+.DS_Store
