@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
 import { CAMERA } from '../config.js';
+import { cameraFade } from '../core/textures.js';
 
 const _dir = new THREE.Vector3();
 
@@ -125,6 +126,7 @@ export class CameraRig extends Entity {
 
     camera.position.copy(this.focus).addScaledVector(_dir, distance);
     camera.lookAt(this.focus);
+    cameraFade.focus.value.copy(this.focus); // tree leaves in the way fade out
     if (this.shakeAmount > 0.001) {
       const s = this.shakeAmount;
       camera.position.x += (Math.random() - 0.5) * s;

@@ -6,7 +6,7 @@ import { TREE_KINDS } from '../models/trees.js';
 import { SEED, WORLD } from '../config.js';
 
 const barkMaterial = texturedVoxelMaterial(barkTexture);
-const leafMaterial = texturedVoxelMaterial(leafTexture);
+const leafMaterial = texturedVoxelMaterial(leafTexture, { fadeNearCamera: true }); // leaves get out of the camera's way
 
 /**
  * Scatters trees evenly across the grass (at least `spacing` apart, so there's room to walk

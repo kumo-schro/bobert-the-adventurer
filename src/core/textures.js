@@ -108,19 +108,22 @@ export const blockTexture = makeTexture(81, (x, y, r) => {
  * clones keep the texture: VoxelBuilder and the see-through camera both clone materials.
  */
 class TexturedVoxelMaterial extends THREE.MeshLambertMaterial {
-  constructor(texture) {
+  constructor(texture, { fadeNearCamera = false } = {}) {
     super();
     this.voxelTexture = texture;
+    this.fadeNearCamera = fadeNearCamera;
   }
 
   copy(source) {
     super.copy(source);
     this.voxelTexture = source.voxelTexture;
+    this.fadeNearCamera = source.fadeNearCamera;
     return this;
   }
 
   onBeforeCompile(shader) {
     shader.uniforms.voxelTexture = { value: this.voxelTexture };
+    shader.uniforms.cameraFocus = cameraFade.focus;
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vVoxelPos;\nvarying vec3 vVoxelNormal;')
       .replace(
@@ -136,11 +139,21 @@ class TexturedVoxelMaterial extends THREE.MeshLambertMaterial {
     shader.fragmentShader = shader.fragmentShader
       .replace(
         '#include <common>',
-        '#include <common>\nuniform sampler2D voxelTexture;\nvarying vec3 vVoxelPos;\nvarying vec3 vVoxelNormal;',
+        `#include <common>\n${this.fadeNearCamera ? '#define FADE_NEAR_CAMERA\n' : ''}uniform sampler2D voxelTexture;\nuniform vec3 cameraFocus;\nvarying vec3 vVoxelPos;\nvarying vec3 vVoxelNormal;`,
       )
       .replace(
         '#include <color_fragment>',
         `#include <color_fragment>
+        #ifdef FADE_NEAR_CAMERA
+          // Leaves between the camera and Bobert (or right in front of the lens) dissolve in a
+          // fine dither, so a tree never hides him or fills the screen with green.
+          vec3 toFocus = cameraFocus - cameraPosition;
+          float along = clamp(dot(vVoxelPos - cameraPosition, toFocus) / max(dot(toFocus, toFocus), 0.001), 0.0, 1.0);
+          float off = distance(vVoxelPos, cameraPosition + toFocus * along);
+          float keep = smoothstep(1.4, 3.2, off);
+          float dither = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+          if (keep < dither) discard;
+        #endif
         vec3 voxelAxis = abs(vVoxelNormal);
         vec2 voxelUv = voxelAxis.x > 0.5 ? vVoxelPos.zy : (voxelAxis.y > 0.5 ? vVoxelPos.xz : vVoxelPos.xy);
         diffuseColor.rgb *= texture2D(voxelTexture, voxelUv).rgb;`,
@@ -148,12 +161,16 @@ class TexturedVoxelMaterial extends THREE.MeshLambertMaterial {
   }
 
   customProgramCacheKey() {
-    return 'textured-voxel';
+    return this.fadeNearCamera ? 'textured-voxel-fade' : 'textured-voxel';
   }
 }
 
-export function texturedVoxelMaterial(texture) {
-  return new TexturedVoxelMaterial(texture);
+/** Where the camera is looking (the camera rig keeps it up to date), for leaves that fade out of its way. */
+export const cameraFade = { focus: { value: new THREE.Vector3() } };
+
+/** `fadeNearCamera`: dissolve where it gets between the camera and the player (tree leaves). */
+export function texturedVoxelMaterial(texture, options) {
+  return new TexturedVoxelMaterial(texture, options);
 }
 
 // Shared textured materials for the world, so every voxel surface has a little pixel detail.

@@ -11,7 +11,7 @@ const GRASS = ['#2f9e3a', '#38a83f', '#278a33', '#44b04a'];
 const SAND = '#ecd38f';
 const WET_SAND = '#d9bb72';
 const barkMaterial = texturedVoxelMaterial(barkTexture);
-const leafMaterial = texturedVoxelMaterial(leafTexture);
+const leafMaterial = texturedVoxelMaterial(leafTexture, { fadeNearCamera: true }); // leaves get out of the camera's way
 const stoneMaterial = texturedVoxelMaterial(stoneTexture);
 
 /**
