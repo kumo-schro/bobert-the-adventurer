@@ -237,11 +237,11 @@ export class TowerIsland extends Entity {
     tower.box(X - 1.6 + 0.6, TOP + 2.6, Z - 1.6, 1.1, 0.7, 0.06, '#7b3fd1');
 
     this.object3d.add(
-      ground.build(),
-      land.grass.build({ castShadow: false, material: grassMaterial }),
-      land.sand.build({ castShadow: false, material: sandMaterial }),
+      ground.build({ merge: true }),
+      land.grass.build({ merge: true, cullBottom: true, castShadow: false, material: grassMaterial }),
+      land.sand.build({ merge: true, cullBottom: true, castShadow: false, material: sandMaterial }),
     );
-    this.towerMesh = tower.build({ material: stoneMaterial });
+    this.towerMesh = tower.build({ merge: true, material: stoneMaterial });
     this.object3d.add(this.towerMesh);
   }
 }

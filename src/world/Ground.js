@@ -46,8 +46,8 @@ export class Ground extends Entity {
     }
 
     this.object3d.add(
-      grass.build({ castShadow: false, material: grassMaterial }),
-      sand.build({ castShadow: false, material: sandMaterial }),
+      grass.build({ merge: true, cullBottom: true, chunk: 48, castShadow: false, material: grassMaterial }),
+      sand.build({ merge: true, cullBottom: true, chunk: 48, castShadow: false, material: sandMaterial }),
     );
   }
 

@@ -192,7 +192,7 @@ export class DreamWorld extends Entity {
         });
       }
     }
-    this.object3d.add(ground.build(), glow.build({ material: glowMaterial, castShadow: false }));
+    this.object3d.add(ground.build({ merge: true }), glow.build({ merge: true, material: glowMaterial, castShadow: false }));
     this.buildBouncePads();
 
     // The way home: a glowing doorway on the hub.

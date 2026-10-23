@@ -30,7 +30,7 @@ export class Clouds extends Entity {
           }
         }
       }
-      const mesh = builder.build({ castShadow: false, receiveShadow: false, material: cloudMaterial });
+      const mesh = builder.build({ merge: true, castShadow: false, receiveShadow: false, material: cloudMaterial });
       mesh.position.set(rng.range(-WRAP, WRAP), rng.range(55, 95), rng.range(-260, 260));
       this.object3d.add(mesh);
       this.clouds.push({ mesh, speed: rng.range(1.5, 4) });

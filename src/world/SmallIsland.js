@@ -57,9 +57,9 @@ export class SmallIsland extends Entity {
       bushOrRock(props, rng, x + Math.cos(a) * d, z + Math.sin(a) * d);
     }
     this.object3d.add(
-      ground.grass.build({ castShadow: false, material: grassMaterial }),
-      ground.sand.build({ castShadow: false, material: sandMaterial }),
-      props.build({ material: blockMaterial }),
+      ground.grass.build({ merge: true, cullBottom: true, castShadow: false, material: grassMaterial }),
+      ground.sand.build({ merge: true, cullBottom: true, castShadow: false, material: sandMaterial }),
+      props.build({ merge: true, material: blockMaterial }),
     );
   }
 

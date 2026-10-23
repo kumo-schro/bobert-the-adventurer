@@ -67,7 +67,7 @@ export class StoneCircle extends Entity {
     RAINBOW.forEach((c, i) => b.box(hx - ((RAINBOW.length - 1) * 0.6) / 2 + i * 0.6, 0.9, hz + 0.27, 0.4, 0.4, 0.06, c.color));
     this.colliders.push({ x: hx, z: hz, halfX: width / 2, halfZ: 0.25 });
 
-    this.object3d.add(b.build({ material: stoneMaterial }));
+    this.object3d.add(b.build({ merge: true, material: stoneMaterial }));
   }
 
   buildPlates() {

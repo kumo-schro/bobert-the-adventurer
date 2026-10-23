@@ -88,6 +88,6 @@ export class Road extends Entity {
     props.box(sp.x + dir.y * 2, 0.9, sp.y - dir.x * 2, 0.15, 1.8, 0.15, '#5e3b22');
     props.box(sp.x + dir.y * 2, 1.55, sp.y - dir.x * 2, 0.8, 0.35, 0.1, '#c58b52');
 
-    this.object3d.add(tiles.build({ castShadow: false, material: dirtMaterial }), props.build({ material: blockMaterial }), lamps.build({ material: glowMaterial, castShadow: false }));
+    this.object3d.add(tiles.build({ merge: true, cullBottom: true, castShadow: false, material: dirtMaterial }), props.build({ merge: true, material: blockMaterial }), lamps.build({ merge: true, material: glowMaterial, castShadow: false }));
   }
 }

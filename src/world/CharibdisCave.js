@@ -91,8 +91,8 @@ export class CharibdisCave extends Entity {
       }
     }
 
-    this.walls = walls.build({ material: wallMaterial });
-    this.roof = roof.build({ material: roofMaterial });
+    this.walls = walls.build({ merge: true, material: wallMaterial });
+    this.roof = roof.build({ merge: true, material: roofMaterial });
     this.object3d.add(this.walls, this.roof);
     this.buildGate();
     this.buildLights();

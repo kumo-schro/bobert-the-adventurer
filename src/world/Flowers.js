@@ -42,6 +42,6 @@ export class Flowers extends Entity {
       }
     }
 
-    this.object3d.add(b.build({ castShadow: false }));
+    this.object3d.add(b.build({ merge: true, cullBottom: true, chunk: 48, castShadow: false }));
   }
 }

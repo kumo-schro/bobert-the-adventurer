@@ -140,10 +140,10 @@ export class Village extends Entity {
     this.pipShopSpot = { x: crystals.center.x + crystals.front.x * 2.1, z: crystals.center.z + crystals.front.z * 2.1 };
     this.pipShopFacing = Math.atan2(crystals.front.x, crystals.front.z);
 
-    this.buildingMeshes = this.buildingBuilders.map((b) => b.build({ material: blockMaterial }));
+    this.buildingMeshes = this.buildingBuilders.map((b) => b.build({ merge: true, material: blockMaterial }));
     this.object3d.add(...this.buildingMeshes);
-    this.object3d.add(this.floor.build({ castShadow: false, material: dirtMaterial }));
-    this.object3d.add(this.glow.build({ material: glowMaterial, castShadow: false }));
+    this.object3d.add(this.floor.build({ merge: true, cullBottom: true, castShadow: false, material: dirtMaterial }));
+    this.object3d.add(this.glow.build({ merge: true, material: glowMaterial, castShadow: false }));
     this.smokeTimer = 0;
   }
 
@@ -267,8 +267,8 @@ export class Village extends Entity {
     const put = into(builder);
     put.glow = into(glow);
     const wing = forgeWing(put, this.rng);
-    const wingMesh = builder.build({ material: blockMaterial });
-    this.object3d.add(wingMesh, glow.build({ material: glowMaterial, castShadow: false }));
+    const wingMesh = builder.build({ merge: true, material: blockMaterial });
+    this.object3d.add(wingMesh, glow.build({ merge: true, material: glowMaterial, castShadow: false }));
     game.cameraBlockers.push(wingMesh);
     const [wx, wz] = rotate(wing.center[0], wing.center[1], k);
     const [hx, hz] = k % 2 ? [wing.halfZ, wing.halfX] : [wing.halfX, wing.halfZ];

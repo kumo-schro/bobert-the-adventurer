@@ -51,7 +51,7 @@ export class Underwater extends Entity {
         plants.box(x, SEA.floor + 0.5, z, rng.range(1, 2.5), rng.range(0.8, 2), rng.range(1, 2.5), vary('#7d8088', rng, 0.06)); // rock
       }
     }
-    this.object3d.add(plants.build({ castShadow: false }));
+    this.object3d.add(plants.build({ merge: true, chunk: 96, castShadow: false }));
   }
 
   onAdd(game) {
@@ -82,6 +82,9 @@ export class Underwater extends Entity {
       if (fog) {
         fog.near = mode === 'under' ? 1 : mode === 'dream' ? 30 : FOG.near;
         fog.far = mode === 'under' ? 55 : mode === 'dream' ? 260 : FOG.far;
+        // Don't draw what the fog hides completely (the dream's stars are further out than its fog).
+        game.camera.far = Math.max(fog.far, mode === 'dream' ? 400 : 0) + 20;
+        game.camera.updateProjectionMatrix();
       }
       game.scene.background = special ? (mode === 'under' ? DEEP : DREAMY).clone() : null;
     }

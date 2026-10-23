@@ -160,9 +160,9 @@ export class Cave extends Entity {
       }
     }
 
-    this.walls = walls.build({ material: wallMaterial });
-    this.roof = roof.build({ material: roofMaterial });
-    this.floor = floor.build({ material: floorMaterial, castShadow: false });
+    this.walls = walls.build({ merge: true, material: wallMaterial });
+    this.roof = roof.build({ merge: true, material: roofMaterial });
+    this.floor = floor.build({ merge: true, cullBottom: true, material: floorMaterial, castShadow: false });
     this.object3d.add(this.walls, this.roof, this.floor);
   }
 
@@ -183,7 +183,7 @@ export class Cave extends Entity {
       this.object3d.add(light);
       this.lights.push(light);
     }
-    this.object3d.add(posts.build({ castShadow: false }));
+    this.object3d.add(posts.build({ merge: true, castShadow: false }));
   }
 
   /** The grid collider: rock cells the player and monsters can't walk into. */

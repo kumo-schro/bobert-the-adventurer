@@ -101,14 +101,26 @@ export const blockTexture = makeTexture(81, (x, y, r) => {
 });
 
 /**
- * A Lambert material that paints `texture` onto every voxel face, tiled once per world unit.
+ * A Lambert material that paints its texture onto every voxel face, tiled once per world unit.
  * UVs come from the world position, so stretched boxes (tall mountain columns, etc.) get
- * evenly sized pixels instead of a smeared texture. Works with VoxelBuilder's instanced meshes.
+ * evenly sized pixels instead of a smeared texture. Works with VoxelBuilder's instanced meshes
+ * and merged meshes. A class (rather than an onBeforeCompile set on a plain material) so that
+ * clones keep the texture: VoxelBuilder and the see-through camera both clone materials.
  */
-export function texturedVoxelMaterial(texture) {
-  const material = new THREE.MeshLambertMaterial();
-  material.onBeforeCompile = (shader) => {
-    shader.uniforms.voxelTexture = { value: texture };
+class TexturedVoxelMaterial extends THREE.MeshLambertMaterial {
+  constructor(texture) {
+    super();
+    this.voxelTexture = texture;
+  }
+
+  copy(source) {
+    super.copy(source);
+    this.voxelTexture = source.voxelTexture;
+    return this;
+  }
+
+  onBeforeCompile(shader) {
+    shader.uniforms.voxelTexture = { value: this.voxelTexture };
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vVoxelPos;\nvarying vec3 vVoxelNormal;')
       .replace(
@@ -133,9 +145,15 @@ export function texturedVoxelMaterial(texture) {
         vec2 voxelUv = voxelAxis.x > 0.5 ? vVoxelPos.zy : (voxelAxis.y > 0.5 ? vVoxelPos.xz : vVoxelPos.xy);
         diffuseColor.rgb *= texture2D(voxelTexture, voxelUv).rgb;`,
       );
-  };
-  material.customProgramCacheKey = () => 'textured-voxel';
-  return material;
+  }
+
+  customProgramCacheKey() {
+    return 'textured-voxel';
+  }
+}
+
+export function texturedVoxelMaterial(texture) {
+  return new TexturedVoxelMaterial(texture);
 }
 
 // Shared textured materials for the world, so every voxel surface has a little pixel detail.

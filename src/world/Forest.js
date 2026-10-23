@@ -40,8 +40,8 @@ export class Forest extends Entity {
       game.gathering?.addNode({ kind: 'wood', x, z, radius });
     }
 
-    const trunks = parts.trunk.build({ material: barkMaterial });
-    const leaves = parts.leaves.build({ material: leafMaterial });
+    const trunks = parts.trunk.build({ merge: true, chunk: 48, material: barkMaterial });
+    const leaves = parts.leaves.build({ merge: true, chunk: 48, material: leafMaterial });
     // Not camera blockers: walking under trees shouldn't make the camera jump in.
     this.object3d.add(trunks, leaves);
   }

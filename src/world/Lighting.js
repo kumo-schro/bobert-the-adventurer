@@ -1,6 +1,21 @@
 import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
-import { SKY, WORLD } from '../config.js';
+import { SKY } from '../config.js';
+
+// The sun's shadows cover a square this many units from its middle, drawn into a
+// SHADOW_MAP x SHADOW_MAP texture (about 14 pixels per block). The square follows the player,
+// pushed ahead toward where the camera looks, since that's the part you see.
+const SHADOW_REACH = 72;
+const SHADOW_MAP = 2048;
+const TEXEL = (SHADOW_REACH * 2) / SHADOW_MAP;
+const SUN_DISTANCE = 150;
+
+// The shadow camera's sideways and up directions (it looks along the sunlight). Moving the
+// shadow square only in whole texels along these keeps shadow edges from shimmering.
+const SUN_RIGHT = new THREE.Vector3(0, 1, 0).cross(SKY.sunDirection).normalize();
+const SUN_UP = SKY.sunDirection.clone().cross(SUN_RIGHT).normalize();
+const _center = new THREE.Vector3();
+const _forward = new THREE.Vector3();
 
 /**
  * Soft sky/ground ambient light plus a sun that casts shadows. The shadow area follows the
@@ -15,19 +30,19 @@ export class Lighting extends Entity {
     this.object3d.add(hemi);
 
     const sun = new THREE.DirectionalLight('#fff3dc', 2.4);
-    sun.position.copy(SKY.sunDirection).multiplyScalar(150);
+    sun.position.copy(SKY.sunDirection).multiplyScalar(SUN_DISTANCE);
     this.sun = sun;
     sun.castShadow = true;
-    const extent = WORLD.islandRadius + 8;
     Object.assign(sun.shadow.camera, {
-      left: -extent,
-      right: extent,
-      top: extent,
-      bottom: -extent,
+      left: -SHADOW_REACH,
+      right: SHADOW_REACH,
+      top: SHADOW_REACH,
+      bottom: -SHADOW_REACH,
       near: 1,
       far: 400,
     });
-    sun.shadow.mapSize.set(4096, 4096);
+    sun.shadow.camera.updateProjectionMatrix();
+    sun.shadow.mapSize.set(SHADOW_MAP, SHADOW_MAP);
     sun.shadow.bias = -0.0004;
     sun.shadow.normalBias = 0.03;
     this.object3d.add(sun, sun.target);
@@ -40,17 +55,16 @@ export class Lighting extends Entity {
   update(_dt, game) {
     const p = game.player?.object3d.position;
     if (!p) return;
-    // Move in big steps so the shadows don't shimmer while walking. Near the village the
-    // shadow area stays centered on the island.
-    const step = 16;
-    const x = Math.hypot(p.x, p.z) < 40 ? 0 : Math.round(p.x / step) * step;
-    const z = Math.hypot(p.x, p.z) < 40 ? 0 : Math.round(p.z / step) * step;
-    const y = p.y > 50 ? Math.round(p.y) : 0; // up in the dream dimension, the shadows come with you
-    if (x === this.cx && z === this.cz && y === this.cy) return;
-    this.cx = x;
-    this.cz = z;
-    this.cy = y;
-    this.sun.target.position.set(x, y, z);
-    this.sun.position.copy(SKY.sunDirection).multiplyScalar(150).add(this.sun.target.position);
+    // Centered a little ahead of the player, in the direction the camera faces.
+    game.camera.getWorldDirection(_forward).setY(0);
+    if (_forward.lengthSq() > 1e-6) _forward.normalize().multiplyScalar(SHADOW_REACH * 0.45);
+    _center.set(p.x + _forward.x, p.y > 50 ? p.y : 0, p.z + _forward.z); // up in the dream dimension, the shadows come with you
+    // Snap to whole shadow-map texels (seen from the sun), so the shadows don't shimmer as it moves.
+    const r = Math.round(_center.dot(SUN_RIGHT) / TEXEL) * TEXEL;
+    const u = Math.round(_center.dot(SUN_UP) / TEXEL) * TEXEL;
+    const f = _center.dot(SKY.sunDirection);
+    _center.copy(SUN_RIGHT).multiplyScalar(r).addScaledVector(SUN_UP, u).addScaledVector(SKY.sunDirection, f);
+    this.sun.target.position.copy(_center);
+    this.sun.position.copy(SKY.sunDirection).multiplyScalar(SUN_DISTANCE).add(_center);
   }
 }

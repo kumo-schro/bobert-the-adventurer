@@ -114,9 +114,9 @@ export class Jungle extends Entity {
       }
     }
     this.object3d.add(
-      grass.build({ castShadow: false, material: grassMaterial }),
-      sand.build({ castShadow: false, material: sandMaterial }),
-      plants.build({ castShadow: false }),
+      grass.build({ merge: true, cullBottom: true, chunk: 48, castShadow: false, material: grassMaterial }),
+      sand.build({ merge: true, cullBottom: true, chunk: 48, castShadow: false, material: sandMaterial }),
+      plants.build({ merge: true, cullBottom: true, chunk: 48, castShadow: false }),
     );
   }
 
@@ -142,7 +142,7 @@ export class Jungle extends Entity {
     for (const [px, pz] of [[-6, -6], [5, -6], [-6, 5], [5, 5]]) {
       for (let y = 3; y < 6; y++) b.add(X + px + 0.5, y + 0.5, Z + pz + 0.5, vary(rng.pick(stone), rng, 0.05));
     }
-    this.object3d.add(b.build({ material: stoneMaterial }));
+    this.object3d.add(b.build({ merge: true, material: stoneMaterial }));
     // The temple is a solid block you can't walk through; the treasure sits out front.
     game.colliders.push({ x: X, z: Z, halfX: 7, halfZ: 7 });
     game.add(new Chest({ x: X - 2, z: Z + 8.5 }, { coins: 40 }));
@@ -184,7 +184,7 @@ export class Jungle extends Entity {
       game.colliders.push(tree);
       game.gathering?.addNode({ kind: 'wood', x, z, radius: 0.8 });
     }
-    this.object3d.add(trunks.build({ material: barkMaterial }), leaves.build({ material: leafMaterial }));
+    this.object3d.add(trunks.build({ merge: true, chunk: 48, material: barkMaterial }), leaves.build({ merge: true, chunk: 48, material: leafMaterial }));
   }
 
   spawnMonsters(game) {

@@ -106,9 +106,9 @@ export class Tulane extends Entity {
       }
     }
     this.object3d.add(
-      grass.build({ castShadow: false, material: grassMaterial }),
-      sand.build({ castShadow: false, material: sandMaterial }),
-      cobble.build({ castShadow: false, material: stoneMaterial }),
+      grass.build({ merge: true, cullBottom: true, chunk: 48, castShadow: false, material: grassMaterial }),
+      sand.build({ merge: true, cullBottom: true, chunk: 48, castShadow: false, material: sandMaterial }),
+      cobble.build({ merge: true, cullBottom: true, chunk: 48, castShadow: false, material: stoneMaterial }),
     );
   }
 
@@ -178,8 +178,8 @@ export class Tulane extends Entity {
     const { x: AX, z: AZ } = this.arrive;
     for (let z = AZ - 8; z < AZ + 1; z += 1) deco.box(AX, -0.05, z + 0.5, 3, 0.2, 0.9, vary('#a0703f', rng, 0.06));
     for (const s of [-1, 1]) for (const z of [AZ - 7, AZ - 3]) deco.box(AX + s * 1.4, -1, z, 0.3, 2.4, 0.3, '#6b4423');
-    this.walls = walls.build({ material: stoneMaterial });
-    this.object3d.add(this.walls, deco.build({ material: blockMaterial }), glow.build({ castShadow: false, material: glowMaterial }));
+    this.walls = walls.build({ merge: true, material: stoneMaterial });
+    this.object3d.add(this.walls, deco.build({ merge: true, material: blockMaterial }), glow.build({ merge: true, castShadow: false, material: glowMaterial }));
     game.cameraBlockers.push(this.walls);
     game.reservedAreas.push({ ...this.courtyard, radius: HALF + 3 });
   }

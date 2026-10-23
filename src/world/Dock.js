@@ -91,6 +91,6 @@ export class Dock extends Entity {
     b.box(sx + 1.25, 1.55, sz, 0.25, 0.25, 0.08, '#c58b52');
     b.box(sx + 0.45, 1.55, sz + 0.05, 0.9, 0.06, 0.02, '#3cc6ea'); // little wave painted on
 
-    this.object3d.add(b.build({ material: plankMaterial }));
+    this.object3d.add(b.build({ merge: true, material: plankMaterial }));
   }
 }

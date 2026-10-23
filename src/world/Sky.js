@@ -24,8 +24,16 @@ export class Sky extends Entity {
       vertexShader: /* glsl */ `
         varying vec3 vDir;
         void main() {
-          vDir = normalize(position);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          // The colors are worked out as if the sky were a dome of radius 1800 centered on the
+          // middle of the world (as it used to be), so the sky looks the same everywhere it did.
+          vec3 look = normalize(position);
+          float b = dot(cameraPosition, look);
+          float t = -b + sqrt(max(b * b - dot(cameraPosition, cameraPosition) + 1800.0 * 1800.0, 0.0));
+          vDir = normalize(cameraPosition + look * t);
+          // Centered on the camera and pushed to the very back (depth 1), so the sky is always
+          // there behind everything, however short the camera's far plane is.
+          gl_Position = projectionMatrix * viewMatrix * vec4(cameraPosition + position, 1.0);
+          gl_Position.z = gl_Position.w;
         }
       `,
       fragmentShader: /* glsl */ `
@@ -67,7 +75,10 @@ export class Sky extends Entity {
     });
 
     this.uniforms = material.uniforms;
-    this.object3d.add(new THREE.Mesh(new THREE.SphereGeometry(1800, 32, 16), material));
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(1800, 32, 16), material); // (its size only matters for clicks: see Suggestions)
+    dome.frustumCulled = false; // it follows the camera (in the shader)
+    dome.renderOrder = -1; // drawn first, so everything else covers it
+    this.object3d.add(dome);
     this.buildStars();
   }
 
@@ -82,10 +93,18 @@ export class Sky extends Entity {
     }
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    this.stars = new THREE.Points(
-      geometry,
-      new THREE.PointsMaterial({ color: '#ffffff', size: 3, sizeAttenuation: false, transparent: true, opacity: 0, fog: false, depthWrite: false }),
-    );
+    const material = new THREE.PointsMaterial({ color: '#ffffff', size: 3, sizeAttenuation: false, transparent: true, opacity: 0, fog: false, depthWrite: false });
+    // Like the sky dome: around the camera, at the very back, so they only show where the sky does.
+    material.onBeforeCompile = (shader) => {
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <project_vertex>',
+        `vec4 mvPosition = viewMatrix * vec4(cameraPosition + transformed, 1.0);
+        gl_Position = projectionMatrix * mvPosition;
+        gl_Position.z = gl_Position.w;`,
+      );
+    };
+    this.stars = new THREE.Points(geometry, material);
+    this.stars.frustumCulled = false;
     this.object3d.add(this.stars);
   }
 

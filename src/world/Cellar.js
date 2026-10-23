@@ -119,9 +119,9 @@ export class Cellar extends Entity {
     ground.rotation.x = -Math.PI / 2;
     ground.position.set(X, -0.3, Z); // covers the sea under the see-through earth
     this.object3d.add(shell, ground);
-    this.walls = stone.build({ material: stoneMaterial });
-    this.earth = earth.build({ material: blockMaterial });
-    this.object3d.add(this.walls, this.earth, b.build({ material: blockMaterial }), glow.build({ material: glowMaterial, castShadow: false }));
+    this.walls = stone.build({ merge: true, material: stoneMaterial });
+    this.earth = earth.build({ merge: true, material: blockMaterial });
+    this.object3d.add(this.walls, this.earth, b.build({ merge: true, material: blockMaterial }), glow.build({ merge: true, material: glowMaterial, castShadow: false }));
 
     // Warm firelight and candlelight
     const fire = new THREE.PointLight('#ff9a4a', 12, 16, 1.4);

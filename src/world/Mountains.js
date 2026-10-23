@@ -42,6 +42,6 @@ export class Mountains extends Entity {
       }
     }
 
-    this.object3d.add(builder.build({ castShadow: false, receiveShadow: false, material: blockMaterial }));
+    this.object3d.add(builder.build({ merge: true, cullBottom: true, chunk: 160, castShadow: false, receiveShadow: false, material: blockMaterial }));
   }
 }

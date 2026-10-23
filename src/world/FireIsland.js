@@ -156,8 +156,8 @@ export class FireIsland extends Entity {
     }
     // Keep only a few of the lava spots for monsters to climb out of.
     this.lavaPoints = this.lavaPoints.filter((_, i) => i % 9 === 0);
-    this.lava = lava.build({ castShadow: false, receiveShadow: false, material: lavaMaterial });
-    this.object3d.add(ground.build({ castShadow: false, material: rockMaterial }), sand.build({ castShadow: false }), this.lava);
+    this.lava = lava.build({ merge: true, cullBottom: true, castShadow: false, receiveShadow: false, material: lavaMaterial });
+    this.object3d.add(ground.build({ merge: true, cullBottom: true, chunk: 48, castShadow: false, material: rockMaterial }), sand.build({ merge: true, cullBottom: true, chunk: 48, castShadow: false }), this.lava);
   }
 
   /** The volcano: a stack of dark rock rings with a glowing crater, and lava down its side. */
@@ -191,7 +191,7 @@ export class FireIsland extends Entity {
         glow.box(VX + dx * r, y + 0.5, VZ + dz * r, 1.4, 1.02, 1.4, rng.pick(['#ff5a1f', '#ff7a1f']));
       }
     }
-    this.object3d.add(rock.build({ material: rockMaterial }), glow.build({ castShadow: false, material: lavaMaterial }));
+    this.object3d.add(rock.build({ merge: true, material: rockMaterial }), glow.build({ merge: true, castShadow: false, material: lavaMaterial }));
     game.colliders.push({ x: VX, z: VZ, radius: R - 0.5 });
     const light = new THREE.PointLight('#ff6a2a', 30, 40, 1.6);
     light.position.set(VX, height + 2, VZ);
@@ -274,7 +274,7 @@ export class FireIsland extends Entity {
       const f = player.model.root.rotation.y;
       const ax = v > 0.5 ? player.velocity.x / v : Math.sin(f);
       const az = v > 0.5 ? player.velocity.z / v : Math.cos(f);
-      player.takeDamage(game, FIRE.lavaDamage, p.x + ax, p.z + az); // pushed back the way you came
+      player.takeDamage(game, FIRE.lavaDamage, p.x + ax, p.z + az, { hazard: true }); // pushed back the way you came (rolling can't dodge lava)
       game.particles?.burst(p.clone().setY(p.y + 0.3), { count: 14, colors: ['#ff5a1f', '#ffd23f', '#3b2a2a'], speed: 3, size: 0.14, gravity: -4, life: 0.5 });
       if (!this.warned) {
         this.warned = true;
