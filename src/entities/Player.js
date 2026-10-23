@@ -122,7 +122,7 @@ export class Player extends Entity {
     // The Star Burst's ring of light, spreading out over the ground
     this.burstRing = new THREE.Mesh(
       new THREE.RingGeometry(0.8, 1, 48),
-      new THREE.MeshBasicMaterial({ color: '#ffe66b', transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }),
+      new THREE.MeshBasicMaterial({ color: '#ffd23f', transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }),
     );
     this.burstRing.rotation.x = -Math.PI / 2;
     this.burstRing.position.y = 0.3;
