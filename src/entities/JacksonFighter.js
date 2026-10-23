@@ -60,12 +60,12 @@ export class JacksonFighter extends Monster {
   }
 
   /** Arrows and Sky Strikes are dodged too. Spins land, but he doesn't flinch. */
-  hit(game, toPlayer, damage) {
+  hit(game, toPlayer, damage, how) {
     if (this.dodges(game)) {
       this.dodge(game, toPlayer);
       return;
     }
-    super.hit(game, toPlayer, damage);
+    super.hit(game, toPlayer, damage, how);
     this.stunTimer = 0;
     this.velocity.set(0, 0, 0);
     this.state = 'circle';

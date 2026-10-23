@@ -20,7 +20,8 @@ These apply to every monster unless a monster below says otherwise.
 
 | Stat | Value | Code |
 | --- | --- | --- |
-| Knockback when you hit a monster | 7 | `Monster.js`, `hit()` |
+| Knockback when you hit a monster | 3.5 for the first two sword swings, 10 for the finisher (and a counter-attack), 9 for a spin, 7 for anything else | `Player.js` `strike`, `Monster.js` `hit()` |
+| Can't hurt you by touching you while it's reeling from a hit | 0.35 s (bosses only flinch: 0.1 s, and a quarter of the knockback) | `Monster.js`, `stunTimer` in `hit()` |
 | Knockback when a monster hits you | 9 | `Player.js`, `takeDamage()` |
 | Time before touching you hurts again | 0.8 s | `Monster.js`, `CONTACT_COOLDOWN` |
 | Gives up chasing at | 30 | `Monster.js`, `GIVE_UP_DISTANCE` |

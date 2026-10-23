@@ -495,8 +495,8 @@ export class OakFighter extends Monster {
   }
 
   /** Master Oak doesn't flinch: hits hurt him, but don't knock him back or stop him. */
-  hit(game, toPlayer, damage) {
-    super.hit(game, toPlayer, damage);
+  hit(game, toPlayer, damage, how) {
+    super.hit(game, toPlayer, damage, how);
     this.stunTimer = 0;
     this.velocity.set(0, 0, 0);
   }

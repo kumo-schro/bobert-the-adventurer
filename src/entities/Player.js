@@ -203,7 +203,8 @@ export class Player extends Entity {
   }
 
   /**
-   * While the blade is sweeping round: { id, damage, counter }, otherwise null.
+   * While the blade is sweeping round: { id, damage, counter, knockback }, otherwise null.
+   * The first hits of the combo barely push (so the next one reaches); the finisher and the spin launch.
    * `id` changes every swing, so enemies can make sure each swing only hits them once.
    * Use slashReaches(monster) to see if the slash hits a particular monster.
    */
@@ -211,10 +212,11 @@ export class Player extends Entity {
     if (!this.isAttacking) return null;
     const counter = this.counterSwing === this.swingId;
     const bonus = counter ? DODGE.counterBonus : 0;
-    if (this.spinning) return { id: this.swingId, damage: this.swordStats.damage + 1 + bonus, counter };
+    if (this.spinning) return { id: this.swingId, damage: this.swordStats.damage + 1 + bonus, counter, knockback: 9 };
     const t = this.swingProgress;
     if (t < this.move.strike[0] || t > this.move.strike[1]) return null;
-    return { id: this.swingId, damage: this.swordStats.damage + bonus, counter };
+    const knockback = this.move.slam || counter ? 10 : 3.5;
+    return { id: this.swingId, damage: this.swordStats.damage + bonus, counter, knockback };
   }
 
   /** Is this monster inside the sideways sweep of the sword (a wide arc in front of us)? */

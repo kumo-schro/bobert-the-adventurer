@@ -221,7 +221,7 @@ export class Charibdis extends Monster {
   }
 
   /** The spinning whirlpool shields it: hits only count while it's stopped. */
-  hit(game, toPlayer, damage) {
+  hit(game, toPlayer, damage, how) {
     if (this.whirling && CHARIBDIS.shieldedWhileSpinning) {
       const pos = this.object3d.position;
       game.particles?.burst(pos.clone().setY(pos.y + 1.5), { count: 12, colors: ['#ffffff', '#bfe6ff'], speed: 5, size: 0.14, life: 0.5 });
@@ -231,7 +231,7 @@ export class Charibdis extends Monster {
       }
       return;
     }
-    super.hit(game, toPlayer, damage);
+    super.hit(game, toPlayer, damage, how);
   }
 
   startWhirlpool(game, announce) {

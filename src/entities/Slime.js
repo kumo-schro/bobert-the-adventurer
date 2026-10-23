@@ -101,10 +101,10 @@ export class Slime extends Monster {
     this.squash = 0.35; // splat!
   }
 
-  hit(game, toPlayer, damage) {
+  hit(game, toPlayer, damage, how) {
     this.squash = 0.45;
-    this.hopTimer = 0.9;
-    super.hit(game, toPlayer, damage);
+    if (!this.boss) this.hopTimer = 0.9; // the big one keeps coming
+    super.hit(game, toPlayer, damage, how);
   }
 
   animate(dt, game) {

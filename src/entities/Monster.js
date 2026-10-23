@@ -181,7 +181,7 @@ export class Monster extends Entity {
       if (this.dodges?.(game)) this.dodge(game, toPlayer); // some masters just aren't there when the sword arrives
       else {
         player.swordHit?.(game, this);
-        this.hit(game, toPlayer, strike.damage);
+        this.hit(game, toPlayer, strike.damage, { knockback: strike.knockback });
         if (this.health <= 0) return;
       }
     }
@@ -193,7 +193,8 @@ export class Monster extends Entity {
     if (this.flying) reachable = Math.abs(pos.y - (p.y + 1)) < this.radius + 1;
     else if (this.aquatic) reachable = player.swimming;
     else reachable = !player.swimming && pos.y < 1 && p.y < 1.5;
-    if (this.touchDamage && !player.dead && reachable && dist < this.radius + 0.6 && this.contactCooldown <= 0) {
+    // (Not while it's reeling from a hit: hitting a monster stops it hurting you for a moment.)
+    if (this.touchDamage && !player.dead && reachable && dist < this.radius + 0.6 && this.contactCooldown <= 0 && this.stunTimer <= 0) {
       const result = player.takeDamage(game, this.power, pos.x, pos.z);
       this.contactCooldown = CONTACT_COOLDOWN;
       if (result === 'blocked' && player.shieldTier >= 1) this.bounce(toPlayer); // the Iron Shield pushes back
@@ -261,14 +262,19 @@ export class Monster extends Entity {
     });
   }
 
-  /** Hurt by the player (a sword, an arrow, a Sky Strike...). toPlayer points from us to them. */
-  hit(game, toPlayer, damage = 1, _how = {}) {
+  /**
+   * Hurt by the player (a sword, an arrow, a Sky Strike...). toPlayer points from us to them.
+   * `how.knockback` is how hard it's pushed away (7 if not given).
+   */
+  hit(game, toPlayer, damage = 1, how = {}) {
+    // Bosses stand their ground: a hit only makes them flinch, so you can't keep them stuck.
+    const knockback = (how.knockback ?? 7) * (this.boss ? 0.25 : 1);
     this.health -= damage;
     this.lastHitAt = game.elapsed;
     game.floatText?.(this.object3d.position.clone().setY(this.object3d.position.y + this.radius * 2 + 0.8), `${damage}`, damage >= 3 ? 'big' : 'damage');
     this.flashTimer = 0.15;
-    this.stunTimer = 0.35;
-    this.velocity.set(-toPlayer.x * 7, this.aquatic ? 0 : this.flying ? 2 : 5, -toPlayer.z * 7); // knocked back
+    this.stunTimer = this.boss ? 0.1 : 0.35;
+    this.velocity.set(-toPlayer.x * knockback, this.aquatic ? 0 : this.flying ? 2 : knockback > 5 ? 5 : 2.5, -toPlayer.z * knockback); // knocked back
     this.onGround = false;
 
     this.healthBar.visible = !this.boss; // bosses get the big bar at the top of the screen instead
