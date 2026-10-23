@@ -429,8 +429,10 @@ export class Vine extends Monster {
  * When beaten he doesn't vanish: he bows, and the duel is over.
  */
 const OAK_SPIN_TIME = 0.8;
+const OAK_SPIN_WINDUP = 0.18; // the start of the spin, before the staff can hit
 const OAK_CHARGE_TIME = attackTime(3); // seconds to charge the next spin
 const OAK_SPIN_REACH = 3.2;
+const OAK_LEAP = 9; // how hard he leaps back after every second hit
 
 export class OakFighter extends Monster {
   constructor({ x, z }, model) {
@@ -477,7 +479,9 @@ export class OakFighter extends Monster {
     const pos = this.object3d.position;
     const player = game.player;
     const p = player.object3d.position;
-    if (!this.hitThisSpin && !player.dead && Math.hypot(p.x - pos.x, p.z - pos.z) < OAK_SPIN_REACH && Math.abs(p.y - pos.y) < 2) {
+    // The staff only hurts once it's swinging round (a split second to roll away, or through it).
+    const swinging = this.spinTimer < OAK_SPIN_TIME - OAK_SPIN_WINDUP;
+    if (swinging && !this.hitThisSpin && !player.dead && Math.hypot(p.x - pos.x, p.z - pos.z) < OAK_SPIN_REACH && Math.abs(p.y - pos.y) < 2) {
       this.hitThisSpin = true;
       player.takeDamage(game, this.power, pos.x, pos.z);
     }
@@ -494,9 +498,21 @@ export class OakFighter extends Monster {
     if (this.spinTimer === 0) this.charge = 0; // start charging the next one
   }
 
-  /** Master Oak doesn't flinch: hits hurt him, but don't knock him back or stop him. */
+  /**
+   * Master Oak doesn't flinch: hits hurt him, but don't stop him. Every second hit he leaps back
+   * out of reach (and his staff charges up faster), so it's a real duel, not a button-mash.
+   */
   hit(game, toPlayer, damage, how) {
     super.hit(game, toPlayer, damage, how);
+    this.hitsTaken = (this.hitsTaken ?? 0) + 1;
+    if (this.health > 0 && this.hitsTaken % 2 === 0 && this.spinTimer === 0) {
+      this.velocity.set(-toPlayer.x * OAK_LEAP, 6, -toPlayer.z * OAK_LEAP);
+      this.onGround = false;
+      this.stunTimer = 0.45; // in the air
+      this.charge = Math.min(OAK_CHARGE_TIME, this.charge + OAK_CHARGE_TIME * 0.4);
+      game.sound?.play('dodge');
+      return;
+    }
     this.stunTimer = 0;
     this.velocity.set(0, 0, 0);
   }

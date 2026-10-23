@@ -283,7 +283,7 @@ Notes:
 
 ### Master Oak (in the duel)
 
-`src/entities/JungleMonsters.js`, `OakFighter`. He doesn't flinch or get knocked back.
+`src/entities/JungleMonsters.js`, `OakFighter`. He doesn't flinch or get knocked back, but every second hit he leaps back out of reach.
 
 | Stat | Value | Code |
 | --- | --- | --- |
@@ -291,8 +291,10 @@ Notes:
 | Spin damage | 10 | `damage` in the constructor |
 | Spin reaches | 3.2 | `OAK_SPIN_REACH` |
 | Spin lasts | 0.8 s | `OAK_SPIN_TIME` |
+| Start of the spin before the staff can hit (time to roll) | 0.18 s | `OAK_SPIN_WINDUP` |
 | Time to charge each spin (even the first) | 2.4 s | `OAK_CHARGE_TIME` |
 | Walking speed | 1.5 | `speed` in `think()` |
+| Leaps back after every second hit (and his staff gets 40% of a charge) | 9 | `OAK_LEAP` |
 
 Notes:
 
