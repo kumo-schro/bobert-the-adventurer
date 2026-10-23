@@ -33,7 +33,7 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 - Bosses (the Gelationus Slime, the Kraken, the Sea Serpent, Charibdis, Master Oak, the Viniac, Master Jackson, Velizar and King Stuart) show a big health bar at the top of the screen.
 - There's a **save point** (a glowing crystal on a stone stand) on every island: the village, the tower island, every little island, the jungle, the fire island, the dream dimension and Tulane Kingdom. Walking up to one saves the game straight away, under the name of the adventure you're playing (the first one asks you to name it).
 - If Bobert is knocked out, he gets back up at the last save point he touched (or in the village, if he hasn't touched one yet).
-- Characters give clues rather than directions. The quest panel and its arrow always show what to do next.
+- Characters give clues rather than directions. The quest panel and its arrow always show what to do next, and the map (M) shows where everything is.
 
 ## Prologue: Banished from Tulane
 *Checkpoint: `intro`*
