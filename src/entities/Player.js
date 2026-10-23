@@ -425,7 +425,7 @@ export class Player extends Entity {
     this.knockback(dx, dz, 9);
     this.attackTimer = 0; // knocked out of a swing
     this.spinCharge = 0;
-    this.drawing = false;
+    this.cancelDraw();
     game.hitStop?.(0.08);
     game.cameraRig?.shake(0.35);
     game.statusBar?.hurt();
@@ -710,7 +710,7 @@ export class Player extends Entity {
     this.spinning = false;
     this.queuedSwing = false;
     this.spinCharge = 0;
-    this.drawing = false;
+    this.cancelDraw();
     this.perfectThisRoll = false;
     this.dashHits.clear();
     const at = this.object3d.position.clone().setY(this.object3d.position.y + 0.2);
@@ -788,6 +788,14 @@ export class Player extends Entity {
     const { item, healed } = eaten;
     game.questLog?.toast(`${item.name}: ${this.health >= this.maxHealth ? 'all better!' : `+${healed} health`}`, { icon: item.icon });
     game.sound?.play('eat');
+  }
+
+  /** Stop pulling the bowstring (without shooting) and put the bow away. */
+  cancelDraw() {
+    if (!this.drawing) return;
+    this.drawing = false;
+    this.charge = 0;
+    this.wearBowOnBack();
   }
 
   /** K: start pulling the bowstring back. The arrow flies after BOW.drawTime seconds. */
