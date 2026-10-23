@@ -23,7 +23,7 @@ const SHAPES = { maj: [0, 4, 7, 12], min: [0, 3, 7, 12], maj7: [0, 4, 7, 11] };
  * twinkly arpeggio and a little melody over four chords. The mood follows where you are: sunny
  * by day, slower at night, floaty in the dream, rolling at sea, and quick and tense in a boss
  * fight. Moods cross-fade at the next bar. Music on/off is in the pause menu (remembered in the
- * browser), and M (all sound) mutes it too. Lives at game.music.
+ * browser), and O (all sound) mutes it too. Lives at game.music.
  */
 export class Music extends Entity {
   constructor() {

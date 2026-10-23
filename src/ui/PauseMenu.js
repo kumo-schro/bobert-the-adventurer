@@ -71,6 +71,7 @@ export class PauseMenu extends Entity {
       [key('interact'), 'Talk · open · use'],
       ['<kbd>Drag</kbd>', 'Look around · scroll to zoom'],
       [key('quests'), 'All your quests'],
+      [key('map'), 'Map'],
     ].filter(Boolean);
     const sound = game.sound?.muted ? 'Off' : 'On';
     this.el.innerHTML = `
@@ -78,6 +79,7 @@ export class PauseMenu extends Entity {
         <div class="pause-title">Paused</div>
         <div class="pause-buttons">
           <button class="primary" data-choice="resume">Resume</button>
+          <button data-choice="map">Map</button>
           <button data-choice="save">Save &amp; load</button>
           <button data-choice="look">Customize Bobert</button>
           <button data-choice="controls">Controls</button>
@@ -96,6 +98,7 @@ export class PauseMenu extends Entity {
     const game = this.game;
     game.sound?.play('click');
     if (choice === 'resume') this.close();
+    else if (choice === 'map') this.openChild(game.map);
     else if (choice === 'save') this.openChild(game.saveMenu);
     else if (choice === 'look') this.openChild(game.customizer);
     else if (choice === 'controls') this.openChild(game.controlsMenu);

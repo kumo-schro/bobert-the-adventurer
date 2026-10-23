@@ -17,7 +17,7 @@ const STORAGE_KEY = 'bobert-sound';
  *   coin, pickup, chest, eat, hurt, bow, dash, boing, dodge, magic, quest   everything else
  *
  * Browsers only allow sound after the player has pressed a key or clicked, so the audio starts
- * then. M turns sound on and off (remembered in the browser). Lives at game.sound.
+ * then. O (or the pause menu) turns sound on and off (remembered in the browser). Lives at game.sound.
  */
 export class Sound extends Entity {
   constructor() {
@@ -64,7 +64,7 @@ export class Sound extends Entity {
     if (game.input.hit('mute')) this.toggle(game);
   }
 
-  /** Sound on / off (M, or the pause menu). */
+  /** Sound on / off (O, or the pause menu). */
   toggle(game) {
     this.muted = !this.muted;
     try {
@@ -72,7 +72,7 @@ export class Sound extends Entity {
     } catch {
       // storage blocked: just for this visit
     }
-    game.questLog?.toast(this.muted ? 'Sound off (M to turn it back on)' : 'Sound on', { icon: this.muted ? '🔇' : '🔊' });
+    game.questLog?.toast(this.muted ? 'Sound off (turn it back on in the pause menu)' : 'Sound on', { icon: this.muted ? '🔇' : '🔊' });
   }
 
   /** Play a sound by name. volume 0..1 on top of SOUND.volume. */

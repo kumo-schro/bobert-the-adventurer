@@ -51,6 +51,7 @@ import { PauseMenu } from './ui/PauseMenu.js';
 import { TitleScreen } from './ui/TitleScreen.js';
 import { FloatingText } from './ui/FloatingText.js';
 import { BossBar } from './ui/BossBar.js';
+import { MapScreen } from './ui/MapScreen.js';
 import { Tips } from './ui/Tips.js';
 import { TouchControls } from './ui/TouchControls.js';
 import { Customizer, storedLook } from './ui/Customizer.js';
@@ -521,9 +522,10 @@ const debugMenu = game.add(new DebugMenu());
 game.add(new Suggestions()); // /: click on something and suggest a change
 const saveMenu = game.add(new SaveMenu()); // name and save your adventure, or load one
 const customizer = game.add(new Customizer()); // P: pick how Bobert looks
+game.add(new MapScreen()); // M: where you are, and where your quest is
 game.add(new PauseMenu()); // Esc (after the menus it opens, so it knows when they close)
 const titleScreen = game.add(new TitleScreen());
-game.add(new Sound()); // sword swishes and hits (M turns sound off)
+game.add(new Sound()); // sword swishes and hits (O turns sound off)
 game.add(new Music()); // background music that follows the mood (pause menu turns it off)
 mainQuest.announce();
 

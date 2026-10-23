@@ -8,7 +8,7 @@ npm run dev      # http://localhost:5173
 npm run build    # production build into dist/
 ```
 
-**Controls** (every key can be changed in the pause menu): WASD / arrow keys move (and swim), **Space** jumps, **Shift** rolls (you can't be hurt mid-roll; keep holding it to run), **Return** or left click swings the sword (tap again for a three-hit combo; once Master Oak teaches you, hold it for a spin attack, or swing in mid-air for a Sky Strike), hold **J** to block with a shield, **K** shoots the bow (hold it to charge the power bow), **L** is the Star Burst (once you have a magic conduit), **F** eats food, **T** talks / opens / uses. **Tab** shows all your quests, **Esc** is the pause menu (save and load, customize Bobert, controls, sound, suggest a change, and how to play). Shortcuts: **P** customize, **M** sound, **/** suggest a change, **`** debug menu. Camera: drag with the left or right mouse button, **Q/E** turn, **R/G** tilt, **C** swings round behind you, scroll or **-/=** zoom. Where you go never moves the camera by itself: walls, houses and cave rock in the way turn see-through instead.
+**Controls** (every key can be changed in the pause menu): WASD / arrow keys move (and swim), **Space** jumps, **Shift** rolls (you can't be hurt mid-roll; keep holding it to run), **Return** or left click swings the sword (tap again for a three-hit combo; once Master Oak teaches you, hold it for a spin attack, or swing in mid-air for a Sky Strike), hold **J** to block with a shield, **K** shoots the bow (hold it to charge the power bow), **L** is the Star Burst (once you have a magic conduit), **F** eats food, **T** talks / opens / uses. **Tab** shows all your quests, **M** opens the map, **Esc** is the pause menu (map, save and load, customize Bobert, controls, sound and music, suggest a change, and how to play). Shortcuts: **P** customize, **O** sound on/off, **/** suggest a change, **`** debug menu. Camera: drag with the left or right mouse button, **Q/E** turn, **R/G** tilt, **C** swings round behind you, scroll or **-/=** zoom. Where you go never moves the camera by itself: walls, houses and cave rock in the way turn see-through instead.
 
 **Feel:** swings turn you toward the nearest monster in front of you and step you in; hits pause the action for a split second, shake the camera and pop up damage numbers; monsters show a "!" when they spot you; coins (and sometimes health) pop out of defeated monsters and fly to you; bosses get a big health bar at the top of the screen. Most of the numbers are in `PLAYER`, `DODGE`, `DROPS` and `DREAM` in `src/config.js`.
 
@@ -18,7 +18,7 @@ npm run build    # production build into dist/
 
 **👕 Customize Bobert:** when you start a new adventure for the first time, and any time you press **P** (or pick it in the pause menu), pick Bobert's skin, hair color and style, shirt, trousers and shoes. The look is remembered in the browser and in saved games. The color choices are in `CUSTOMIZE` in `src/config.js`.
 
-**🔊 Sound:** swinging the sword swishes, and hits sound different for monsters (squishy slimes, stony gargoyles), trees, chests and posts (a wooden knock) and rocks and walls (a clink). The sounds are made in code (`src/core/Sound.js`), no sound files. **M** turns them off.
+**🔊 Sound:** swinging the sword swishes, and hits sound different for monsters (squishy slimes, stony gargoyles), trees, chests and posts (a wooden knock) and rocks and walls (a clink). The sounds are made in code (`src/core/Sound.js`), no sound files. **O** (or the pause menu) turns them off.
 
 **🎵 Music:** made in code too (`src/core/Music.js`): a bass line, an arpeggio and a little melody whose mood follows where you are (sunny by day, slower at night, floaty in the dream, rolling at sea, quick and tense in a boss fight). Turn it on or off in the pause menu.
 
@@ -68,7 +68,7 @@ src/
                        the masters' duels, the Viniac, dream quests, Velizar)
   saves.js             Saved games in the browser (what's saved, and setting a fresh game up from a save)
   models/              Voxel model recipes: trees, buildings, character, people (outfits), gear
-  ui/                  TitleScreen, PauseMenu (Esc), Dialog (+ "Press T" prompts), QuestLog (quest tracker
+  ui/                  TitleScreen, PauseMenu (Esc), MapScreen (M), Dialog (+ "Press T" prompts), QuestLog (quest tracker
                        + toasts), StatusBar (health, magic, coins, fame, and the action bar), BossBar,
                        FloatingText (damage numbers), Shop, ControlsMenu, DebugMenu (`), Suggestions
                        (click on something and suggest a change), SaveMenu (saved games), Customizer
