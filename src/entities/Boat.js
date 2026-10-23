@@ -9,7 +9,7 @@ const _seat = new THREE.Vector3();
 
 /**
  * Bobert's sailboat. It's unlocked once you've been to the jungle: build it at the end of the
- * dock for 40 wood. Get in (T), steer with the move keys (Shift to go faster), and press T out
+ * dock for BOAT.price coins. Get in (T), steer with the move keys (Shift to go faster), and press T out
  * at sea for the boat map (sail to the jungle, sail home, or hop out and swim). Near land, T gets
  * you out. Sea monsters live underwater, so they can't get you in the boat. Lives at game.boat.
  */
@@ -53,15 +53,17 @@ export class Boat extends Entity {
 
   build(game) {
     const player = game.player;
-    if (player.wood < BOAT.wood) {
-      game.questLog.toast(`You need ${BOAT.wood} wood to build a boat (you have ${player.wood}). Chop some trees!`);
+    if (player.coins < BOAT.price) {
+      game.questLog.toast(`You need ${BOAT.price - player.coins} more coins to build a boat.`, { icon: '⛵' });
+      game.sound?.play('deny');
       return;
     }
-    player.wood -= BOAT.wood;
+    player.coins -= BOAT.price;
+    game.sound?.play('buy');
     this.built = true;
     this.object3d.visible = true;
     game.particles?.burst(this.object3d.position.clone().setY(1), { count: 50, colors: ['#a0522d', '#ffffff', '#ffd23f'], speed: 6, size: 0.18 });
-    game.questLog.toast('You built a boat! Press T to get in.');
+    game.questLog.toast('You built a boat! Press T to get in.', { icon: '⛵' });
   }
 
   get boarded() {
@@ -171,7 +173,7 @@ export class Boat extends Entity {
     if (!this.built) {
       const d = Math.hypot(p.x - this.dock.end, p.z - this.dock.z);
       if (player.visitedJungle && d < 4) {
-        game.dialog.offerInteraction(`Press T to build a boat (${BOAT.wood} wood)`, d, () => this.build(game));
+        game.dialog.offerInteraction(`Press T to build a boat (${BOAT.price} coins)`, d, () => this.build(game));
       }
       return;
     }

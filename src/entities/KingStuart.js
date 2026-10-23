@@ -22,6 +22,7 @@ const warningMaterial = new THREE.MeshBasicMaterial({ color: '#ff3b1f', transpar
 export class KingStuart extends Monster {
   constructor({ x, z }) {
     super({ x, z, health: KING.health, damage: KING.damage, radius: 0.7, barHeight: 2.9, colors: ['#ffcf3f', '#c0392b', '#ffffff'], touchDamage: false });
+    this.boss = 'King Stuart';
     this.model = createCharacter(LOOKS.king.colors);
     LOOKS.king.decorate(this.model);
     part(this.model.handR, [0.14, 1.5, 0.08], '#e8edf2', [0, -0.1, 0.75]).rotation.x = Math.PI / 2; // big sword

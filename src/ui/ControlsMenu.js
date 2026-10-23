@@ -1,11 +1,9 @@
 import { Entity } from '../core/Entity.js';
-import { ACTIONS, RESERVED, MENU_KEYS, keyName } from '../controls.js';
+import { ACTIONS, RESERVED, keyName } from '../controls.js';
 
 /**
- * Two small bits of UI:
- *  - Option (Alt) shows / hides the quest panel and the controls list (hidden to start with).
- *  - Ctrl or Command opens the controls menu, where you click a control and press a new key for it.
- * Changed keys are saved in the browser. Lives at game.controlsMenu.
+ * The controls menu: click a control and press a new key for it. Changed keys are saved in the
+ * browser. Opens from the pause menu, or with Ctrl or Command. Lives at game.controlsMenu.
  */
 const MENU_OPENERS = ['MetaLeft', 'MetaRight', 'ControlLeft', 'ControlRight'];
 
@@ -15,11 +13,8 @@ export class ControlsMenu extends Entity {
     this.isOpen = false;
     this.waitingFor = null; // action id waiting for a new key
     this.el = document.createElement('div');
-    this.el.className = 'shop controls-menu hidden';
-    this.hint = document.createElement('div');
-    this.hint.className = 'menu-hint';
-    this.hint.innerHTML = `<kbd>${MENU_KEYS.panels}</kbd> quests &amp; controls &nbsp; <kbd>${MENU_KEYS.controls}</kbd> change keys &nbsp; <kbd>Esc</kbd> save`;
-    document.body.append(this.el, this.hint);
+    this.el.className = 'modal controls-menu hidden';
+    document.body.append(this.el);
     this.el.addEventListener('pointerdown', (e) => {
       const button = e.target.closest('button');
       if (!button) return;
@@ -34,30 +29,6 @@ export class ControlsMenu extends Entity {
     this.game = game;
     game.controlsMenu = this;
     game.ui.push(this);
-    this.renderHud();
-  }
-
-  /** The list of controls in the corner panel (shown with Option). */
-  renderHud() {
-    const list = document.querySelector('#hud ul');
-    if (!list) return;
-    const keys = (id) => keyName(this.game.input.bindings[id][0] ?? '?'); // just the main key, to keep it short
-    const rows = [
-      [`${keys('forward')} ${keys('left')} ${keys('back')} ${keys('right')}`, 'move / swim'],
-      [keys('jump'), 'jump'],
-      [keys('run'), 'run'],
-      [keys('swing'), 'swing sword'],
-      [keys('shield'), 'hold to block'],
-      [keys('bow'), 'shoot bow (hold to charge a power bow)'],
-      [keys('eat'), 'eat food'],
-      [keys('interact'), 'talk / open / chop / mine'],
-      ['Drag', 'look around'],
-      [`${keys('camLeft')} ${keys('camRight')}`, 'turn camera'],
-      [`${keys('tiltUp')} ${keys('tiltDown')}`, 'tilt camera'],
-      [keys('camBehind'), 'camera behind you'],
-      ['Scroll', 'zoom'],
-    ];
-    list.innerHTML = rows.map(([k, what]) => `<li><kbd>${k}</kbd> ${what}</li>`).join('');
   }
 
   open() {
@@ -76,8 +47,8 @@ export class ControlsMenu extends Entity {
   render() {
     const { bindings } = this.game.input;
     this.el.innerHTML = `
-      <div class="shop-header"><div class="shop-title">Controls</div></div>
-      <p class="shop-message">${
+      <div class="modal-header"><div class="modal-title">Controls</div></div>
+      <p class="modal-message">${
         this.waitingFor
           ? `Press the new key for <b>${ACTIONS.find((a) => a.id === this.waitingFor).label}</b>...`
           : 'Click a control, then press the key you want for it.'
@@ -91,16 +62,14 @@ export class ControlsMenu extends Entity {
           </button>`,
         ).join('')}
       </div>
-      <div class="controls-buttons">
-        <button class="shop-close" data-reset="1">Reset to default</button>
-        <button class="shop-close" data-close="1">Done (Esc)</button>
+      <div class="modal-footer">
+        <button class="ghost" data-reset="1">Reset to default</button>
+        <button class="primary" data-close="1">Done</button>
       </div>`;
   }
 
   update(_dt, game) {
     const { input } = game;
-    if (input.wasPressed('AltLeft', 'AltRight')) document.body.classList.toggle('show-panels');
-
     if (!this.isOpen) {
       if (input.wasPressed(...MENU_OPENERS) && !game.isUiOpen()) this.open();
     } else {
@@ -110,7 +79,6 @@ export class ControlsMenu extends Entity {
           input.rebind(this.waitingFor, code);
           this.waitingFor = null;
           this.dirty = true;
-          this.renderHud();
         } else if (input.wasPressed('Escape')) {
           this.waitingFor = null;
           this.dirty = true;
@@ -120,7 +88,6 @@ export class ControlsMenu extends Entity {
       }
       if (this.pendingReset) {
         input.resetBindings(Object.fromEntries(ACTIONS.map((a) => [a.id, [...a.keys]])));
-        this.renderHud();
       }
     }
     this.pendingClose = this.pendingReset = false;

@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
 import { pushOut } from '../core/collision.js';
 import { VoxelBuilder } from '../core/VoxelBuilder.js';
-import { createCharacter, poseWalk, turnToward } from '../models/character.js';
+import { createCharacter, poseWalk, turnToward, mergeParts } from '../models/character.js';
+import { RENDER } from '../config.js';
 
 const WALK_SPEED = 2.4;
 const HURRY_SPEED = 3.4; // when walking over to give a quest
@@ -79,6 +80,7 @@ export class Npc extends Entity {
 
     this.model = createModel ? createModel() : createCharacter(look.colors);
     look?.decorate?.(this.model);
+    if (!createModel) mergeParts(this.model.root); // far fewer draw calls for a crowd of townsfolk
     this.object3d.add(this.model.root);
     this.model.root.rotation.y = facing;
     // People who stand in one place (shopkeepers) walk back to it in the morning.
@@ -248,15 +250,24 @@ export class Npc extends Entity {
       }
     }
 
-    this.walkPhase += this.moving * dt * 1.6;
-    poseWalk(this.model, this.walkPhase, this.moving > 0 ? 0.7 : 0);
-    this.model.idle?.(game.elapsed);
-    if (this.state === 'talking') this.model.armR.rotation.x = -0.9 + Math.sin(game.elapsed * 6) * 0.25; // gesturing
-
     if (!this.asleep) {
       this.collider.x = pos.x;
       this.collider.z = pos.z;
     }
+
+    // Far from the camera: skip drawing and posing them (each person is lots of little parts).
+    const cam = game.camera.position;
+    const far = cam.distanceToSquared(pos) > RENDER.npcDrawDistance ** 2;
+    this.model.root.visible = !far;
+    if (far) {
+      for (const marker of Object.values(this.markers)) marker.visible = false;
+      return;
+    }
+
+    this.walkPhase += this.moving * dt * 1.6;
+    poseWalk(this.model, this.walkPhase, this.moving > 0 ? 0.7 : 0);
+    this.model.idle?.(game.elapsed);
+    if (this.state === 'talking') this.model.armR.rotation.x = -0.9 + Math.sin(game.elapsed * 6) * 0.25; // gesturing
 
     // Quest marker bobs and spins above their head.
     const symbol = this.state === 'talking' ? null : this.quest?.marker;

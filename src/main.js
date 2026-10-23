@@ -47,6 +47,12 @@ import { ControlsMenu } from './ui/ControlsMenu.js';
 import { DebugMenu } from './ui/DebugMenu.js';
 import { Suggestions } from './ui/Suggestions.js';
 import { SaveMenu } from './ui/SaveMenu.js';
+import { PauseMenu } from './ui/PauseMenu.js';
+import { TitleScreen } from './ui/TitleScreen.js';
+import { FloatingText } from './ui/FloatingText.js';
+import { BossBar } from './ui/BossBar.js';
+import { Tips } from './ui/Tips.js';
+import { TouchControls } from './ui/TouchControls.js';
 import { Customizer, storedLook } from './ui/Customizer.js';
 import { Sound } from './core/Sound.js';
 import { ArtifactQuest } from './quest/ArtifactQuest.js';
@@ -56,7 +62,6 @@ import {
   RainbowStonesQuest,
   CrystalQuest,
   CharibdisQuest,
-  DeliveryQuest,
   JungleQuest,
   OakDuelQuest,
   VineQuest,
@@ -67,9 +72,10 @@ import {
   SkyStrikeQuest,
   JacksonDuelQuest,
   VelizarQuest,
+  ThomageQuest,
   KingQuest,
 } from './quest/sideQuests.js';
-import { createShell } from './models/gear.js';
+import { createShell, createPlank, createWellStone } from './models/gear.js';
 import { LOOKS } from './models/people.js';
 import { createGecko } from './models/critters.js';
 import { SIDE_QUESTS, BLACKSMITH, BAKER, VILLAGER_CHATTER, PIP_CRYSTAL, OLLIE, ZACH, HERALD, TULANE_GUARD } from './story.js';
@@ -98,7 +104,7 @@ cellar.trapdoor = trapdoor;
 const cave = game.add(new Cave());
 const stoneCircle = game.add(new StoneCircle());
 game.add(new Flowers());
-game.add(new Gathering()); // boulders to mine (before the forest, so trees grow around them)
+game.add(new Gathering()); // boulders (before the forest, so trees grow around them)
 game.add(new Forest());
 
 // Out at sea: the tower island, little islands to rest on, and Charibdis's locked cave.
@@ -290,6 +296,7 @@ game.add(
 const starsQuest = new DreamStarsQuest(game, { dream });
 const wispsQuest = new DreamWispsQuest(game, { dream, makeWisp: (spot) => new Wisp(spot), after: starsQuest });
 const hopQuest = new CloudHopQuest(game, { dream, after: wispsQuest });
+const thomageQuest = new ThomageQuest(game, { dream, after: hopQuest, delay: 20 });
 for (const q of [starsQuest, wispsQuest, hopQuest]) for (const id of q.abilities) DREAM_SHRINE.quests[id] = q;
 game.add(
   new Npc({
@@ -297,7 +304,7 @@ game.add(
     look: LOOKS.dreamKeeper,
     position: dream.keeperSpot,
     facing: Math.PI,
-    quests: [starsQuest, wispsQuest, hopQuest],
+    quests: [starsQuest, wispsQuest, hopQuest, thomageQuest],
   }),
 );
 game.add(
@@ -342,7 +349,17 @@ const villagers = [
     at: [-6, 4],
     quests: [
       huntQuest,
-      new DeliveryQuest(game, { id: 'wood', story: SIDE_QUESTS.wood, material: 'wood', amount: 10, reward: 35, after: huntQuest, delay: LATER }),
+      new FindGemsQuest(game, {
+        id: 'planks',
+        story: SIDE_QUESTS.wood,
+        count: 5,
+        reward: 35,
+        itemName: 'fence plank',
+        model: createPlank,
+        colors: ['#e0483e'],
+        after: huntQuest,
+        delay: LATER,
+      }),
     ],
   },
   {
@@ -355,7 +372,18 @@ const villagers = [
     name: SIDE_QUESTS.stone.giver,
     look: LOOKS.villager,
     at: [5, -4],
-    quests: [new DeliveryQuest(game, { id: 'stone', story: SIDE_QUESTS.stone, material: 'stone', amount: 8, reward: 30, requires: afterMerchant })],
+    quests: [
+      new FindGemsQuest(game, {
+        id: 'wellStones',
+        story: SIDE_QUESTS.stone,
+        count: 5,
+        reward: 30,
+        itemName: 'well stone',
+        model: createWellStone,
+        colors: ['#5fa8e8'],
+        requires: afterMerchant,
+      }),
+    ],
   },
 ];
 // Each villager has a house to go to bed in at night.
@@ -403,7 +431,8 @@ houses
     game.add(new Npc({ ...v, lines: VILLAGER_CHATTER[v.name], position: at, wander: strolling, home: house.door }));
   });
 
-// Save points: one on every island. Walk up to one and it saves your adventure straight away.
+// Save points: one on every island. Walk up to one and it saves your adventure straight away
+// (and if you're knocked out, you get back up at the last one you touched).
 const freeSpotNear = (x, z, y = null) => {
   for (let r = 0; r <= 6; r += 1.5) {
     for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
@@ -426,6 +455,7 @@ for (const [spot, name] of [
   [freeSpotNear(jungle.arrive.x + 5, jungle.arrive.z - 3), 'the jungle save point'],
   [freeSpotNear(fireIsland.arrive.x - 5, fireIsland.arrive.z + 3), 'the fire island save point'],
   [freeSpotNear(dream.arrive.x + 3, dream.arrive.z - 2, dream.y), 'the dream save point'],
+  [freeSpotNear(tulane.captainSpot.x - 4, tulane.captainSpot.z - 2), 'the Tulane save point'],
 ]) {
   game.add(new SavePoint(spot, name));
 }
@@ -482,11 +512,16 @@ game.add(pipShop);
 game.add(finnTrips);
 game.add(new QuestLog());
 game.add(new StatusBar());
+game.add(new BossBar()); // a big health bar while you fight a boss
+game.add(new Tips()); // how-to-play tips, each once, when they're useful
+game.add(new TouchControls()); // a stick and buttons on phones and tablets
 game.add(new ControlsMenu());
 const debugMenu = game.add(new DebugMenu());
-game.add(new Suggestions()); // 💡 click on something and suggest a change
-const saveMenu = game.add(new SaveMenu()); // 💾 Esc: name and save your adventure, or load one
-const customizer = game.add(new Customizer()); // 👕 P: pick how Bobert looks
+game.add(new Suggestions()); // /: click on something and suggest a change
+const saveMenu = game.add(new SaveMenu()); // name and save your adventure, or load one
+const customizer = game.add(new Customizer()); // P: pick how Bobert looks
+game.add(new PauseMenu()); // Esc (after the menus it opens, so it knows when they close)
+const titleScreen = game.add(new TitleScreen());
 game.add(new Sound()); // sword swishes and hits (M turns sound off)
 mainQuest.announce();
 
@@ -495,6 +530,7 @@ game.add(new CameraRig(player));
 game.add(new Underwater()); // after the camera: switches to the underwater look when it dips below the waves
 const intro = game.add(new Intro()); // after the camera, so it can move the camera during the cutscene
 game.add(new Ending());
+game.add(new FloatingText()); // last, so the damage numbers follow the camera's final position
 
 game.quests.oak = oakDuel;
 game.quests.vine = vineQuest;
@@ -504,20 +540,34 @@ game.quests.jacksonDuel = jacksonDuel;
 game.quests.velizar = velizarQuest;
 game.quests.king = kingQuest;
 game.quests.stars = starsQuest;
+game.quests.thomage = thomageQuest;
 
 // Opened with ?checkpoint=... (from the debug menu)? Jump to that point in the story.
 debugMenu.start();
+const checkpoint = new URLSearchParams(location.search).has('checkpoint');
 // Bobert's look from last time, then a saved game to load (the page reloaded for it), which
-// brings its own look. A brand-new player starts by picking how Bobert looks.
-const firstVisit = !storedLook() && !new URLSearchParams(location.search).has('checkpoint');
+// brings its own look.
+const firstVisit = !storedLook() && !checkpoint;
 customizer.start();
 const loaded = saveMenu.start();
-if (firstVisit && !loaded) customizer.open();
 updateHerald();
-// A new adventure (not a saved game or a checkpoint) starts with the intro in Tulane Kingdom.
-if (!loaded && !new URLSearchParams(location.search).has('checkpoint') && !introSeen()) intro.queue();
+// Otherwise, the title screen. A new adventure starts by picking how Bobert looks (the first
+// time), then the intro in Tulane Kingdom.
+if (!loaded && !checkpoint) {
+  titleScreen.open({
+    onNew: () => {
+      if (firstVisit) customizer.open();
+      if (!introSeen()) intro.queue();
+    },
+  });
+}
 
 game.start();
+
+// The world is built: fade the loading screen away.
+const loading = document.getElementById('loading');
+loading?.classList.add('done');
+setTimeout(() => loading?.remove(), 600);
 
 // Handy for poking at things from the browser console.
 window.game = game;

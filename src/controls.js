@@ -1,5 +1,5 @@
 // Every control in the game, with its default keys. Players can change them in-game
-// (press Ctrl or Command to open the controls menu); their choices are saved in the browser.
+// (from the pause menu, or Ctrl / Command); their choices are saved in the browser.
 // Read them with game.input.held('shield'), game.input.hit('swing'), game.input.axisOf('left', 'right').
 
 export const ACTIONS = [
@@ -8,17 +8,13 @@ export const ACTIONS = [
   { id: 'left', label: 'Move left', keys: ['KeyA', 'ArrowLeft'] },
   { id: 'right', label: 'Move right', keys: ['KeyD', 'ArrowRight'] },
   { id: 'jump', label: 'Jump', keys: ['Space'] },
-  { id: 'run', label: 'Run', keys: ['ShiftLeft', 'ShiftRight'] },
-  { id: 'swing', label: 'Swing sword', keys: ['Enter', 'NumpadEnter'] },
+  { id: 'dodge', label: 'Roll (hold to run)', keys: ['ShiftLeft', 'ShiftRight'] },
+  { id: 'swing', label: 'Sword (hold for spin)', keys: ['Enter', 'NumpadEnter'] },
   { id: 'shield', label: 'Block (hold)', keys: ['KeyJ'] },
-  { id: 'bow', label: 'Shoot bow', keys: ['KeyK'] },
+  { id: 'bow', label: 'Bow (hold to charge)', keys: ['KeyK'] },
+  { id: 'power', label: 'Star Burst (dream power)', keys: ['KeyL'] },
   { id: 'eat', label: 'Eat food', keys: ['KeyF'] },
-  { id: 'interact', label: 'Talk / open / chop / mine', keys: ['KeyT'] },
-  { id: 'dodge', label: 'Dodge (Master Jackson)', keys: ['KeyX'] },
-  { id: 'dash', label: 'Dash (dream ability)', keys: ['KeyL'] },
-  { id: 'invisible', label: 'Turn invisible (dream ability)', keys: ['KeyI'] },
-  { id: 'dreamHeal', label: 'Dream Heal (dream ability)', keys: ['KeyU'] },
-  { id: 'starShield', label: 'Star Shield (dream ability)', keys: ['KeyO'] },
+  { id: 'interact', label: 'Talk / open / use', keys: ['KeyT'] },
   { id: 'camLeft', label: 'Turn camera left', keys: ['KeyQ'] },
   { id: 'camRight', label: 'Turn camera right', keys: ['KeyE'] },
   { id: 'tiltUp', label: 'Tilt camera up', keys: ['KeyR'] },
@@ -26,6 +22,7 @@ export const ACTIONS = [
   { id: 'camBehind', label: 'Camera behind you', keys: ['KeyC'] },
   { id: 'zoomIn', label: 'Zoom in', keys: ['Equal', 'NumpadAdd'] },
   { id: 'zoomOut', label: 'Zoom out', keys: ['Minus', 'NumpadSubtract'] },
+  { id: 'quests', label: 'Show all quests', keys: ['Tab'] },
   { id: 'suggest', label: 'Suggest a change', keys: ['Slash'] },
   { id: 'customize', label: 'Customize Bobert', keys: ['KeyP'] },
   { id: 'mute', label: 'Sound on / off', keys: ['KeyM'] },
@@ -33,11 +30,6 @@ export const ACTIONS = [
 
 // Keys the game itself uses for menus; they can't be given to anything else.
 export const RESERVED = new Set(['MetaLeft', 'MetaRight', 'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight', 'Escape', 'Backquote']); // ` = debug menu
-
-// What the menu keys are called on this computer: Option / Command on a Mac, Alt / Ctrl elsewhere
-// (Windows keyboards have no Command key). Ctrl and Command both open the controls menu everywhere.
-const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
-export const MENU_KEYS = IS_MAC ? { panels: 'Option', controls: 'Command' } : { panels: 'Alt', controls: 'Ctrl' };
 
 const NAMES = {
   Space: 'Space',
@@ -75,7 +67,7 @@ export function keyName(code) {
   return code;
 }
 
-const STORAGE_KEY = 'voxel-meadow-controls';
+const STORAGE_KEY = 'bobert-controls-v2'; // v2: the simpler control scheme (old saved keys don't carry over)
 
 /** The saved bindings (falling back to the defaults). Returns { actionId: [codes] }. */
 export function loadBindings() {

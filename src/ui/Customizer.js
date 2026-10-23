@@ -27,7 +27,7 @@ export function storedLook() {
 
 /**
  * The character customization screen: pick Bobert's skin, hair, hair style, shirt, trousers and
- * shoes. Opens by itself the first time someone plays, and any time with P (or the 👕 button).
+ * shoes. Opens by itself the first time someone plays, and any time with P (or from the pause menu).
  * Changes show on Bobert straight away, the camera swings round to his front while it's open,
  * and the look is remembered in the browser (and in saved games). Lives at game.customizer.
  */
@@ -37,15 +37,8 @@ export class Customizer extends Entity {
     this.isOpen = false;
     this.look = storedLook() ?? { ...CUSTOMIZE.start };
 
-    this.button = document.createElement('button');
-    this.button.className = 'customize-button';
-    this.button.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-      this.requestOpen = true;
-    });
-
     this.el = document.createElement('div');
-    this.el.className = 'shop customizer hidden';
+    this.el.className = 'modal customizer hidden';
     this.el.addEventListener('click', (e) => {
       const button = e.target.closest('button');
       if (!button) return;
@@ -54,7 +47,7 @@ export class Customizer extends Entity {
       else if (button.dataset.reset) this.set({ ...CUSTOMIZE.start });
       else if (button.dataset.done) this.close();
     });
-    document.body.append(this.button, this.el);
+    document.body.append(this.el);
   }
 
   onAdd(game) {
@@ -123,19 +116,18 @@ export class Customizer extends Entity {
         .join('');
     };
     this.el.innerHTML = `
-      <div class="shop-header"><div class="shop-title">👕 Customize Bobert</div></div>
-      <p class="shop-message">Pick how Bobert looks. You can change it any time with <kbd>${keyName(this.game.input.bindings.customize[0] ?? 'KeyP')}</kbd>.</p>
+      <div class="modal-header"><div class="modal-title">Customize Bobert</div></div>
+      <p class="modal-message">Pick how Bobert looks. Change it any time with <kbd>${keyName(this.game.input.bindings.customize[0] ?? 'KeyP')}</kbd> or from the menu.</p>
       ${ROWS.map((row) => `<div class="custom-row"><div class="custom-label">${row.label}</div><div class="custom-options">${options(row)}</div></div>`).join('')}
-      <div class="controls-buttons">
-        <button class="shop-close" data-random="1">🎲 Surprise me</button>
-        <button class="shop-close" data-reset="1">Start look</button>
-        <button class="customize-done" data-done="1">Done</button>
+      <div class="modal-footer">
+        <button class="ghost" data-random="1">🎲 Surprise me</button>
+        <button class="ghost" data-reset="1">Reset</button>
+        <button class="primary" data-done="1">Done</button>
       </div>`;
   }
 
   update(_dt, game) {
     const { input } = game;
-    this.button.textContent = `👕 Customize (${keyName(input.bindings.customize[0] ?? 'KeyP')})`;
     if (this.isOpen) {
       if (input.wasPressed('Escape', 'Enter', 'NumpadEnter') || input.hit('customize')) this.close();
       return;

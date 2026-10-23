@@ -13,7 +13,7 @@ function when(iso) {
 }
 
 /**
- * Saved games: press Esc (or click 💾) to name and save your adventure, or load / delete a save.
+ * Saved games (from the pause menu): name and save your adventure, or load / delete a save.
  * Saves live in this browser (see saves.js). Lives at game.saveMenu.
  */
 export class SaveMenu extends Entity {
@@ -22,25 +22,17 @@ export class SaveMenu extends Entity {
     this.isOpen = false;
     this.confirming = null; // { id, action } waiting for a second click
 
-    this.button = document.createElement('button');
-    this.button.className = 'save-button';
-    this.button.textContent = '💾 Save (Esc)';
-    this.button.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-      this.requestOpen = true;
-    });
-
     this.el = document.createElement('div');
-    this.el.className = 'shop save-menu hidden';
+    this.el.className = 'modal save-menu hidden';
     this.el.innerHTML = `
-      <div class="shop-header"><div class="shop-title">💾 Saved games</div></div>
-      <p class="shop-message save-message"></p>
+      <div class="modal-header"><div class="modal-title">Saved games</div></div>
+      <p class="modal-message save-message"></p>
       <form class="save-new">
         <input class="save-name" maxlength="30" placeholder="Name your save (like: Bobert's big adventure)" />
-        <button type="submit">Save</button>
+        <button type="submit" class="primary">Save</button>
       </form>
       <div class="save-list"></div>
-      <button class="shop-close" data-close="1">Close (Esc)</button>`;
+      <div class="modal-footer"><button class="ghost" data-close="1"><kbd>Esc</kbd> Back</button></div>`;
     this.messageEl = this.el.querySelector('.save-message');
     this.nameEl = this.el.querySelector('.save-name');
     this.listEl = this.el.querySelector('.save-list');
@@ -57,7 +49,7 @@ export class SaveMenu extends Entity {
       else if (button?.dataset.load) this.confirm(button.dataset.load, 'load');
       else if (button?.dataset.delete) this.confirm(button.dataset.delete, 'delete');
     });
-    document.body.append(this.button, this.el);
+    document.body.append(this.el);
   }
 
   onAdd(game) {
@@ -73,14 +65,20 @@ export class SaveMenu extends Entity {
     return save;
   }
 
-  open() {
+  /** `loadOnly`: just the list of saves to load (from the title screen). */
+  open({ loadOnly = false } = {}) {
     this.isOpen = true;
     this.confirming = null;
+    this.loadOnly = loadOnly;
+    this.el.querySelector('.save-new').classList.toggle('hidden', loadOnly);
     this.nameEl.value = this.game.saveName ?? listSaves().find(canLoad)?.name ?? '';
-    this.show(this.game.player.dead ? "You can save once you're back on your feet." : 'Type a name and press Save. Using the same name again saves over it.');
+    if (loadOnly) this.show('Pick an adventure to carry on with.');
+    else this.show(this.game.player.dead ? "You can save once you're back on your feet." : 'Type a name and press Save. Using the same name again saves over it.');
     this.el.classList.remove('hidden');
-    this.nameEl.focus();
-    this.nameEl.select();
+    if (!loadOnly) {
+      this.nameEl.focus();
+      this.nameEl.select();
+    }
   }
 
   close() {
@@ -105,7 +103,7 @@ export class SaveMenu extends Entity {
       return this.show("Couldn't save: this browser isn't letting the game store anything.");
     }
     this.close();
-    this.game.questLog.toast(replacing ? `Saved over “${name}” 💾` : `Saved “${name}” 💾`);
+    this.game.questLog.toast(replacing ? `Saved over “${name}”` : `Saved “${name}”`, { icon: '💾' });
   }
 
   /** Loading and deleting take two clicks, so nothing's lost by accident. */
@@ -143,21 +141,11 @@ export class SaveMenu extends Entity {
         </div>`;
       })
       .join('');
-    if (this.confirming?.action === 'load') this.messageEl.textContent = 'Anything you haven’t saved yet will be lost. Click again to load.';
+    if (this.confirming?.action === 'load') this.messageEl.textContent = this.loadOnly ? 'Click again to load it.' : 'Anything you haven’t saved yet will be lost. Click again to load.';
     if (this.confirming?.action === 'delete') this.messageEl.textContent = 'Click again to delete it for good.';
   }
 
   update(_dt, game) {
-    const { input } = game;
-    const uiWasOpen = this.uiWasOpen; // so the Esc that closes another menu doesn't open this one
-    this.uiWasOpen = game.isUiOpen();
-    if (this.isOpen) {
-      if (input.wasPressed('Escape')) this.close();
-      return;
-    }
-    if (this.requestOpen || (input.wasPressed('Escape') && !uiWasOpen && !game.isUiOpen())) {
-      this.requestOpen = false;
-      if (!game.isUiOpen()) this.open();
-    }
+    if (this.isOpen && game.input.wasPressed('Escape')) this.close();
   }
 }

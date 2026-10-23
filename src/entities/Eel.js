@@ -27,6 +27,7 @@ export class Eel extends Monster {
       aquatic: true,
     });
     this.kind = k;
+    if (kind === 'serpent') this.boss = 'The Sea Serpent';
     this.body.scale.setScalar(k.scale);
     this.lungeTimer = 0;
     this.lungeCooldown = 1;

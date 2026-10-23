@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
-import { keyName } from '../controls.js';
 
 // What to call things people click on (by entity class). Entities can also have their own
 // describe(point) or a `name` (townsfolk).
@@ -54,29 +53,21 @@ export class Suggestions extends Entity {
   constructor() {
     super();
     this.mode = null; // null, 'picking' or 'typing'
-    this.button = document.createElement('button');
-    this.button.className = 'suggest-button';
-    this.button.innerHTML = '💡 Suggest a change';
-    this.button.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-      this.requestOpen = true;
-    });
-
     this.banner = document.createElement('div');
     this.banner.className = 'suggest-banner hidden';
     this.banner.innerHTML = 'Click on the thing you want to change. <span>(Esc to cancel, Enter to skip)</span>';
 
     this.panel = document.createElement('form');
-    this.panel.className = 'shop suggest-panel hidden';
+    this.panel.className = 'modal suggest-panel hidden';
     this.panel.innerHTML = `
-      <div class="shop-header"><div class="shop-title">💡 Suggest a change</div></div>
-      <p class="shop-message suggest-target"></p>
+      <div class="modal-header"><div class="modal-title">💡 Suggest a change</div></div>
+      <p class="modal-message suggest-target"></p>
       <textarea class="suggest-text" maxlength="1000" rows="4" placeholder="How would you like it changed? (For example: make the well bigger and give it a bucket that goes up and down)"></textarea>
       <input class="suggest-name" maxlength="40" placeholder="Your name (optional)" />
       <div class="suggest-status"></div>
-      <div class="controls-buttons">
-        <button type="button" class="shop-close" data-cancel="1">Cancel</button>
-        <button type="submit" class="suggest-send">Send idea</button>
+      <div class="modal-footer">
+        <button type="button" class="ghost" data-cancel="1">Cancel</button>
+        <button type="submit" class="primary suggest-send">Send idea</button>
       </div>`;
     this.textEl = this.panel.querySelector('.suggest-text');
     this.nameEl = this.panel.querySelector('.suggest-name');
@@ -211,8 +202,7 @@ export class Suggestions extends Entity {
           p.swordTier >= 1 ? "knight's sword" : 'sword',
           p.hasBow && (p.bowTier >= 1 ? 'power bow' : 'bow'),
           p.armor && 'armor',
-          p.hasAxe && 'axe',
-          p.hasPickaxe && 'pickaxe',
+          p.hasConduit && 'magic conduit',
         ].filter(Boolean),
       },
       quests,
@@ -289,7 +279,6 @@ export class Suggestions extends Entity {
 
   update(_dt, game) {
     const { input } = game;
-    this.button.textContent = `💡 Suggest a change (${keyName(input.bindings.suggest[0] ?? 'Slash')})`;
     if (this.requestOpen || (input.hit('suggest') && !game.isUiOpen())) {
       this.requestOpen = false;
       if (!this.isOpen) this.startPicking();

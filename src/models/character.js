@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 const boxCache = new Map();
 function boxGeometry(w, h, d) {
@@ -155,4 +156,50 @@ export function turnToward(model, angle, dt, speed = 12) {
   let delta = angle - model.root.rotation.y;
   delta = Math.atan2(Math.sin(delta), Math.cos(delta));
   model.root.rotation.y += delta * (1 - Math.exp(-speed * dt));
+}
+
+const mergedMaterial = new THREE.MeshLambertMaterial({ vertexColors: true });
+const _color = new THREE.Color();
+
+/**
+ * Bakes the plain colored boxes in each part of a character (the body, each leg, each arm, the
+ * head...) into one mesh per part, so a person takes a handful of draw calls instead of dozens.
+ * The parts still move (only boxes that sit side by side in the same group are joined), and
+ * glowing, see-through or hidden boxes are left as they are. Only for characters that never
+ * change color afterwards (townsfolk, not Bobert).
+ */
+export function mergeParts(root) {
+  const groups = [root];
+  root.traverse((o) => o !== root && !o.isMesh && groups.push(o));
+  for (const group of groups) {
+    const plain = group.children.filter(
+      (m) =>
+        m.isMesh &&
+        m.visible &&
+        m.children.length === 0 &&
+        m.material?.isMeshLambertMaterial &&
+        !m.material.transparent &&
+        !m.material.map &&
+        m.material.emissive.getHex() === 0,
+    );
+    if (plain.length < 2) continue;
+    const geometries = plain.map((m) => {
+      m.updateMatrix();
+      const g = m.geometry.clone().applyMatrix4(m.matrix);
+      g.deleteAttribute('uv');
+      const count = g.attributes.position.count;
+      const colors = new Float32Array(count * 3);
+      _color.copy(m.material.color);
+      for (let i = 0; i < count; i++) colors.set([_color.r, _color.g, _color.b], i * 3);
+      g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      return g;
+    });
+    const merged = new THREE.Mesh(mergeGeometries(geometries), mergedMaterial);
+    merged.castShadow = true;
+    for (const m of plain) {
+      group.remove(m);
+      m.material.dispose();
+    }
+    group.add(merged);
+  }
 }

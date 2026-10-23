@@ -61,14 +61,18 @@ export class Sound extends Entity {
   }
 
   update(_dt, game) {
-    if (!game.input.hit('mute')) return;
+    if (game.input.hit('mute')) this.toggle(game);
+  }
+
+  /** Sound on / off (M, or the pause menu). */
+  toggle(game) {
     this.muted = !this.muted;
     try {
       localStorage.setItem(STORAGE_KEY, this.muted ? 'off' : 'on');
     } catch {
       // storage blocked: just for this visit
     }
-    game.questLog?.toast(this.muted ? '🔇 Sound off (M to turn it back on)' : '🔊 Sound on');
+    game.questLog?.toast(this.muted ? 'Sound off (M to turn it back on)' : 'Sound on', { icon: this.muted ? '🔇' : '🔊' });
   }
 
   /** Play a sound by name. volume 0..1 on top of SOUND.volume. */
@@ -193,6 +197,47 @@ const RECIPES = {
   },
   magic(s, t, v, p) {
     [880, 1109, 1319].forEach((f, i) => s.tone(t + i * 0.05, { duration: 0.25, volume: 0.1 * v, frequency: f * p }));
+  },
+  charged(s, t, v) {
+    s.tone(t, { duration: 0.18, volume: 0.1 * v, type: 'triangle', frequency: 1320, endFrequency: 1760 });
+  },
+  step(s, t, v, p) {
+    s.noise(t, { duration: 0.06, volume: 0.06 * v, type: 'lowpass', frequency: 900 * p, endFrequency: 250 });
+  },
+  draw(s, t, v, p) {
+    s.noise(t, { duration: 0.3, volume: 0.07 * v, frequency: 500 * p, endFrequency: 1400 * p, q: 4 });
+  },
+  burst(s, t, v, p) {
+    s.tone(t, { duration: 0.5, volume: 0.22 * v, type: 'triangle', frequency: 220 * p, endFrequency: 880 * p });
+    s.noise(t, { duration: 0.5, volume: 0.2 * v, frequency: 3000 * p, endFrequency: 600, q: 0.7 });
+    [1319, 1568, 2093].forEach((f, i) => s.tone(t + 0.08 + i * 0.05, { duration: 0.3, volume: 0.07 * v, frequency: f * p }));
+  },
+  heart(s, t, v, p) {
+    s.tone(t, { duration: 0.12, volume: 0.15 * v, type: 'triangle', frequency: 660 * p, endFrequency: 990 * p });
+    s.tone(t + 0.08, { duration: 0.2, volume: 0.13 * v, type: 'triangle', frequency: 990 * p, endFrequency: 1320 * p });
+  },
+  counter(s, t, v, p) {
+    s.tone(t, { duration: 0.35, volume: 0.18 * v, type: 'sawtooth', frequency: 1200 * p, endFrequency: 300 });
+    s.noise(t, { duration: 0.2, volume: 0.3 * v, type: 'highpass', frequency: 2500 });
+  },
+  defeat(s, t, v, p) {
+    s.noise(t, { duration: 0.3, volume: 0.25 * v, type: 'lowpass', frequency: 1800 * p, endFrequency: 150 });
+    s.tone(t, { duration: 0.18, volume: 0.12 * v, type: 'square', frequency: 520 * p, endFrequency: 1040 * p });
+  },
+  click(s, t, v) {
+    s.tone(t, { duration: 0.05, volume: 0.08 * v, type: 'triangle', frequency: 1200 });
+  },
+  open(s, t, v) {
+    s.tone(t, { duration: 0.12, volume: 0.08 * v, type: 'triangle', frequency: 600, endFrequency: 900 });
+  },
+  close(s, t, v) {
+    s.tone(t, { duration: 0.12, volume: 0.08 * v, type: 'triangle', frequency: 900, endFrequency: 600 });
+  },
+  buy(s, t, v) {
+    [784, 1175].forEach((f, i) => s.tone(t + i * 0.07, { duration: 0.16, volume: 0.13 * v, type: 'square', frequency: f }));
+  },
+  deny(s, t, v) {
+    s.tone(t, { duration: 0.16, volume: 0.12 * v, type: 'square', frequency: 220, endFrequency: 180 });
   },
   quest(s, t, v) {
     [523, 659, 784, 1047, 784, 1047].forEach((f, i) => s.tone(t + i * 0.09, { duration: 0.2, volume: 0.14 * v, type: 'triangle', frequency: f }));

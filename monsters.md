@@ -473,7 +473,7 @@ Notes:
 
 ### Wisp
 
-`src/entities/Wisp.js`. Wandering wisps give dream points (`DREAM` in `config.js`).
+`src/entities/Wisp.js`. Like every monster, wisps give magic points when you have a magic conduit.
 
 | Stat | Value | Code |
 | --- | --- | --- |
@@ -481,8 +481,33 @@ Notes:
 | Damage | 1 | `damage` in the constructor |
 | Floating speed | 2.6 | `FLOAT_SPEED` |
 | Notices you at | 10 | `NOTICE` |
-| Dream points | 1 | `DREAM.wispDreamPoints` |
+| Magic points | 1 | `magicPoints()` in `Monster.js` |
 | Floats back after | 25 s | `DREAM.wispRespawn` |
+
+Notes:
+
+-
+
+### Thomage, the Nightmare Mage (dream boss)
+
+`src/entities/Thomage.js`. Most numbers are in `THOMAGE` in `src/config.js`. The Dream Keeper's last quest. He floats over the dream hub (too high for a sword) and casts spells; after three spells he sinks to the ground, tired, and you can hit him.
+
+| Stat | Value | Code |
+| --- | --- | --- |
+| Health | 40 | `health` |
+| Star bolt damage | 2 | `damage` |
+| Star bolts | 3 in a fan (5 at half health) | `castBolts()` |
+| Star bolt speed | 9 | `boltSpeed` |
+| Rune circle damage | 2 | `damage` |
+| Rune circles | 1 under you + 3 around (5 at half health) | `castRunes()` |
+| Warning before a spell (staff glows) | 0.9 s (faster at half health) | `CAST_WINDUP` in `Thomage.js` |
+| Warning before a rune erupts | 1.3 s | `RUNE_WARNING` |
+| Time between spells | 1.7 s (1.1 s at half health) | `attackTime(2.1)` / `attackTime(1.4)` |
+| Spells before he rests | 3 | `SPELLS_BEFORE_REST` |
+| Rests on the ground for | 3.6 s | `TIRED_TIME` |
+| Floats this high | 4.2 | `HOVER` |
+| Wakes up when you're within | 18 | `WAKE_RANGE` |
+| Coins | 42 when defeated, plus 200 from the quest | `reward` |
 
 Notes:
 

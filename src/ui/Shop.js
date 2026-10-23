@@ -4,15 +4,14 @@ const NUMBER_KEYS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6',
 
 /**
  * A shop menu. Open it with shop.open() (an Npc's onInteract usually does this).
- * Click Buy, or press the item's number key. Esc or T closes it.
+ * Click an item's button, or press its number key. Esc or T closes it.
  *
  *   new Shop({ title: "Blacksmith's Forge", greeting: 'Welcome!', items: (player) => [...] })
  *
  * `items(player)` returns what's for sale right now (see shops.js):
- *   { name, icon, description, price, wood, stone, owned, locked, buy, bought, section }
- *   price / wood / stone: what it costs (wood and stone are optional, for upgrades)
+ *   { name, icon, description, price, owned, locked, buy, bought, section }
+ *   price:  coins
  *   section: a heading to show above this item (like "Upgrades")
- *   currency: 'coins' (default) or 'dreamPoints'
  *   action: true for menu choices that aren't things you buy (like "Sail to the jungle"):
  *           the button shows `buttonLabel` and the menu closes after
  *   owned:  already bought (shows "Owned")
@@ -28,7 +27,7 @@ export class Shop extends Entity {
     this.title = config.title;
     this.greeting = config.greeting;
     this.el = document.createElement('div');
-    this.el.className = 'shop hidden';
+    this.el.className = 'modal shop hidden';
     document.body.append(this.el);
     this.isOpen = false;
     this.el.addEventListener('pointerdown', (e) => {
@@ -51,13 +50,16 @@ export class Shop extends Entity {
     this.isOpen = true;
     this.openedFrame = true;
     this.message = this.greeting;
+    this.mood = '';
     this.render();
     this.el.classList.remove('hidden');
+    this.game.sound?.play('open');
   }
 
   close() {
     this.isOpen = false;
     this.el.classList.add('hidden');
+    this.game.sound?.play('close');
   }
 
   buy(index) {
@@ -66,29 +68,24 @@ export class Shop extends Entity {
     if (!item || item.owned) return;
     if (item.locked) {
       this.message = item.lockedMessage ?? `Sorry, you can't buy that yet: ${item.locked}.`;
-    } else if (player[item.currency ?? 'coins'] < item.price) {
-      const have = player[item.currency ?? 'coins'];
-      this.message =
-        item.currency === 'dreamPoints'
-          ? `You need ${item.price - have} more dream points. Do the Dream Keeper's quests to earn them!`
-          : `You need ${item.price - have} more coins for that. Try quests and treasure chests!`;
-    } else if (player.wood < (item.wood ?? 0) || player.stone < (item.stone ?? 0)) {
-      const need = [];
-      if (player.wood < item.wood) need.push(`${item.wood - player.wood} more wood (chop trees with an axe)`);
-      if (player.stone < item.stone) need.push(`${item.stone - player.stone} more stone (mine boulders with a pickaxe)`);
-      this.message = `You need ${need.join(' and ')}.`;
+      this.mood = 'no';
+      this.game.sound?.play('deny');
+    } else if (player.coins < item.price) {
+      this.message = `You need ${item.price - player.coins} more coins for that. Monsters, quests and treasure chests all have coins!`;
+      this.mood = 'no';
+      this.game.sound?.play('deny');
     } else {
-      player[item.currency ?? 'coins'] -= item.price;
-      player.wood -= item.wood ?? 0;
-      player.stone -= item.stone ?? 0;
+      player.coins -= item.price;
       item.buy();
       if (item.action) {
         this.close();
         return;
       }
       this.message = item.bought ?? `Here's your ${item.name}! Use it well.`;
+      this.mood = 'yes';
+      this.game.sound?.play('buy');
       const article = item.article === 'a' && /^[aeiou]/i.test(item.name) ? 'an' : (item.article ?? 'the');
-      this.game.questLog?.toast(`You bought ${article ? `${article} ` : ''}${item.name}!`);
+      this.game.questLog?.toast(`You bought ${article ? `${article} ` : ''}${item.name}!`, { icon: item.icon });
       this.game.particles?.burst(player.object3d.position.clone().setY(player.object3d.position.y + 1.5), {
         count: 30,
         colors: ['#ffc93c', '#ffffff', '#7fc4ff'],
@@ -100,47 +97,38 @@ export class Shop extends Entity {
   }
 
   render() {
-    const { coins, wood, stone, dreamPoints } = this.game.player;
-    const cost = (item) => {
-      if (item.action) return item.buttonLabel ?? 'Go';
-      let text = item.currency === 'dreamPoints' ? `${item.price} ✨` : `${item.price} coins`;
-      if (!item.price && (item.wood || item.stone)) text = '';
-      if (item.wood) text += `${text ? ' + ' : ''}${item.wood} 🪵`;
-      if (item.stone) text += `${text ? ' + ' : ''}${item.stone} 🪨`;
-      return text;
-    };
+    const { coins } = this.game.player;
     const button = (item) => {
       if (item.owned) return 'Owned';
       if (item.locked) return item.locked;
-      return cost(item);
+      if (item.action) return item.buttonLabel ?? 'Go';
+      return `<span class="coin"></span>${item.price}`;
     };
-    const wallet = { coins, dreamPoints };
-    const affordable = (item) =>
-      wallet[item.currency ?? 'coins'] >= item.price && wood >= (item.wood ?? 0) && stone >= (item.stone ?? 0);
+    const anyPrices = this.items().some((item) => !item.action);
     this.el.innerHTML = `
-      <div class="shop-header">
-        <div class="shop-title">${this.title}</div>
-        <div class="shop-coins">${
-          this.config.showDreamPoints ? `✨ ${dreamPoints}` : `<span class="coin"></span>${coins} &nbsp;🪵 ${wood} &nbsp;🪨 ${stone}`
-        }</div>
+      <div class="modal-header">
+        <div class="modal-title">${this.title}</div>
+        ${anyPrices ? `<div class="wallet"><span class="coin"></span>${coins}</div>` : ''}
       </div>
-      <p class="shop-message">${this.message}</p>
+      <p class="modal-message ${this.mood}">${this.message}</p>
+      <div class="shop-items">
       ${this.items()
         .map(
           (item, i) => `${item.section ? `<div class="shop-section">${item.section}</div>` : ''}
-        <div class="shop-item${item.owned ? ' owned' : ''}">
+        <div class="shop-item${item.owned ? ' owned' : ''}${item.locked && !item.owned ? ' locked' : ''}">
           <div class="shop-icon">${item.icon}</div>
           <div class="shop-info">
-            <div class="shop-name"><kbd>${i + 1}</kbd> ${item.name}</div>
+            <div class="shop-name">${item.name}</div>
             <div class="shop-desc">${item.description}</div>
           </div>
-          <button data-index="${i}" class="${!affordable(item) || item.locked ? 'cant-afford' : ''}" ${item.owned ? 'disabled' : ''}>
-            ${button(item)}
+          <button data-index="${i}" class="buy${item.action ? ' action' : ''}${!item.action && (coins < item.price || item.locked) ? ' cant-afford' : ''}" ${item.owned ? 'disabled' : ''}>
+            <kbd>${i + 1}</kbd>${button(item)}
           </button>
         </div>`,
         )
         .join('')}
-      <button class="shop-close" data-close="1">Close (Esc)</button>`;
+      </div>
+      <div class="modal-footer"><button class="ghost" data-close="1"><kbd>Esc</kbd> Close</button></div>`;
   }
 
   update(_dt, game) {
@@ -155,7 +143,7 @@ export class Shop extends Entity {
     });
     // Ignore T on the frame the shop opened (that same T press opened it).
     const closeKey = input.wasPressed('Escape') || (!this.openedFrame && input.hit('interact'));
-    if (this.pendingClose || closeKey) this.close();
+    if (this.isOpen && (this.pendingClose || closeKey)) this.close();
     this.pendingClose = false;
     this.openedFrame = false;
   }

@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { Entity } from '../core/Entity.js';
 import { pushOut } from '../core/collision.js';
 import { part } from '../models/character.js';
-import { SEA, BUFFS, MONSTERS, CRYSTALS } from '../config.js';
+import { SEA, BUFFS, MONSTERS, CRYSTALS, DROPS } from '../config.js';
+import { Pickup } from './Pickup.js';
 
 const GRAVITY = 25;
 /** Coins a monster drops: its health plus its damage, at least 1. (Masters in a duel drop none: noCoins.) */
@@ -35,7 +36,8 @@ const NIGHT_DAMAGE = 1; // ...and hit 1 heart harder
  * bite players who are swimming. Land monsters only reach players on land.
  * Flying monsters (gargoyles) move freely in 3D and can reach you anywhere.
  * touchDamage: false for monsters that hurt you some other way (the kraken's tentacles).
- * Set `onDefeated(position)` to react when it dies.
+ * Set `onDefeated(position)` to react when it dies. Set `boss` to a name to show a big health bar
+ * at the top of the screen while you fight it.
  *
  * A monster with dodges(game) -> true and dodge(game, toPlayer) leaps aside instead of being hit.
  *
@@ -130,9 +132,16 @@ export class Monster extends Entity {
    * going until they get GIVE_UP_DISTANCE away (or are knocked out / somewhere we can't follow).
    */
   chasing(toPlayer, noticeRange, canReach = true) {
-    if (toPlayer.playerDown || !canReach || this.game?.player.invisible) this.aggro = false;
+    const was = this.aggro;
+    if (toPlayer.playerDown || !canReach) this.aggro = false;
     else if (toPlayer.dist < noticeRange) this.aggro = true;
     else if (toPlayer.dist > GIVE_UP_DISTANCE) this.aggro = false;
+    // A "!" pops up over its head when it spots you (not every time it loses and finds you again).
+    if (this.aggro && !was && this.game && this.game.elapsed - (this.alertedAt ?? -99) > 8) {
+      this.alertedAt = this.game.elapsed;
+      const pos = this.object3d.position;
+      this.game.floatText?.(pos.clone().setY(pos.y + this.radius * 2 + 1.2), '!', 'alert');
+    }
     return this.aggro;
   }
 
@@ -184,7 +193,7 @@ export class Monster extends Entity {
     if (this.flying) reachable = Math.abs(pos.y - (p.y + 1)) < this.radius + 1;
     else if (this.aquatic) reachable = player.swimming;
     else reachable = !player.swimming && pos.y < 1 && p.y < 1.5;
-    if (this.touchDamage && !player.dead && !player.invisible && reachable && dist < this.radius + 0.6 && this.contactCooldown <= 0) {
+    if (this.touchDamage && !player.dead && reachable && dist < this.radius + 0.6 && this.contactCooldown <= 0) {
       const result = player.takeDamage(game, this.power, pos.x, pos.z);
       this.contactCooldown = CONTACT_COOLDOWN;
       if (result === 'blocked' && player.shieldTier >= 1) this.bounce(toPlayer); // the Iron Shield pushes back
@@ -252,14 +261,17 @@ export class Monster extends Entity {
     });
   }
 
-  hit(game, toPlayer, damage = 1) {
+  /** Hurt by the player (a sword, an arrow, a Sky Strike...). toPlayer points from us to them. */
+  hit(game, toPlayer, damage = 1, _how = {}) {
     this.health -= damage;
+    this.lastHitAt = game.elapsed;
+    game.floatText?.(this.object3d.position.clone().setY(this.object3d.position.y + this.radius * 2 + 0.8), `${damage}`, damage >= 3 ? 'big' : 'damage');
     this.flashTimer = 0.15;
     this.stunTimer = 0.35;
     this.velocity.set(-toPlayer.x * 7, this.aquatic ? 0 : this.flying ? 2 : 5, -toPlayer.z * 7); // knocked back
     this.onGround = false;
 
-    this.healthBar.visible = true;
+    this.healthBar.visible = !this.boss; // bosses get the big bar at the top of the screen instead
     const fraction = Math.max(0, this.health / this.maxHealth);
     this.healthFill.scale.x = Math.max(0.001, fraction);
     this.healthFill.position.x = (-this.healthFillWidth / 2) * (1 - fraction);
@@ -279,11 +291,18 @@ export class Monster extends Entity {
       size: 0.25,
       life: 1.4,
     });
+    game.hitStop?.(this.boss ? 0.25 : 0.07);
+    game.sound?.play('defeat');
     if (coinsFor(this)) {
-      // Barrett's Lucky Tail buff doubles them; Pip's Lucky Crystal adds two more.
+      // Barrett's Lucky Tail buff doubles them; Pip's Lucky Crystal adds two more. They pop out
+      // and fly to you.
       const coins = coinsFor(this) * (game.player.buffs?.luckyTail ? BUFFS.luckyTail.coins : 1) + (game.player.luckyCrystal ? CRYSTALS.lucky.coins : 0);
-      game.player.addCoins(coins);
-      game.particles?.burst(where.clone().setY(where.y + 1), { count: coins * 3, colors: ['#ffc93c', '#ffe08a'], speed: 5, size: 0.14 });
+      Pickup.coins(game, where.clone().setY(where.y + 0.6), coins);
+    }
+    // When you're hurt, now and then a little health too.
+    const player = game.player;
+    if (player.health < player.maxHealth && !this.noCoins && Math.random() < DROPS.healthChance) {
+      game.add(new Pickup('health', where.clone().setY(where.y + 0.6), 1));
     }
     // Magic points for the dream abilities: (health + damage) / 4, at least 1 (with a magic conduit).
     if (game.player.hasConduit) {

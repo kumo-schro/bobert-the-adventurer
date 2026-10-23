@@ -79,12 +79,7 @@ export const CHECKPOINTS = [
       const p = game.player;
       p.giveShield();
       p.giveBow();
-      p.addArrows(20);
-      p.giveTool('axe');
-      p.giveTool('pickaxe');
       p.addCoins(150);
-      p.wood += 15;
-      p.stone += 15;
       p.food = ['bread', 'bread', 'pie'];
     },
     place(game) {
@@ -148,7 +143,6 @@ export const CHECKPOINTS = [
       if (p.shieldTier < 1) p.upgradeShield();
       if (p.bowTier < 1) p.upgradeBow();
       p.giveArmor();
-      p.addArrows(60);
       p.food = ['pie', 'pie', 'pie', 'bread', 'bread'];
     },
     place(game) {
@@ -207,7 +201,7 @@ export const CHECKPOINTS = [
     label: '15. Build a boat at the dock',
     setup(game) {
       game.player.visitedJungle = true;
-      game.player.wood = Math.max(game.player.wood, 45);
+      game.player.coins = Math.max(game.player.coins, 80);
     },
     place(game) {
       const d = game.dock;
@@ -267,9 +261,9 @@ export const CHECKPOINTS = [
     id: 'dream-powers',
     label: '20. All the dream powers, and a magic conduit full of magic',
     setup(game) {
-      for (const q of npc(game, 'Dream Keeper').quests) {
+      for (const q of npc(game, 'Dream Keeper').quests.filter((q) => q.abilities.length)) {
         skipQuest(game, q);
-        q.onFinish(); // learns its two abilities
+        q.onFinish(); // learns its ability
       }
       game.player.hasConduit = true;
       game.player.magic = 100;
@@ -277,6 +271,17 @@ export const CHECKPOINTS = [
     place(game) {
       const s = game.dream.shrineSpot;
       go(game, s.x, s.z - 2, { y: s.y, facing: 0 });
+    },
+  },
+  {
+    id: 'thomage',
+    label: '20½. Fight Thomage, the Nightmare Mage',
+    setup(game) {
+      if (game.quests.thomage.stage === 'offer') game.quests.thomage.start();
+    },
+    place(game) {
+      const c = game.dream.center;
+      go(game, c.x, c.z - 7, { y: game.dream.y, facing: 0 });
     },
   },
   {

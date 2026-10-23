@@ -197,3 +197,23 @@ export function createShell(color = '#ffb3c7') {
   part(shell, [0.2, 0.1, 0.4], '#ffe0e8', [-0.2, -0.1, 0]);
   return shell;
 }
+
+/** A red-painted fence plank (Jonah's fence quest). */
+export function createPlank(color = '#e0483e') {
+  const plank = new THREE.Group();
+  const glow = { emissive: color };
+  part(plank, [0.22, 1.1, 0.1], color, [0, 0, 0], glow).material.emissiveIntensity = 0.25;
+  part(plank, [0.12, 0.12, 0.11], '#ffffff', [0, 0.36, 0.01]);
+  part(plank, [0.12, 0.12, 0.11], '#ffffff', [0, -0.36, 0.01]);
+  plank.rotation.z = 0.35;
+  return plank;
+}
+
+/** One of the well's old blue stones (Julian's well quest). */
+export function createWellStone(color = '#5fa8e8') {
+  const stone = new THREE.Group();
+  const glow = { emissive: color };
+  part(stone, [0.5, 0.36, 0.42], color, [0, 0, 0], glow).material.emissiveIntensity = 0.3;
+  part(stone, [0.32, 0.18, 0.3], '#bfe6ff', [0.06, 0.24, 0], glow).material.emissiveIntensity = 0.3;
+  return stone;
+}

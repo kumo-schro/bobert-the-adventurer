@@ -1,6 +1,6 @@
-# Voxel Meadow
+# Bobert the Adventurer
 
-A colorful voxel-style single-player web game built with [Three.js](https://threejs.org) and [Vite](https://vite.dev).
+A colorful voxel adventure game for the web built with [Three.js](https://threejs.org) and [Vite](https://vite.dev).
 
 ```bash
 npm install
@@ -8,23 +8,25 @@ npm run dev      # http://localhost:5173
 npm run build    # production build into dist/
 ```
 
-**Controls** (change any of them in-game by pressing **Ctrl** or **Command**): WASD / arrow keys move (and swim), Space jumps, Shift runs, **Return** (or left click) swings your sword in a wide sideways slash, hold **J** to block with a shield, **K** shoots the bow (hold it to charge the power bow), **F** eats food, **T** talks / opens / shops / chops / mines / boards the boat, swing in mid-air to **Sky Strike** (once Master Oak teaches you), **X** dodges (once Master Jackson teaches you), **L** dash, **I** invisible, **U** dream heal and **O** star shield (dream powers, which use magic points), **/** suggests a change, **P** customizes how Bobert looks, **M** turns sound on and off, **Esc** opens saved games, **`** opens the debug menu, Enter/Space/click advances dialog. Camera: drag with the left or right mouse button, **Q/E** turn, **R/G** tilt, **C** swings round behind you, scroll or **-/=** zoom. Where you go never moves the camera by itself: walls, houses and cave rock in the way turn see-through instead. Press **Option** (**Alt** on Windows) to show or hide the quest panel and the controls list.
+**Controls** (every key can be changed in the pause menu): WASD / arrow keys move (and swim), **Space** jumps, **Shift** rolls (you can't be hurt mid-roll; keep holding it to run), **Return** or left click swings the sword (tap again for a three-hit combo; once Master Oak teaches you, hold it for a spin attack, or swing in mid-air for a Sky Strike), hold **J** to block with a shield, **K** shoots the bow (hold it to charge the power bow), **L** is the Star Burst (once you have a magic conduit), **F** eats food, **T** talks / opens / uses. **Tab** shows all your quests, **Esc** is the pause menu (save and load, customize Bobert, controls, sound, suggest a change, and how to play). Shortcuts: **P** customize, **M** sound, **/** suggest a change, **`** debug menu. Camera: drag with the left or right mouse button, **Q/E** turn, **R/G** tilt, **C** swings round behind you, scroll or **-/=** zoom. Where you go never moves the camera by itself: walls, houses and cave rock in the way turn see-through instead.
+
+**Feel:** swings turn you toward the nearest monster in front of you and step you in; hits pause the action for a split second, shake the camera and pop up damage numbers; monsters show a "!" when they spot you; coins (and sometimes health) pop out of defeated monsters and fly to you; bosses get a big health bar at the top of the screen. Most of the numbers are in `PLAYER`, `DODGE`, `DROPS` and `DREAM` in `src/config.js`.
 
 **The story** is in [`story.md`](story.md): a short outline, chapter by chapter. Edit it (add details, change what happens, add chapters) and ask Claude to "update the game from story.md". Feature requests can also go in `theme.md`, one line each.
 
-**Debug menu:** press **`** (the key above Tab) to jump to any chapter of the story (each chapter in `story.md` lists its checkpoint), or use cheats: coins, wood and stone, healing, can't-get-hurt mode, day/night, and teleports. You can also open the game at a checkpoint directly, like `http://localhost:5173/?checkpoint=charibdis`.
+**Debug menu:** press **`** (the key above Tab) to jump to any chapter of the story (each chapter in `story.md` lists its checkpoint), or use cheats: coins, magic, healing, can't-get-hurt mode, day/night, and teleports. You can also open the game at a checkpoint directly, like `http://localhost:5173/?checkpoint=charibdis`.
 
-**👕 Customize Bobert:** the first time you play, and any time you press **P** (or click 👕), pick Bobert's skin, hair color and style, shirt, trousers and shoes. The look is remembered in the browser and in saved games. The color choices are in `CUSTOMIZE` in `src/config.js`.
+**👕 Customize Bobert:** when you start a new adventure for the first time, and any time you press **P** (or pick it in the pause menu), pick Bobert's skin, hair color and style, shirt, trousers and shoes. The look is remembered in the browser and in saved games. The color choices are in `CUSTOMIZE` in `src/config.js`.
 
 **🔊 Sound:** swinging the sword swishes, and hits sound different for monsters (squishy slimes, stony gargoyles), trees, chests and posts (a wooden knock) and rocks and walls (a clink). The sounds are made in code (`src/core/Sound.js`), no sound files. **M** turns them off.
 
-**🏰 The story:** a new adventure starts with an intro in Tulane Kingdom: Bobert is banished after a sword juggling accident and marched to Crestview Village (Esc skips it). Finishing quests wins **fame** (⭐ in the status bar). At 120 fame, Tulane's herald comes for Bobert, and the last boss, King Stuart, waits on his throne. See `story.md`.
+**🏰 The story:** the game opens on a title screen (Continue, New adventure, Load). A new adventure starts with an intro in Tulane Kingdom: Bobert is banished after a sword juggling accident and marched to Crestview Village (Esc skips it). Finishing quests wins **fame** (⭐ in the status bar). At 120 fame, Tulane's herald comes for Bobert, and the last boss, King Stuart, waits on his throne. See `story.md`.
 
 **💎 Save points:** there's a glowing save crystal on every island. Walk up to one and it saves straight away, under the name of the adventure you're playing (the first time, it asks for a name).
 
-**💾 Saved games:** press **Esc** (or click 💾 in the corner), type a name and press Save. Saves are kept in this browser; load or delete them from the same menu. After a big update to the game (`SAVES.version` in `src/config.js`), older saves can't be loaded any more.
+**💾 Saved games:** press **Esc** and pick **Save & load**, type a name and press Save. Saves are kept in this browser; load or delete them from the same menu. After a big update to the game (`SAVES.version` in `src/config.js`), older saves can't be loaded any more.
 
-**💡 Suggest a change:** press **/** (or click the button in the corner), click on anything in the game, and type how you'd like it changed. It's saved with where you were, what you clicked, your quest and a small screenshot. Nothing happens automatically; the ideas are just collected for later:
+**💡 Suggest a change:** press **/** (or pick it in the pause menu), click on anything in the game, and type how you'd like it changed. It's saved with where you were, what you clicked, your quest and a small screenshot. Nothing happens automatically; the ideas are just collected for later:
 - Playing locally (`npm run dev`), ideas go straight into `recommendations.json` (screenshots in `recommendations/`).
 - On the live site, they're saved to a private Vercel Blob store. Run `npm run recommendations` to download everyone's ideas into `recommendations.json` (it needs `RECOMMENDATIONS_KEY` from `.env.local`; get it with `npx vercel env pull`). Then ask Claude to review them.
 
@@ -52,22 +54,23 @@ src/
                        Dock (where you jump in to swim), Road (town to dock), TowerIsland (tower +
                        spiral stairs), SmallIsland, CharibdisCave (locked sea cave), Cellar
                        (Ward's room under the trapdoor), DayNight (lighting cycle),
-                       Gathering (trees and boulders for wood and stone), Jungle (the jungle island), FireIsland (volcano, lava, Velizar's lair), Tulane (the castle: intro and last boss),
+                       Gathering (boulders), Jungle (the jungle island), FireIsland (volcano, lava, Velizar's lair), Tulane (the castle: intro and last boss),
                        Underwater (seabed + underwater/dream look), Dream (dream dimension + portal)
   entities/            Player, Npc (townsfolk), Monster (base) -> Slime, Spider, Shark, Eel (and
                        the sea serpent), Kraken, Gargoyle, Charibdis, JungleMonsters (FlyTrap,
                        Snake, Gorilla, Frog, Panther, Vine (the Viniac), OakFighter), JacksonFighter,
                        LavaMonster, Velizar (the dragon), FireMonsters, KingStuart (+ TulaneGuard), SavePoint, Wisp; Boat, Arrow, Trapdoor, Chest,
-                       Collectible, Artifact, Particles, Butterflies, CameraRig
+                       Collectible, Pickup (coins and health that fly to you), Artifact, Particles, Butterflies, CameraRig
   quest/               Quest (base, with `requires` / `after` for quest chains), ArtifactQuest (main),
                        sideQuests (find things, hunt, puzzle, deliveries, crystal, Charibdis, jungle,
                        the masters' duels, the Viniac, dream quests, Velizar)
   saves.js             Saved games in the browser (what's saved, and setting a fresh game up from a save)
   models/              Voxel model recipes: trees, buildings, character, people (outfits), gear
-  ui/                  Dialog (+ "Press T" prompts), QuestLog, StatusBar (hearts/coins/food), Shop,
-                       ControlsMenu (Ctrl/Command to change keys, Option/Alt to show panels), DebugMenu (`),
-                       Suggestions (💡 click on something and suggest a change), SaveMenu (💾 Esc: saved games),
-                       Customizer (👕 P: Bobert's look), Cutscene (the intro and the ending)
+  ui/                  TitleScreen, PauseMenu (Esc), Dialog (+ "Press T" prompts), QuestLog (quest tracker
+                       + toasts), StatusBar (health, magic, coins, fame, and the action bar), BossBar,
+                       FloatingText (damage numbers), Shop, ControlsMenu, DebugMenu (`), Suggestions
+                       (click on something and suggest a change), SaveMenu (saved games), Customizer
+                       (P: Bobert's look), Cutscene (the intro and the ending), icons (action bar icons)
 api/recommendations.js Vercel Function that saves suggestions (and lets the owner download them)
 server/                Code shared by that function and the local dev server (vite.config.js)
 scripts/               npm run recommendations: download everyone's suggestions (and build recommendations/index.html)

@@ -26,7 +26,7 @@ export class Dialog extends Entity {
     this.box.innerHTML = `
       <div class="dialog-name"></div>
       <p class="dialog-text"></p>
-      <div class="dialog-next">Press Enter ▶</div>`;
+      <div class="dialog-next"><kbd>Enter</kbd></div>`;
     this.nameEl = this.box.querySelector('.dialog-name');
     this.textEl = this.box.querySelector('.dialog-text');
     this.box.addEventListener('pointerdown', () => (this.advanceRequested = true));
@@ -64,12 +64,14 @@ export class Dialog extends Entity {
     this.textEl.textContent = '';
     this.box.classList.remove('hidden');
     this.box.classList.add('typing');
+    document.body.classList.add('talking');
   }
 
   close() {
     this.pages = [];
     this.focus = null;
     this.box.classList.add('hidden');
+    document.body.classList.remove('talking');
     const done = this.onClose;
     this.onClose = null;
     done?.();
@@ -95,8 +97,14 @@ export class Dialog extends Entity {
     const canInteract = offer && !game.isUiOpen() && !game.player?.dead;
     this.promptEl.classList.toggle('hidden', !canInteract);
     if (canInteract) {
-      // Prompts say "Press T"; show whatever key the player has picked for talking instead.
-      this.promptEl.textContent = offer.text.replace(/^Press T\b/, `Press ${keyName(game.input.bindings.interact[0])}`);
+      // Prompts say "Press T to ..."; show the key the player has picked for talking, then what it does.
+      const key = keyName(game.input.bindings.interact[0]);
+      if (offer.text + key !== this.promptText) {
+        this.promptText = offer.text + key;
+        const what = offer.text.replace(/^Press T( to)?\s*/, '');
+        this.promptEl.innerHTML = `<kbd>${key}</kbd><span></span>`;
+        this.promptEl.querySelector('span').textContent = what[0].toUpperCase() + what.slice(1);
+      }
       if (game.input.hit('interact')) {
         this.promptEl.classList.add('hidden');
         offer.action();
@@ -104,6 +112,7 @@ export class Dialog extends Entity {
     }
 
     if (!this.isOpen) return;
+    this.box.querySelector('.dialog-next').classList.toggle('last', this.page === this.pages.length - 1);
 
     const text = this.pages[this.page];
     const typing = this.shown < text.length;

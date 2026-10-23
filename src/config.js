@@ -68,8 +68,27 @@ export const CUSTOMIZE = {
 
 export const PLAYER = {
   maxHealth: 5, // hits you can take before you're knocked out
-  regenDelay: 6, // seconds without getting hit before hearts start coming back
-  regenInterval: 4, // seconds per heart while regenerating
+  regenDelay: 6, // seconds without getting hit before health starts coming back
+  regenInterval: 4, // seconds per point of health while regenerating
+  walkSpeed: 6.5,
+  runSpeed: 11, // holding the roll key (Shift) after a roll keeps you running
+  coyoteTime: 0.12, // you can still jump this long after running off a ledge...
+  jumpBuffer: 0.14, // ...and a jump pressed this long before landing still happens
+  swingSlowdown: 0.35, // how fast you can move while swinging (0..1 of normal speed)
+  autoAim: 3.2, // a swing turns you toward a monster this close (on top of the sword's reach)
+};
+
+// Rolling: Shift, from the very start. You can't be hurt in the middle of a roll. Master Jackson
+// teaches the Perfect Dodge: roll through an attack at the last moment and time slows down, and
+// your next swing is a big counter-attack.
+export const DODGE = {
+  speed: 13,
+  time: 0.32, // seconds of rolling (you can't be hurt for all of it)
+  cooldown: 0.22, // after a roll ends
+  slowMo: 0.6, // Perfect Dodge: seconds of slow motion...
+  slowMoScale: 0.3, // ...at this speed
+  counterTime: 1.6, // seconds to land the counter-attack
+  counterBonus: 2, // extra damage it does
 };
 
 export const SWORDS = [
@@ -77,49 +96,43 @@ export const SWORDS = [
   { name: "Knight's Sword", damage: 2, reach: 1.5 },
 ];
 
-// What the blacksmith's forge sells. Like Hana's oven, you help build a bigger forge (with wood
-// and stone) to unlock all the upgraded things.
+// What the blacksmith's forge sells. Pay to build a bigger forge to unlock the upgraded things.
 export const FORGE = {
-  prices: { shield: 25, bow: 40, arrows: 20, axe: 10, pickaxe: 10 },
-  biggerForge: { coins: 40, wood: 20, stone: 20 },
-  upgrades: { sword: 60, powerBow: 70, ironShield: 60, armor: 90, steelAxe: 30, steelPickaxe: 30 },
-  arrowsPerBundle: 10, // how many arrows you get for prices.arrows
-  armorHearts: 2, // extra max hearts from the armor
+  prices: { shield: 25, bow: 40 },
+  biggerForge: 60,
+  upgrades: { sword: 60, powerBow: 70, ironShield: 60, armor: 90 },
+  armorHearts: 2, // extra max health from the armor
 };
 
-// What the baker sells. `heals` is how many hearts it brings back; `extra` is golden extra
-// hearts on top (they disappear once you take that much damage). Press F to eat.
-// `upgraded` foods only appear after Hana's oven is upgraded with wood and stone.
+// What the baker sells. `heals` is how much health it brings back. Press F to eat.
 export const FOOD = {
   carry: 5, // how much food you can carry at once
-  maxExtra: 5, // most golden hearts you can have at once
   menu: [
-    { id: 'apple', name: 'Apple', icon: '🍎', heals: 1, extra: 0, price: 2 },
-    { id: 'bread', name: 'Bread', icon: '🍞', heals: 2, extra: 0, price: 4 },
-    { id: 'pie', name: 'Berry Pie', icon: '🥧', heals: 99, extra: 0, price: 15 }, // 99 = all your hearts
-    { id: 'goldenApple', name: 'Golden Apple', icon: '🍏', heals: 1, extra: 1, price: 8, upgraded: true },
-    { id: 'stew', name: 'Hearty Stew', icon: '🍲', heals: 3, extra: 2, price: 15, upgraded: true },
-    { id: 'feast', name: 'Royal Feast', icon: '🍗', heals: 99, extra: 3, price: 30, upgraded: true },
+    { id: 'apple', name: 'Apple', icon: '🍎', heals: 1, price: 3 },
+    { id: 'bread', name: 'Bread', icon: '🍞', heals: 2, price: 5 },
+    { id: 'pie', name: 'Berry Pie', icon: '🥧', heals: 99, price: 15 }, // 99 = all the way
   ],
-  ovenUpgrade: { coins: 20, wood: 6, stone: 8 },
 };
 
-// Wood and stone: chop trees with an axe and mine boulders with a pickaxe (press T next to them).
+// What monsters drop besides coins: when you're hurt, a health pickup now and then.
+export const DROPS = {
+  healthChance: 0.3, // chance a defeated monster drops one, if you're missing health
+  magnetRange: 6, // pickups fly to you from this close...
+  autoCollect: 0.7, // ...and from anywhere nearby after this many seconds
+};
+
+// Boulders around the island (scenery).
 export const GATHER = {
-  perNode: 3, // how many chops (or swings of the pickaxe) one tree or boulder takes before it needs a rest
-  steelBonus: 2, // a steel axe / pickaxe gets this much per chop instead of 1
-  regrowSeconds: 60,
   boulderCount: 40,
 };
 
+// The bow never runs out of arrows: it just takes a moment to draw.
 export const BOW = {
   damage: 1,
-  secondsPerDamage: 2, // power bow: +1 damage for every 2 seconds you hold the bow key...
-  maxDamage: 5, // ...up to 5
-  drawTime: 1, // seconds to pull the string back before the arrow flies
-  startArrows: 10, // arrows that come with the bow
-  maxArrows: 100, // the quiver holds this many
-  speed: 28,
+  secondsPerDamage: 0.6, // power bow: +1 damage for every 0.6 seconds you hold the bow key...
+  maxDamage: 4, // ...up to 4
+  drawTime: 0.45, // seconds to pull the string back before the arrow flies
+  speed: 32,
   range: 30, // how far an arrow flies
 };
 
@@ -217,7 +230,7 @@ export const SKY_STRIKE = {
 };
 
 // Master Jackson, Oak's old friend: he dodges every attack except a spin attack. Beat him in a
-// duel and he teaches you to dodge.
+// duel and he teaches you the Perfect Dodge (see DODGE).
 export const JACKSON = {
   island: { x: 247, z: -104 }, // he trains on this little island
   health: 6, // spin attacks it takes to beat him (each spin does at least 2)
@@ -225,62 +238,42 @@ export const JACKSON = {
   reward: 60,
 };
 
-// Dodging (Master Jackson teaches it): press X to leap out of the way. Nothing can hurt you mid-leap.
-export const DODGE = {
-  speed: 13,
-  time: 0.28, // seconds of leaping
-  cooldown: 0.7,
-};
-
-// The dream dimension. Each Dream Keeper quest teaches two dream abilities. Using them takes magic
-// points (see MAGIC). These are the abilities' own settings.
+// The dream dimension. Aleli's magic conduit holds magic, and gives you the Star Burst (press L):
+// a ring of starlight that knocks back and hurts every monster around you, and wraps you in a
+// star shield. Each Dream Keeper quest teaches one more dream ability.
 export const DREAM = {
-  speedBoost: 1.35, // Speed Boots: run and swim this much faster
-  healCooldown: 60, // Dream Heal: seconds before you can heal again
-  starShieldHits: 3, // Star Shield: blocks this many hits...
-  starShieldTime: 12, // ...or until this many seconds pass
-  starShieldCooldown: 30,
   wispRespawn: 25, // seconds before a popped wandering wisp floats back
-  dashSpeed: 24,
-  dashTime: 0.22, // seconds of dashing
-  dashCooldown: 1.2,
-  invisibleTime: 6, // seconds you stay invisible...
-  invisibleCooldown: 18, // ...and how long before you can do it again
+  burstRadius: 6, // Star Burst: how far it reaches...
+  burstDamage: 3, // ...how hard it hits...
+  burstCooldown: 1.2,
+  shieldHits: 1, // ...and the star shield it leaves blocks this many hits...
+  shieldTime: 8, // ...for this many seconds
+  healAmount: 2, // Dream Heal: the Star Burst heals you this much too
+  dashSpeed: 22, // Dream Dash: your roll becomes a long dash...
+  dashTime: 0.3,
+  dashDamage: 1, // ...that hurts monsters you dash through
 };
 
-// The dream abilities. Each one is taught by a Dream Keeper quest (see sideQuests.js), and using
-// it costs magic points (MAGIC.cost has the same names).
+// The dream abilities the Dream Keeper's quests teach (see sideQuests.js). None of them has its own key.
 export const DREAM_ABILITIES = {
-  doubleJump: { flag: 'hasDoubleJump', name: 'Double Jump', icon: '🦘', how: 'press Space again in mid-air to jump a second time' },
-  speedBoots: { flag: 'hasSpeedBoots', name: 'Speed Boots', icon: '👟', how: 'run and swim much faster' },
-  dash: { flag: 'hasDash', name: 'Dash', icon: '💨', how: 'press L to dash forward in a flash' },
-  invisible: { flag: 'hasInvisibility', name: 'Invisibility', icon: '👻', how: "press I to turn invisible, so monsters can't see you" },
-  dreamHeal: { flag: 'hasDreamHeal', name: 'Dream Heal', icon: '🌈', how: 'press U to heal all the way' },
-  starShield: { flag: 'hasStarShield', name: 'Star Shield', icon: '🔮', how: 'press O for a starlight bubble that blocks the next 3 hits' },
+  doubleJump: { flag: 'hasDoubleJump', name: 'Double Jump', icon: '🦘', how: 'jump again in mid-air' },
+  dreamDash: { flag: 'hasDreamDash', name: 'Dream Dash', icon: '💨', how: 'your roll becomes a long dash that hurts monsters' },
+  dreamHeal: { flag: 'hasDreamHeal', name: 'Dream Heal', icon: '🌈', how: 'your Star Burst heals you too' },
 };
 
-// Magic points power the dream abilities. You need a magic conduit (Aleli sells it at the dream
-// shrine) to hold them. Defeating a monster gives (its health + its damage) / 4 magic points,
-// at least 1.
+// Magic powers the Star Burst. You need a magic conduit (Aleli sells it at the dream shrine) to
+// hold it. Defeating a monster gives (its health + its damage) / 4 magic points, at least 1.
 export const MAGIC = {
   conduitPrice: 60, // coins
   max: 100,
-  starting: 20, // magic points a new conduit comes with
-  cost: {
-    dash: 5,
-    invisible: 20,
-    doubleJump: 3,
-    speedBoots: 1, // per second while you're moving
-    dreamHeal: 25,
-    starShield: 20,
-  },
+  starting: 50, // magic points a new conduit comes with
+  burstCost: 25, // each Star Burst
 };
 
 // Pip's crystal shop: his stall on the plaza opens once you show him the mystery crystal.
 export const CRYSTALS = {
   heart: { price: 80, most: 2 }, // +1 max health each, up to `most` of them
-  magic: { price: 15, points: 30 }, // fills up 30 magic points (needs a magic conduit)
-  bigMagic: { price: 40, points: 100 }, // fills your magic all the way
+  magic: { price: 30 }, // fills your magic all the way (needs a magic conduit)
   swift: { price: 120, speed: 1.1 }, // walk and run 10% faster, for good
   sea: { price: 90, swim: 1.25 }, // swim 25% faster, for good
   lucky: { price: 150, coins: 2 }, // every monster drops 2 more coins, for good
@@ -312,6 +305,14 @@ export const KING = {
   guards: 2, // guards he calls (once, at half health)
 };
 
+// Thomage, the Nightmare Mage: the boss of the dream dimension (the Dream Keeper's last quest).
+export const THOMAGE = {
+  health: 40,
+  damage: 2, // his star bolts and rune circles
+  boltSpeed: 9,
+  reward: 200,
+};
+
 // Velizar, the dragon boss of the fire island.
 export const VELIZAR = {
   health: 30,
@@ -326,7 +327,7 @@ export const VELIZAR = {
 
 // The sailboat: unlocked once you've been to the jungle, built at the dock.
 export const BOAT = {
-  wood: 40,
+  price: 60, // coins
   speed: 9,
   fastSpeed: 14,
 };
@@ -355,10 +356,15 @@ export const CHARIBDIS = {
 // Saved games (press Esc in the game). Bump `version` after a big change to the game:
 // saves made with a different version can't be loaded any more (they're not converted).
 export const SAVES = {
-  version: 1,
+  version: 2, // 2: wood, stone, arrows and golden health are gone
 };
 
 export const QUEST = {
   slimeHealth: 10, // sword hits (with the starting sword) to defeat the Gelationus Slime
   rewardCoins: 100,
+};
+
+// Drawing (performance). Things further than this from the camera aren't drawn.
+export const RENDER = {
+  npcDrawDistance: 110, // townspeople (each one is lots of little parts)
 };

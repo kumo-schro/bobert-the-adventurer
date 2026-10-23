@@ -104,10 +104,13 @@ export class Quest {
     this.stage = 'complete';
     this.completedAt = game.elapsed;
     game.sound?.play('quest');
+    const rewards = [];
+    if (this.reward) rewards.push(`<span class="coin"></span>+${this.reward}`);
+    if (this.fame) rewards.push(`<span class="fame-star">★</span>+${this.fame} fame`);
+    game.questLog.celebrate(this.title, rewards);
     if (this.reward) {
       game.player.addCoins(this.reward);
-      game.questLog.toast(`Quest complete! +${this.reward} gold coins`);
-      game.particles?.burst(game.player.object3d.position.clone().setY(2), {
+      game.particles?.burst(game.player.object3d.position.clone().setY(game.player.object3d.position.y + 2), {
         count: 50,
         colors: ['#ffc93c', '#ffe08a', '#f0a500'],
         speed: 7,
@@ -117,9 +120,9 @@ export class Quest {
     }
     for (const id of this.abilities) {
       const a = DREAM_ABILITIES[id];
-      game.questLog.toast(`You learned ${a.icon} ${a.name}: ${a.how}! (It uses magic points.)`, 5);
+      game.questLog.toast(`You learned ${a.name}: ${a.how}!`, { seconds: 6, icon: a.icon });
     }
-    if (this.fame) game.player.addFame(game, this.fame);
+    if (this.fame) game.player.addFame(game, this.fame, { quiet: true }); // the banner shows it
     game.questLog.complete(this.id);
     this.onFinish();
   }

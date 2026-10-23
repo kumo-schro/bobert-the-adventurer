@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Input } from './Input.js';
+import { FOG } from '../config.js';
 
 /**
  * Owns the renderer, scene, camera and the main loop.
@@ -8,14 +9,16 @@ import { Input } from './Input.js';
 export class Game {
   constructor(container) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // sharp enough, and far less to draw on big screens
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     container.appendChild(this.renderer.domElement);
 
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 4000);
+    // Nothing past the fog is drawn (the fog hides it anyway). The sky is drawn at any distance;
+    // Underwater changes the far plane along with the fog.
+    this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, FOG.far + 20);
     this.input = new Input(this.renderer.domElement);
 
     this.entities = [];
@@ -87,6 +90,12 @@ export class Game {
     this.hitStopTimer = Math.max(this.hitStopTimer ?? 0, seconds);
   }
 
+  /** Slow everything down for a moment (real seconds), like after a Perfect Dodge. */
+  slowMo(seconds, scale = 0.3) {
+    this.slowMoTimer = seconds;
+    this.slowMoScale = scale;
+  }
+
   /** Move the player somewhere else instantly (down a trapdoor...), with a quick fade. */
   teleport(x, z, { y = 0, facing } = {}) {
     const player = this.player;
@@ -116,9 +125,15 @@ export class Game {
     if (this.hitStopTimer > 0) {
       this.hitStopTimer -= dt;
       dt *= 0.05; // nearly frozen
+    } else if (this.slowMoTimer > 0) {
+      this.slowMoTimer -= dt;
+      // Ease back to full speed over the last 0.2 seconds.
+      const k = Math.min(1, this.slowMoTimer / 0.2);
+      dt *= this.slowMoScale + (1 - this.slowMoScale) * (1 - k);
     }
     this.elapsed += dt;
 
+    this.uiWasOpen = this.isUiOpen(); // so the Esc that closes one menu doesn't open another
     for (const entity of this.entities) entity.update(dt, this);
     this.input.endFrame();
     this.renderer.render(this.scene, this.camera);

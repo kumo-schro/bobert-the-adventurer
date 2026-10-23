@@ -4,7 +4,7 @@ import { CHECKPOINTS, applyCheckpoint } from '../checkpoints.js';
 /**
  * The debug menu, for testing: press ` (the key above Tab) to open it.
  *  - Jump to any point in the story (reloads the page at that checkpoint, see checkpoints.js).
- *  - Cheats: coins, wood and stone, healing, can't-get-hurt mode, day/night, and teleports.
+ *  - Cheats: coins, magic, healing, can't-get-hurt mode, day/night, and teleports.
  * Opening the page with ?checkpoint=<id> also jumps there. Lives at game.debugMenu.
  */
 export class DebugMenu extends Entity {
@@ -12,7 +12,7 @@ export class DebugMenu extends Entity {
     super();
     this.isOpen = false;
     this.el = document.createElement('div');
-    this.el.className = 'shop debug-menu hidden';
+    this.el.className = 'modal debug-menu hidden';
     document.body.append(this.el);
     this.el.addEventListener('pointerdown', (e) => {
       const button = e.target.closest('button');
@@ -40,7 +40,7 @@ export class DebugMenu extends Entity {
     const gate = game.charibdisCave.gateSpot;
     return [
       { id: 'coins', label: '+100 coins', run: () => p.addCoins(100) },
-      { id: 'materials', label: '+20 wood & stone', run: () => ((p.wood += 20), (p.stone += 20)) },
+      { id: 'magic', label: 'Magic conduit, full of magic', run: () => ((p.hasConduit = true), (p.magic = 100)) },
       { id: 'heal', label: 'Heal fully', run: () => (p.health = p.maxHealth) },
       { id: 'god', label: `Can't get hurt: ${p.godMode ? 'ON' : 'off'}`, run: () => (p.godMode = !p.godMode) },
       { id: 'day', label: 'Make it day', run: () => (game.dayNight.time = 0.1) },
@@ -68,8 +68,8 @@ export class DebugMenu extends Entity {
   render() {
     const current = new URLSearchParams(location.search).get('checkpoint') ?? 'start';
     this.el.innerHTML = `
-      <div class="shop-header"><div class="shop-title">Debug menu</div></div>
-      <p class="shop-message">Jump to a part of the story (the game restarts there), or use a cheat.</p>
+      <div class="modal-header"><div class="modal-title">Debug menu</div></div>
+      <p class="modal-message">Jump to a part of the story (the game restarts there), or use a cheat.</p>
       <div class="shop-section">Story checkpoints</div>
       <div class="debug-list">
         ${CHECKPOINTS.map((c) => `<button class="debug-row${c.id === current ? ' current' : ''}" data-checkpoint="${c.id}">${c.label}</button>`).join('')}
@@ -78,7 +78,7 @@ export class DebugMenu extends Entity {
       <div class="debug-cheats">
         ${this.cheats.map((c) => `<button class="debug-cheat" data-cheat="${c.id}">${c.label}</button>`).join('')}
       </div>
-      <button class="shop-close" data-close="1">Close (Esc or \`)</button>`;
+      <button class="ghost" data-close="1">Close (Esc or \`)</button>`;
   }
 
   update(_dt, game) {

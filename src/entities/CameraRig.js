@@ -97,9 +97,18 @@ export class CameraRig extends Entity {
       fz = t.z - Math.sin(this.yaw) * 0.9;
     }
 
+    // The title screen: drift slowly round, a little higher and further out.
+    if (game.titleScreen?.isOpen || document.body.classList.contains('title-open')) {
+      this.yaw += dt * 0.05;
+      wantedZoom = 17;
+      wantedTilt = 0.3;
+      focusHeight = 2.5;
+    }
+
     const k = dt === 0 ? 1 : 1 - Math.exp(-10 * dt);
+    const ky = dt === 0 ? 1 : 1 - Math.exp(-5 * dt); // softer up and down, so jumps don't jolt the view
     this.focus.x += (fx - this.focus.x) * k;
-    this.focus.y += (t.y + focusHeight - this.focus.y) * k;
+    this.focus.y += (t.y + focusHeight - this.focus.y) * ky;
     this.focus.z += (fz - this.focus.z) * k;
     const ease = dt === 0 ? 1 : 1 - Math.exp(-4 * dt);
     this.zoom += (wantedZoom - this.zoom) * ease;

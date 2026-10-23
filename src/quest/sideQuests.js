@@ -4,6 +4,7 @@ import { Slime } from '../entities/Slime.js';
 import { OakFighter, Vine } from '../entities/JungleMonsters.js';
 import { JacksonFighter } from '../entities/JacksonFighter.js';
 import { Velizar } from '../entities/Velizar.js';
+import { Thomage } from '../entities/Thomage.js';
 import { KingStuart } from '../entities/KingStuart.js';
 import { TrainingPost } from '../entities/TrainingPost.js';
 import { createCharacter } from '../models/character.js';
@@ -11,7 +12,7 @@ import { LOOKS } from '../models/people.js';
 import { createMysteryCrystal, createKey } from '../models/gear.js';
 import { RAINBOW } from '../world/StoneCircle.js';
 import { createRng } from '../utils/random.js';
-import { SEED, PLACES, JACKSON, SKY_STRIKE, VELIZAR } from '../config.js';
+import { SEED, PLACES, JACKSON, SKY_STRIKE, VELIZAR, THOMAGE } from '../config.js';
 import { keyName } from '../controls.js';
 import { SIDE_QUESTS } from '../story.js';
 
@@ -112,65 +113,6 @@ export class FindGemsQuest extends Quest {
 
   updateObjective() {
     this.setObjective(`Find the ${this.itemName}s (${this.found}/${this.count})`, () => this.nearestGem());
-  }
-}
-
-/** Bring materials: chop wood or mine stone and hand it over. */
-export class DeliveryQuest extends Quest {
-  constructor(game, { id, story, material, amount, reward, ...rest }) {
-    super(game, { id, title: story.title, text: story.text, reward, ...rest });
-    this.material = material;
-    this.amount = amount;
-  }
-
-  get enough() {
-    return this.game.player[this.material] >= this.amount;
-  }
-
-  get marker() {
-    if (this.stage === 'active' && this.enough) return '?';
-    return super.marker;
-  }
-
-  onStart() {
-    const tool = this.material === 'wood' ? 'chop trees with an axe' : 'mine boulders with a pickaxe';
-    this.setObjective(`Bring ${this.giver.name} ${this.amount} ${this.material} (${tool})`, () =>
-      this.enough ? this.giver : this.nearestSource(),
-    );
-  }
-
-  nearestSource() {
-    const { game } = this;
-    const p = game.player.object3d.position;
-    const kind = this.material;
-    let best = null;
-    let bestDist = Infinity;
-    for (const node of game.gathering?.nodes ?? []) {
-      if (node.kind !== kind || node.left <= 0) continue;
-      const d = Math.hypot(node.x - p.x, node.z - p.z);
-      if (d < bestDist) {
-        best = node;
-        bestDist = d;
-      }
-    }
-    return best && { questPosition: { x: best.x, z: best.z } };
-  }
-
-  dialogFor() {
-    const player = this.game.player;
-    if (this.stage === 'active') {
-      if (this.enough) {
-        return {
-          pages: this.text.turnIn,
-          onClose: () => {
-            player[this.material] -= this.amount;
-            this.finish();
-          },
-        };
-      }
-      return { pages: [...this.text.active, `You have ${player[this.material]} of ${this.amount} ${this.material} so far.`] };
-    }
-    return super.dialogFor();
   }
 }
 
@@ -448,7 +390,7 @@ export class OakDuelQuest extends DuelQuest {
   constructor(game, rest = {}) {
     super(game, { id: 'oak', title: SIDE_QUESTS.oak.title, text: SIDE_QUESTS.oak.text, reward: 0, ...rest });
     this.duel = {
-      objective: 'Defeat Master Oak in battle! (Dodge when his staff glows.)',
+      objective: 'Defeat Master Oak in battle! (Roll away when his staff glows.)',
       begins: 'Master Oak raises his staff. The duel begins!',
       won: 'You beat Master Oak! Talk to him.',
     };
@@ -462,11 +404,11 @@ export class OakDuelQuest extends DuelQuest {
 
   onFinish() {
     this.game.player.knowsSpin = true;
-    this.game.questLog.toast('You learned the SPIN ATTACK! Hold the swing button, then let go.', 5);
+    this.game.questLog.toast('You learned the SPIN ATTACK! Hold the sword button, then let go.', { seconds: 6, icon: '🌀' });
   }
 }
 
-/** Master Jackson dodges everything except a spin attack. Beat him and he teaches you to dodge. */
+/** Master Jackson dodges everything except a spin attack. Beat him and he teaches you the Perfect Dodge. */
 export class JacksonDuelQuest extends DuelQuest {
   constructor(game, rest = {}) {
     super(game, { id: 'jackson', title: SIDE_QUESTS.jackson.title, text: SIDE_QUESTS.jackson.text, reward: JACKSON.reward, ...rest });
@@ -484,8 +426,8 @@ export class JacksonDuelQuest extends DuelQuest {
   }
 
   onFinish() {
-    this.game.player.knowsDodge = true;
-    this.game.questLog.toast(`You learned to DODGE! Press ${keyName(this.game.input.bindings.dodge[0] ?? 'KeyX')} to leap out of the way.`, 5);
+    this.game.player.knowsPerfectDodge = true;
+    this.game.questLog.toast(`You learned the PERFECT DODGE! Roll (${keyName(this.game.input.bindings.dodge[0] ?? 'ShiftLeft')}) through an attack just as it hits, then strike back.`, { seconds: 6, icon: '🌀' });
   }
 }
 
@@ -517,12 +459,12 @@ export class VineQuest extends Quest {
   }
 }
 
-// ---- Dream dimension quests (the Dream Keeper). They give dream points instead of coins. ----
+// ---- Dream dimension quests (the Dream Keeper). Each teaches a dream ability, and the last one is a boss. ----
 
 /** Catch the fallen stars scattered around the dream islands. */
 export class DreamStarsQuest extends Quest {
   constructor(game, { dream, ...rest }) {
-    super(game, { id: 'stars', title: SIDE_QUESTS.stars.title, text: SIDE_QUESTS.stars.text, abilities: ['doubleJump', 'speedBoots'], ...rest });
+    super(game, { id: 'stars', title: SIDE_QUESTS.stars.title, text: SIDE_QUESTS.stars.text, abilities: ['doubleJump'], ...rest });
     this.dream = dream;
     this.stars = [];
   }
@@ -564,7 +506,7 @@ export class DreamStarsQuest extends Quest {
 /** Chase away the nightmare wisps. */
 export class DreamWispsQuest extends Quest {
   constructor(game, { dream, makeWisp, ...rest }) {
-    super(game, { id: 'wisps', title: SIDE_QUESTS.wisps.title, text: SIDE_QUESTS.wisps.text, abilities: ['dash', 'invisible'], ...rest });
+    super(game, { id: 'wisps', title: SIDE_QUESTS.wisps.title, text: SIDE_QUESTS.wisps.text, abilities: ['dreamDash'], ...rest });
     this.dream = dream;
     this.makeWisp = makeWisp;
   }
@@ -601,7 +543,7 @@ export class DreamWispsQuest extends Quest {
 /** Jump up the cloud stones to the summit and catch the dream star there. */
 export class CloudHopQuest extends Quest {
   constructor(game, { dream, ...rest }) {
-    super(game, { id: 'hop', title: SIDE_QUESTS.hop.title, text: SIDE_QUESTS.hop.text, abilities: ['dreamHeal', 'starShield'], ...rest });
+    super(game, { id: 'hop', title: SIDE_QUESTS.hop.title, text: SIDE_QUESTS.hop.text, abilities: ['dreamHeal'], ...rest });
     this.dream = dream;
   }
 
@@ -609,6 +551,39 @@ export class CloudHopQuest extends Quest {
     const star = this.game.add(new Collectible(this.dream.summitSpot, { color: '#ff8fe0' }));
     star.onCollect = () => this.readyToTurnIn('You reached the top of the clouds!');
     this.setObjective('Jump up the cloud stones to the summit (press Space to jump)', star);
+  }
+}
+
+/**
+ * The Dream Keeper's last quest: Thomage, the Nightmare Mage, has taken over the middle of the
+ * dream. Beat him (he appears over the hub when it starts). Knocked out? He fades away until you
+ * ask the Dream Keeper again.
+ */
+export class ThomageQuest extends Quest {
+  constructor(game, { dream, ...rest }) {
+    super(game, { id: 'thomage', title: SIDE_QUESTS.thomage.title, text: SIDE_QUESTS.thomage.text, reward: THOMAGE.reward, ...rest });
+    this.dream = dream;
+    this.restartsWhenLoaded = true;
+  }
+
+  onStart() {
+    const { game } = this;
+    const c = this.dream.center;
+    this.boss = game.add(new Thomage({ x: c.x, y: this.dream.y, z: c.z + 5 }));
+    this.boss.onDefeated = () => {
+      this.boss = null;
+      this.readyToTurnIn('Thomage is beaten! The nightmares are gone.');
+    };
+    this.setObjective('Defeat Thomage, the Nightmare Mage (hit him when he gets tired!)', this.boss);
+  }
+
+  update() {
+    const { game } = this;
+    if (this.stage !== 'active' || !game.player.dead || !this.boss) return;
+    game.remove(this.boss);
+    this.boss = null;
+    this.stage = 'offer';
+    game.questLog.remove(this.id);
   }
 }
 
@@ -642,7 +617,7 @@ export class SkyStrikeQuest extends Quest {
   onStart() {
     const { game } = this;
     game.player.knowsSkyStrike = true;
-    game.questLog.toast('You learned the SKY STRIKE! Jump, then swing in the air.', 5);
+    game.questLog.toast('You learned the SKY STRIKE! Jump, then swing in the air.', { seconds: 6, icon: '⚡' });
     this.posts = [];
     for (let i = 0; i < SKY_STRIKE.posts; i++) {
       const a = Math.PI * 0.75 + (i - 1) * 1.2;

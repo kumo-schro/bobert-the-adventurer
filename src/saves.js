@@ -5,10 +5,11 @@
 // remember every monster: they come back when a save is loaded, like after a fresh start.
 //
 // Loading reloads the page and sets the fresh game up from the save (like the debug checkpoints).
-// Saves from a different SAVES.version can't be loaded: bump it after big changes to the game.
+// Saves from a different SAVES.version can't be loaded: bump it after big changes to the game
+// (or teach migrate() how to bring the older saves up to date).
 
 import { Chest } from './entities/Chest.js';
-import { FORGE_SHOP, BAKERY_SHOP } from './shops.js';
+import { FORGE_SHOP } from './shops.js';
 import { SAVES } from './config.js';
 
 const STORAGE_KEY = 'bobert-saves';
@@ -28,7 +29,23 @@ function writeSaves(saves) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(saves));
 }
 
-export const canLoad = (save) => save.version === SAVES.version;
+export const canLoad = (save) => save.version === SAVES.version || save.version === 1;
+
+/**
+ * Brings a version 1 save up to date: wood, stone, arrows and golden health are gone, the dodge
+ * is everyone's now (Jackson teaches the Perfect Dodge), and the dream powers were reshuffled.
+ */
+function migrate(data, version) {
+  if (version !== 1) return data;
+  const p = data.player;
+  p.knowsPerfectDodge = p.knowsDodge;
+  p.hasDreamDash = p.hasDash;
+  p.food = (p.food ?? []).map((id) => ({ goldenApple: 'apple', stew: 'bread', feast: 'pie' })[id] ?? id);
+  const q = data.quests;
+  if (q.wood) q.planks = { stage: q.wood.stage };
+  if (q.stone) q.wellStones = { stage: q.stone.stage };
+  return data;
+}
 
 /** Save the game under `name`. A save with the same name is replaced. Returns the save. */
 export function saveGame(game, name) {
@@ -69,7 +86,7 @@ export function applyPendingLoad(game) {
   }
   const save = id && listSaves().find((s) => s.id === id);
   if (!save || !canLoad(save)) return null;
-  apply(game, save.data);
+  apply(game, migrate(save.data, save.version));
   game.saveName = save.name;
   return save;
 }
@@ -77,9 +94,9 @@ export function applyPendingLoad(game) {
 // ---- What goes into a save ----
 
 const PLAYER_FIELDS = [
-  'coins', 'health', 'tempHealth', 'arrows', 'wood', 'stone', 'food', 'buffs', 'heartCrystals',
-  'hasConduit', 'magic', 'swiftCrystal', 'seaCrystal', 'luckyCrystal', 'visitedFire', 'fame', 'visitedTulane', 'knowsSpin', 'knowsSkyStrike', 'knowsDodge', 'hasDash', 'hasInvisibility', 'hasDoubleJump', 'hasSpeedBoots',
-  'hasDreamHeal', 'hasStarShield', 'hasCrystal', 'hasKey', 'visitedJungle', 'canSwimFromBeach',
+  'coins', 'health', 'food', 'buffs', 'heartCrystals', 'hasConduit', 'magic', 'swiftCrystal', 'seaCrystal', 'luckyCrystal',
+  'visitedFire', 'fame', 'visitedTulane', 'knowsSpin', 'knowsSkyStrike', 'knowsPerfectDodge', 'hasDoubleJump', 'hasDreamDash',
+  'hasDreamHeal', 'hasCrystal', 'hasKey', 'visitedJungle', 'canSwimFromBeach',
 ];
 
 /** Every quest in the game (they all belong to someone), in the order they're given out. */
@@ -101,11 +118,10 @@ function collect(game) {
     swordTier: p.swordTier,
     shieldTier: p.shieldTier,
     bowTier: p.bowTier,
-    axeTier: p.axeTier,
-    pickaxeTier: p.pickaxeTier,
     armor: p.armor,
     position: { x: pos.x, y: p.boat ? 0 : pos.y, z: pos.z },
     facing: p.model.root.rotation.y,
+    spawn: { x: p.spawn.x, y: p.spawn.y, z: p.spawn.z }, // the last save crystal touched
     swimming: p.swimming,
     inBoat: !!p.boat,
     look: p.look,
@@ -119,7 +135,6 @@ function collect(game) {
       time: game.dayNight.time,
       forgeBuilt: FORGE_SHOP.forgeBuilt,
       pipCrystalShown: !!game.pip?.crystalShown,
-      ovenUpgraded: BAKERY_SHOP.ovenUpgraded,
       boatBuilt: !!game.boat?.built,
       trapdoorOpen: !!game.quests.crystal.trapdoor.open,
       caveUnlocked: !game.charibdisCave.locked,
@@ -160,14 +175,12 @@ function applyPlayer(game, saved) {
   while (p.swordTier < saved.swordTier) p.upgradeSword();
   if (saved.bowTier >= 0) p.giveBow();
   if (saved.bowTier >= 1) p.upgradeBow();
-  if (saved.axeTier >= 0) p.giveTool('axe');
-  if (saved.axeTier >= 1) p.upgradeTool('axe');
-  if (saved.pickaxeTier >= 0) p.giveTool('pickaxe');
-  if (saved.pickaxeTier >= 1) p.upgradeTool('pickaxe');
   if (saved.armor) p.giveArmor();
   p.maxHealth += saved.heartCrystals ?? 0; // Pip's heart crystals
   for (const f of PLAYER_FIELDS) if (saved[f] !== undefined) p[f] = saved[f];
+  p.health = Math.min(p.health, p.maxHealth);
   if (saved.look) game.customizer?.wear(saved.look);
+  if (saved.spawn) p.spawn.set(saved.spawn.x, saved.spawn.y, saved.spawn.z);
 }
 
 function applyQuests(game, saved) {
@@ -193,7 +206,6 @@ function applyWorld(game, world) {
     FORGE_SHOP.forgeBuilt = true;
     FORGE_SHOP.onBuilt?.(); // the forge's big new wing
   }
-  BAKERY_SHOP.ovenUpgraded = world.ovenUpgraded;
   if (world.boatBuilt) {
     game.boat.built = true;
     game.boat.object3d.visible = true;

@@ -1,12 +1,12 @@
 // What each shop sells. Each function gets the player and returns the items for the Shop menu
 // (see ui/Shop.js for the fields). Add a new item by adding an entry to a list.
 
-import { SWORDS, FORGE, FOOD, BOW, GATHER, BUFFS, MAGIC, CRYSTALS, DREAM_ABILITIES, FAME } from './config.js';
+import { SWORDS, FORGE, FOOD, BOW, BUFFS, MAGIC, CRYSTALS, DREAM_ABILITIES, FAME } from './config.js';
 import { BLACKSMITH, BAKER, PIP_CRYSTAL } from './story.js';
 
 const U = FORGE.upgrades;
 
-/** The blacksmith's forge. Build a bigger forge (wood + stone) to unlock the upgrades. */
+/** The blacksmith's forge. Pay to build a bigger forge and unlock the upgrades. */
 export const FORGE_SHOP = {
   title: `${BLACKSMITH.name}'s Forge`,
   greeting: BLACKSMITH.greeting,
@@ -17,7 +17,7 @@ export const FORGE_SHOP = {
       {
         name: 'Shield',
         icon: '🛡️',
-        description: 'Hold J to block attacks. (You can’t swing your sword while blocking.)',
+        description: 'Hold J to block attacks from the front. (You can’t swing while blocking.)',
         price: FORGE.prices.shield,
         owned: player.hasShield,
         buy: () => player.giveShield(),
@@ -25,49 +25,19 @@ export const FORGE_SHOP = {
       {
         name: 'Bow',
         icon: '🏹',
-        description: `Press K to draw and shoot (takes 1 second). Aims at the closest monster in front of you. Comes with ${BOW.startArrows} arrows.`,
+        description: 'Press K to shoot. It aims at the closest monster in front of you, and never runs out of arrows.',
         price: FORGE.prices.bow,
         owned: player.hasBow,
         buy: () => player.giveBow(),
       },
-      {
-        name: `${FORGE.arrowsPerBundle} Arrows`,
-        article: '',
-        icon: '➶',
-        description: `You have ${player.arrows}/${BOW.maxArrows} arrows. When you run out, you can't shoot until you buy more.`,
-        price: FORGE.prices.arrows,
-        locked: !player.hasBow ? 'Buy the Bow first' : player.arrows >= BOW.maxArrows ? 'Quiver full' : null,
-        lockedMessage: !player.hasBow ? 'Arrows are no good without a bow! Buy the Bow first.' : `Your quiver is full! It holds ${BOW.maxArrows} arrows.`,
-        buy: () => player.addArrows(FORGE.arrowsPerBundle),
-        bought: 'Here you go. Make every arrow count!',
-      },
-      {
-        name: 'Axe',
-        icon: '🪓',
-        description: 'Chop trees for wood: press T next to a tree.',
-        price: FORGE.prices.axe,
-        owned: player.hasAxe,
-        buy: () => player.giveTool('axe'),
-      },
-      {
-        name: 'Pickaxe',
-        icon: '⛏️',
-        description: 'Mine boulders for stone: press T next to a big rock.',
-        price: FORGE.prices.pickaxe,
-        owned: player.hasPickaxe,
-        buy: () => player.giveTool('pickaxe'),
-      },
     ];
     if (!this.forgeBuilt) {
-      const b = FORGE.biggerForge;
       list.push({
         section: 'Upgrade',
         name: 'Bigger Forge',
         icon: '🔥',
-        description: 'Help the blacksmith build a bigger forge, and they can make upgraded gear: the Knight Sword, Power Bow, Iron Shield, Knight Armor and steel tools!',
-        price: b.coins,
-        wood: b.wood,
-        stone: b.stone,
+        description: 'Help build a bigger forge, and the blacksmith can make the Knight’s Sword, the Power Bow, the Iron Shield and Knight Armor!',
+        price: FORGE.biggerForge,
         buy: () => {
           this.forgeBuilt = true;
           this.onBuilt?.();
@@ -79,7 +49,7 @@ export const FORGE_SHOP = {
     const upgrade = (item) => ({ bought: 'Fresh from the big forge. Use it well!', ...item });
     list.push(
       upgrade({
-        section: 'Upgraded gear (from the big forge)',
+        section: 'From the big forge',
         name: SWORDS[1].name,
         icon: '⚔️',
         description: 'Hits twice as hard and reaches farther.',
@@ -90,10 +60,10 @@ export const FORGE_SHOP = {
       upgrade({
         name: 'Power Bow',
         icon: '🎯',
-        description: `Hold K to charge: +1 damage for every ${BOW.secondsPerDamage} seconds you hold it, up to ${BOW.maxDamage}.`,
+        description: `Hold K to charge a stronger arrow, up to ${BOW.maxDamage} damage.`,
         price: U.powerBow,
         owned: player.bowTier >= 1,
-        locked: player.hasBow ? null : 'Buy the Bow first',
+        locked: player.hasBow ? null : 'Needs the Bow',
         lockedMessage: 'I can only upgrade a bow you already have. Buy the Bow first!',
         buy: () => player.upgradeBow(),
       }),
@@ -103,77 +73,39 @@ export const FORGE_SHOP = {
         description: 'Walk at full speed while blocking, and monsters bounce off it.',
         price: U.ironShield,
         owned: player.shieldTier >= 1,
-        locked: player.hasShield ? null : 'Buy the Shield first',
+        locked: player.hasShield ? null : 'Needs the Shield',
         lockedMessage: 'I can only make your shield stronger once you have one. Buy the Shield first!',
         buy: () => player.upgradeShield(),
       }),
       upgrade({
         name: 'Knight Armor',
         icon: '🦺',
-        description: 'Sturdy steel armor: you can take more hits before you get knocked out.',
+        description: `Sturdy steel armor: ${FORGE.armorHearts} more health.`,
         price: U.armor,
         owned: player.armor,
         buy: () => player.giveArmor(),
-      }),
-      upgrade({
-        name: 'Steel Axe',
-        icon: '🪓',
-        description: `Chops ${GATHER.steelBonus} wood at a time instead of 1.`,
-        price: U.steelAxe,
-        owned: player.axeTier >= 1,
-        locked: player.hasAxe ? null : 'Buy the Axe first',
-        buy: () => player.upgradeTool('axe'),
-      }),
-      upgrade({
-        name: 'Steel Pickaxe',
-        icon: '⛏️',
-        description: `Mines ${GATHER.steelBonus} stone at a time instead of 1.`,
-        price: U.steelPickaxe,
-        owned: player.pickaxeTier >= 1,
-        locked: player.hasPickaxe ? null : 'Buy the Pickaxe first',
-        buy: () => player.upgradeTool('pickaxe'),
       }),
     );
     return list;
   },
 };
 
-/** Hana's bakery. After you upgrade her oven (wood + stone) she bakes special food that gives golden extra health. */
+/** Hana's bakery: food heals you (press F to eat). */
 export const BAKERY_SHOP = {
   title: `${BAKER.name}'s Bakery`,
   greeting: BAKER.greeting,
-  ovenUpgraded: false,
   items(player) {
-    const foods = FOOD.menu.filter((f) => !f.upgraded || this.ovenUpgraded);
-    const list = foods.map((food) => ({
+    return FOOD.menu.map((food) => ({
       name: food.name,
       article: 'a',
       icon: food.icon,
-      section: food.upgraded && food === foods.find((f) => f.upgraded) ? 'Special food (golden health!)' : undefined,
-      description: `${food.heals >= 99 ? 'Makes you feel all better' : food.heals >= 2 ? 'Heals you a lot' : 'Heals you a little'}${
-        food.extra ? `, and gives you ${food.extra >= 3 ? 'lots of ' : ''}extra golden health that soaks up the next hits` : ''
-      }. (You have ${player.food.length}/${FOOD.carry} food.)`,
+      description: `${food.heals >= 99 ? 'Heals you all the way' : `Heals ${food.heals} health`}. (You have ${player.food.length}/${FOOD.carry} food.)`,
       price: food.price,
       locked: player.food.length >= FOOD.carry ? 'Bag full' : null,
       lockedMessage: `Your bag is full! You can carry ${FOOD.carry} things. Eat something first (press F).`,
       buy: () => player.addFood(food.id),
       bought: BAKER.bought,
     }));
-    if (!this.ovenUpgraded) {
-      const o = FOOD.ovenUpgrade;
-      list.push({
-        section: 'Upgrade',
-        name: 'Bigger Oven',
-        icon: '🔥',
-        description: 'Help Hana build a bigger oven, and she can bake special food that gives extra golden health!',
-        price: o.coins,
-        wood: o.wood,
-        stone: o.stone,
-        buy: () => (this.ovenUpgraded = true),
-        bought: 'What a wonderful oven! Look, now I can bake Golden Apples, Hearty Stew and a Royal Feast!',
-      });
-    }
-    return list;
   },
 };
 
@@ -251,27 +183,27 @@ export const BOAT_MENU = {
 };
 
 /**
- * The dream shrine (Aleli): sells the magic conduit, which holds the magic points that dream
- * abilities run on. The abilities themselves are taught by the Dream Keeper's quests; the shrine
+ * The dream shrine (Aleli): sells the magic conduit, which gives you the Star Burst (press L) and
+ * holds the magic it runs on. The Dream Keeper's quests teach the other dream abilities; the shrine
  * lists them so you can see which quest teaches which.
  */
 export const DREAM_SHRINE = {
   title: '✨ Dream Shrine',
-  greeting: 'Dream powers run on magic, dreamer. A conduit holds it, and every monster you defeat fills it up.',
+  greeting: 'Dream magic, dreamer! A conduit holds it, and every monster you defeat fills it up.',
   quests: {}, // set in main.js: ability id -> the quest that teaches it
   items(player) {
     const list = [
       {
         name: 'Magic Conduit',
         icon: '🔮',
-        description: `Holds up to ${MAGIC.max} magic points for your dream abilities (it comes with ${MAGIC.starting}). Defeat monsters to fill it up.`,
+        description: `Gives you the STAR BURST: press L for a ring of starlight that blasts monsters away and shields you. Each one uses ${MAGIC.burstCost} magic; defeat monsters for more.`,
         price: MAGIC.conduitPrice,
         owned: player.hasConduit,
         buy: () => {
           player.hasConduit = true;
           player.magic = Math.max(player.magic, MAGIC.starting);
         },
-        bought: 'Feel it hum? Every monster you defeat now gives you magic. Bigger monsters give more!',
+        bought: 'Feel it hum? Press L to let the stars out! Every monster you defeat gives you more magic.',
       },
     ];
     Object.entries(DREAM_ABILITIES).forEach(([id, a], i) => {
@@ -280,7 +212,7 @@ export const DREAM_SHRINE = {
         section: i === 0 ? 'Dream abilities (the Dream Keeper teaches them)' : undefined,
         name: a.name,
         icon: a.icon,
-        description: `${a.how[0].toUpperCase()}${a.how.slice(1)}. Uses ${MAGIC.cost[id]} magic${id === 'speedBoots' ? ' a second while you move' : ''}.`,
+        description: `${a.how[0].toUpperCase()}${a.how.slice(1)}.`,
         price: 0,
         owned: player[a.flag],
         locked: player[a.flag] ? null : 'Quest',
@@ -309,23 +241,13 @@ export const PIP_SHOP = {
     {
       name: 'Magic Crystal',
       icon: '💎',
-      description: `Fills up ${CRYSTALS.magic.points} magic points for your dream abilities.`,
+      description: 'Fills your magic all the way up.',
       price: CRYSTALS.magic.price,
       locked: !player.hasConduit ? 'Needs a conduit' : player.magic >= MAGIC.max ? 'Magic full' : null,
       lockedMessage: !player.hasConduit
         ? 'Ooh, this one is magic! You need a magic conduit to hold it. They say they sell them in the dream dimension...'
         : 'Your magic is already full!',
-      buy: () => player.addMagic(CRYSTALS.magic.points),
-      bought: 'Zing! Magic, right into your conduit.',
-    },
-    {
-      name: 'Big Magic Crystal',
-      icon: '🔷',
-      description: 'Fills your magic all the way up.',
-      price: CRYSTALS.bigMagic.price,
-      locked: !player.hasConduit ? 'Needs a conduit' : player.magic >= MAGIC.max ? 'Magic full' : null,
-      lockedMessage: !player.hasConduit ? 'You need a magic conduit to hold this much magic!' : 'Your magic is already full!',
-      buy: () => player.addMagic(CRYSTALS.bigMagic.points),
+      buy: () => player.addMagic(MAGIC.max),
       bought: 'WHOOSH! That is a LOT of magic.',
     },
     {

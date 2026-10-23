@@ -31,7 +31,9 @@ export class Slime extends Monster {
 
   /** The Gelationus Slime from the merchant's quest: big, tough, and carrying the artifact. */
   static boss(position) {
-    return new Slime(position, { size: 0.7, health: QUEST.slimeHealth, artifact: true, chaseRange: 11 });
+    const slime = new Slime(position, { size: 0.7, health: QUEST.slimeHealth, artifact: true, chaseRange: 11 });
+    slime.boss = 'The Gelationus Slime';
+    return slime;
   }
 
   buildModel(color, glow, hasArtifact) {

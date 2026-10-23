@@ -7,8 +7,9 @@
  * pushOut() moves a circle at `pos` (radius `radius`) so it no longer overlaps any of them.
  */
 export function pushOut(pos, radius, colliders, ignore = null) {
+  const skip = typeof ignore === 'function' ? ignore : (c) => c === ignore;
   for (const c of colliders) {
-    if (c === ignore) continue;
+    if (skip(c)) continue;
     if (c.isSolid) pushOutOfGrid(pos, radius, c);
     else if (c.halfX !== undefined) pushOutOfBox(pos, radius, c);
     else pushOutOfCircle(pos, radius, c);

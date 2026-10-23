@@ -28,6 +28,7 @@ export class JacksonFighter extends Monster {
       colors: ['#ff8a1f', '#d9293f', '#ffffff'],
       touchDamage: false,
     });
+    this.boss = 'Master Jackson';
     this.model = model;
     this.body.add(model.root);
     this.noCoins = true; // a master, not a monster

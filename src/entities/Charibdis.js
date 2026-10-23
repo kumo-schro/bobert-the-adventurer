@@ -67,6 +67,7 @@ export class Charibdis extends Monster {
       aquatic: true,
       touchDamage: false,
     });
+    this.boss = 'Charibdis';
     this.awake = false;
     this.whirling = false;
     this.phaseTimer = 0;

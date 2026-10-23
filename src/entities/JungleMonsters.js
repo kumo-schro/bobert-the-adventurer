@@ -324,6 +324,7 @@ export class Vine extends Monster {
       colors: [VINE_GREEN, '#ff3b8d', '#ffd23f'],
       touchDamage: false,
     });
+    this.boss = 'The Viniac';
     this.isVine = true;
     this.slams = [];
     this.slamTimer = 2;
@@ -434,6 +435,7 @@ const OAK_SPIN_REACH = 3.2;
 export class OakFighter extends Monster {
   constructor({ x, z }, model) {
     super({ x, z, health: 8, damage: 10, radius: 0.6, barHeight: 2.6, colors: ['#3fae3a', '#8a5a35', '#ffd23f'], touchDamage: false });
+    this.boss = 'Master Oak';
     this.model = model;
     this.body.add(model.root);
     this.model.armR.rotation.order = 'YXZ';

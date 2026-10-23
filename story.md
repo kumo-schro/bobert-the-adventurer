@@ -5,7 +5,7 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 (press ` in the game) can jump you.
 
 ## Characters
-- **Bobert** (you): banished from Tulane Kingdom after a sword juggling accident. Starts with a sword and 5 hearts, no shield.
+- **Bobert** (you): banished from Tulane Kingdom after a sword juggling accident. Starts with a sword and 5 health, no shield. He can roll out of the way of anything from the very start.
 - **King Stuart**: the king of Tulane Kingdom. His son, the prince, was hit by Bobert's juggling sword.
 - **The Tulane Herald**: comes to Crestview once Bobert is famous again.
 - **The Merchant**: purple robe, white beard, travels with a big backpack. Runs the market stall.
@@ -29,8 +29,10 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 - **Ollie**: a kid who looks after the save stones, by the one in the village.
 
 ## Things that are true everywhere
-- Every monster Bobert defeats drops coins: its health plus its attack damage (at least 1). Barrett's Lucky Tail doubles them, and Pip's Lucky Crystal adds 2 more.
-- There's a **save point** (a glowing crystal on a stone stand) on every island: the village, the tower island, every little island, the jungle, the fire island and the dream dimension. Walking up to one saves the game straight away, under the name of the adventure you're playing (the first one asks you to name it).
+- Every monster Bobert defeats drops coins: its health plus its attack damage (at least 1). Barrett's Lucky Tail doubles them, and Pip's Lucky Crystal adds 2 more. The coins pop out and fly to him, and when he's hurt, monsters sometimes drop a little health too.
+- Bosses (the Gelationus Slime, the Kraken, the Sea Serpent, Charibdis, Master Oak, the Viniac, Master Jackson, Velizar and King Stuart) show a big health bar at the top of the screen.
+- There's a **save point** (a glowing crystal on a stone stand) on every island: the village, the tower island, every little island, the jungle, the fire island, the dream dimension and Tulane Kingdom. Walking up to one saves the game straight away, under the name of the adventure you're playing (the first one asks you to name it).
+- If Bobert is knocked out, he gets back up at the last save point he touched (or in the village, if he hasn't touched one yet).
 - Characters give clues rather than directions. The quest panel and its arrow always show what to do next.
 
 ## Prologue: Banished from Tulane
@@ -39,7 +41,7 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 - Bobert juggles swords for **King Stuart** and his son, the prince. One sword flies off... and hits the prince.
 - The king banishes Bobert forever. Tulane soldiers march him to **Crestview Village**, while the story is told:
   > After being banished from the Tulane Kingdom, Bobert is taken to Crestview Village as punishment for killing King Stuart's son in a sword juggling accident. You must work your way to fame again through acts of kindness and helping others in the village. Once more powerful, you must come and do your duty by killing the king of Tulane Kingdom. So, are you ready? Because your story starts... NOW.
-- The intro plays once for a new adventure (after picking Bobert's look). Esc or the Skip button skips it.
+- The game opens on a title screen: Continue (the newest saved game), New adventure, or Load a saved game. The intro plays once for a new adventure (after picking Bobert's look). Esc or the Skip button skips it.
 - **Fame:** every quest Bobert finishes gives 10 fame (shown as ⭐ in the status bar).
 
 ## Chapter 1: The village in danger
@@ -60,11 +62,12 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 *Checkpoints: `merchant-done`, `geared-up`*
 - Now the villagers ask for help, and come up with new jobs over time:
   - Pip: find 6 lost gems, then 5 seashells on the beaches.
-  - Jonah: defeat 5 blue slimes in his meadow, then bring 10 wood for his fence.
+  - Jonah: defeat 5 blue slimes in his meadow, then find the 5 red fence planks the wind blew away.
   - Elda: step on the rainbow stones in order, then backwards.
-  - Julian: bring 8 stone to fix the well.
-- The blacksmith sells a shield, a bow and arrows, an axe and a pickaxe.
-- Chop wood and mine stone to build a bigger forge (it unlocks the Knight's Sword, Power Bow, Iron Shield, armor and steel tools) and a bigger oven for Hana (special food with golden hearts).
+  - Julian: find 5 blue stones that rolled away from the old well.
+- The blacksmith sells a shield and a bow (it never runs out of arrows).
+- Pay 60 coins to build a bigger forge: it unlocks the Knight's Sword, Power Bow, Iron Shield and Knight Armor.
+- Hana sells apples, bread and berry pie, which heal you (carry up to 5).
 - Every five minutes day turns to night. At night everyone in town (even the shopkeepers) goes to bed and monsters get stronger.
 - Monsters that spot Bobert keep chasing him until he gets far away.
 
@@ -78,7 +81,7 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 - Bobert brings the crystal back, and Max lets him keep it.
 - Pip, who collects crystals, gasps when he sees it. He tells Bobert about Old Man Ward, who lives under the old trapdoor by the road, and opens a crystal shop: a little stall on the plaza, where he works from then on.
   - **Heart Crystal** (80 coins): 1 more max health, up to 2 of them.
-  - **Magic Crystal** (15 coins): fills up 30 magic points. **Big Magic Crystal** (40 coins): fills it all the way. (Both need a magic conduit, see chapter 11.)
+  - **Magic Crystal** (30 coins): fills your magic all the way. (It needs a magic conduit, see chapter 11.)
   - **Frost Crystal** (30 coins): Frosty Feet for five minutes, so lava can't burn you (see chapter 12).
   - **Swift Crystal** (120 coins): walk and run a little faster, for good.
   - **Sea Crystal** (90 coins): swim much faster, for good.
@@ -94,7 +97,7 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 ## Chapter 6: The key
 *Checkpoints: `kraken`, `charibdis-gate`*
 - The key was swallowed by either the Kraken or the Sea Serpent.
-- The Kraken (10 hits) slams its tentacles down where a red circle shows: 5 hearts.
+- The Kraken (10 hits) slams its tentacles down where a red circle shows: 5 damage.
 - The Sea Serpent (10 hits) is a huge, fast eel.
 - Defeating either one drops the golden key.
 
@@ -104,16 +107,16 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 - Charibdis (30 hits) lives in a big flooded cave and spins a whirlpool that hurts anyone caught in it every 3 seconds.
 - The whirlpool spins for 5 seconds, then stops for 9, then starts again.
 - While it spins, the water shields Charibdis, and it spits water balls at anyone outside.
-- While it's stopped, Bobert can attack, but Charibdis bites anyone who gets too close (3 hearts).
+- While it's stopped, Bobert can attack, but Charibdis bites anyone who gets too close (3 damage).
 - Bobert slays Charibdis and tells Ward, who gives him his treasure (150 coins).
 
 ## Chapter 8: The jungle island
 *Checkpoint: `jungle`*
 - Captain Max takes Bobert through the sea currents to a wild jungle island.
-- Giant Venus fly traps can't move and bite slowly, but each bite is 5 hearts. One hit defeats them.
+- Giant Venus fly traps can't move and bite slowly, but each bite does 5 damage. One hit defeats them.
 - Snakes and gorillas roam the jungle. An old temple hides treasure.
 - Bobert defeats all the fly traps and Max brings him home a hero.
-- Now that Bobert has seen the jungle, he can build a boat at the dock (40 wood) to sail the ocean or go back to the jungle any time.
+- Now that Bobert has seen the jungle, he can build a boat at the dock (60 coins) to sail the ocean or go back to the jungle any time.
 - *Checkpoint: `boat`*
 
 ## Chapter 9: Master Oak
@@ -128,24 +131,26 @@ Edit anything here (add details, change what happens, add new chapters) and ask 
 ## Chapter 10: The Viniac
 *Checkpoint: `vine`*
 - The Viniac, the boss of the jungle, grows to the east: a giant carnivorous plant (70 health). Up to three of its arms can be coming down at once.
-- Its thorny arms slam down like the Kraken's (5 hearts). A red circle shows where.
+- Its thorny arms slam down like the Kraken's (5 damage). A red circle shows where.
 - When the Viniac is beaten, a shimmering portal opens where it grew.
 
 ## Chapter 10½: Master Jackson
 *Checkpoint: `jackson`*
 - After the Viniac, Oak tells Bobert about his old friend Master Jackson, who trains alone on a little island far east of the village.
 - Jackson only trains Oak's students. He challenges Bobert to a duel: he dodges every sword swing, arrow and Sky Strike. Only a spin attack (it comes from every side at once) can hit him. He has 6 health, and darts in with quick jabs of his wooden practice sword (2 damage).
-- When Bobert wins, Jackson teaches him to **dodge**: press X to leap out of the way, and nothing can hurt him mid-leap. Jackson pays 60 coins.
+- When Bobert wins, Jackson teaches him the **Perfect Dodge**: roll through an attack just as it lands, and time slows down for a moment, and his next swing is a big counter-attack (2 extra damage). Jackson pays 60 coins.
 
 ## Chapter 11: The dream dimension
 *Checkpoints: `dream`, `dream-powers`*
 - The portal leads to floating pastel islands in a starry purple sky, joined by rainbow bridges.
-- Aleli at the shrine sells a **magic conduit** (60 coins). It holds up to 100 magic points (it comes with 20), and dream powers run on magic.
+- Aleli at the shrine sells a **magic conduit** (60 coins). It holds up to 100 magic points (it comes with 50), and gives Bobert his one dream power: the **Star Burst** (press L, 25 magic). A ring of starlight blasts every monster around him (3 damage, and it throws them back) and wraps him in a star shield that blocks the next hit.
 - Every monster Bobert defeats (once he has the conduit) gives magic points: its health plus its damage, divided by 4, and at least 1.
-- The Dream Keeper's quests each teach two dream powers:
-  - Catch the fallen stars: **Double Jump** (press Space again in mid-air, 3 magic) and **Speed Boots** (faster while you have magic, 1 magic a second while moving).
-  - Chase away the nightmare wisps: **Dash** (press L, 5 magic) and **Invisibility** (press I, 20 magic).
-  - Jump up the cloud stones to the summit: **Dream Heal** (press U to heal all the way, once a minute, 25 magic) and **Star Shield** (press O for a bubble that blocks the next 3 hits, 20 magic).
+- The Dream Keeper's quests each teach one dream ability. None of them needs a new key:
+  - Catch the fallen stars: **Double Jump** (jump again in mid-air).
+  - Chase away the nightmare wisps: **Dream Dash** (Bobert's roll becomes a long dash that hurts monsters he goes through).
+  - Jump up the cloud stones to the summit: **Dream Heal** (the Star Burst heals 2 health too).
+- Then the Dream Keeper's last quest: **Thomage, the Nightmare Mage** (40 health), who wants the whole dream for himself. He floats over the middle island, out of reach of a sword, and casts spells (his staff glows first): a fan of star bolts (2 damage; roll through them!) and rune circles that light up around Bobert and erupt (2 damage). After three spells he sinks down, tired: that's the moment to hit him with the sword. Arrows, the Star Burst, or a jump and a swing reach him in the air. At half health he casts faster and teleports. The Dream Keeper pays 200 coins.
+- *Checkpoint: `thomage`*
 - Wandering wisps float around the islands and come back after a while, so there's always a little magic to collect.
 
 ## Chapter 12: The fire island

@@ -1,6 +1,5 @@
 // All the words characters say live here, so the story is easy to read and change.
 
-import { MENU_KEYS } from './controls.js';
 
 export const MAIN_QUEST = {
   title: 'The Precious Artifact',
@@ -138,11 +137,11 @@ Object.assign(SIDE_QUESTS, {
     title: 'Fence Mending',
     text: {
       offer: [
-        'Those slimes squashed my fence flat! I need wood to build a new one.',
-        'Could you bring me 10 wood? Trees don\'t chop themselves... but the blacksmith sells just the thing.',
+        'Those slimes squashed my fence flat, and the wind blew the planks all over the island!',
+        'Could you find my 5 fence planks? Look out in the meadows. They\'re hard to miss: bright red paint!',
       ],
-      active: ['10 wood for my fence, please. There\'s no shortage of trees around here!'],
-      turnIn: ['That is plenty of wood! My fence will be stronger than ever. Thank you, partner!'],
+      active: ['5 red fence planks, out in the meadows somewhere. That wind sure was strong!'],
+      turnIn: ['All five planks! My fence will be stronger than ever. Thank you, partner!'],
       complete: ['Not a single slime has gotten through my new fence.'],
     },
   },
@@ -166,10 +165,10 @@ Object.assign(SIDE_QUESTS, {
     text: {
       offer: [
         'Lovely day! Say, the old well is getting a bit wobbly.',
-        'Could you bring me 8 stone to fix it? Big rocks hold good stone, if you have the right tool.',
-        `And a tip: press ${MENU_KEYS.panels} to see your quests and controls, and ${MENU_KEYS.controls} to change the keys!`,
+        'Some of its old blue stones rolled away down the hills. Could you find 5 of them for me?',
+        'And a tip: press Tab to see all your quests, and Esc for the menu!',
       ],
-      active: ['8 stone for the well, please! The big rocks around the island are full of it.'],
+      active: ['5 blue well stones, rolled off across the island. They glow a little, like the well water.'],
       turnIn: ['Wonderful! The well will be good as new. Here, take these coins.'],
       complete: [
         'Lovely day for a walk! Drag the mouse, or press Q and E to turn the camera. C puts it right behind you.',
@@ -273,16 +272,17 @@ Object.assign(SIDE_QUESTS, {
       locked: ['Hm? Who are you? I only train the students of my old friend, Master Oak.'],
       offer: [
         'Oak sent you? That old tree! Welcome, welcome. I am Master Jackson.',
-        'I teach the art of DODGING. But first, you must land a hit on me... and nobody has ever hit Master Jackson!',
+        'I teach the art of the PERFECT DODGE. But first, you must land a hit on me... and nobody has ever hit Master Jackson!',
         'Swing, shoot, slam: I will dodge them all. Well... almost all. Let us see what Oak taught you. Begin!',
       ],
       active: ['Land hits on Master Jackson! He dodges almost everything... what did Master Oak teach you?'],
       turnIn: [
         'Oof! A spin attack! Nobody can dodge something that comes from every side at once. Well fought!',
-        'Now my secret: press X to DODGE. You leap out of the way, and nothing can touch you in the middle of a leap.',
+        'Now my secret: the PERFECT DODGE. When a blow is about to land, roll right through it.',
+        'Time slows down for you, and your very next swing is a mighty counter-attack!',
       ],
       complete: [
-        'Remember: X to dodge. Leap away just before a hit lands!',
+        'Remember: roll through the blow just as it lands, then strike back!',
         'Oak and I learned everything from old Master Zach. They say he could dodge raindrops. He went to live on an island toward the sunset.',
       ],
     },
@@ -323,11 +323,11 @@ Object.assign(SIDE_QUESTS, {
     text: {
       offer: [
         'Welcome, dreamer. I am the Dream Keeper. This is where dreams are made.',
-        'Some of my stars have fallen onto the dream islands. Catch them all and I will teach you two dream powers.',
-        'Dream powers run on magic. Aleli at the shrine sells a magic conduit to hold it, and every monster you defeat fills it up.',
+        'Some of my stars have fallen onto the dream islands. Catch them all and I will teach you a dream power.',
+        'And visit Aleli at the shrine. Her magic conduit lets you call down the STAR BURST.',
       ],
       active: ['My stars fell wherever the rainbows lead.'],
-      turnIn: ['My stars! They shine so brightly again. Now: DOUBLE JUMP (press Space again in the air) and SPEED BOOTS (you run faster while you have magic).'],
+      turnIn: ['My stars! They shine so brightly again. Now you can DOUBLE JUMP: jump again in the air!'],
       complete: ['Every star you saved is a happy dream for someone.'],
     },
   },
@@ -340,7 +340,7 @@ Object.assign(SIDE_QUESTS, {
         'Chase them away! They sting a little, but two good hits will pop them.',
       ],
       active: ['Chase away the nightmare wisps on the floating islands.'],
-      turnIn: ['Sweet dreams have returned! Thank you. Now: DASH (press L) and INVISIBILITY (press I).'],
+      turnIn: ['Sweet dreams have returned! Thank you. Now your roll becomes a DREAM DASH: long and fast, and it hurts any monster in your way!'],
       complete: ['No more nightmares. Well... not today.'],
     },
   },
@@ -353,8 +353,24 @@ Object.assign(SIDE_QUESTS, {
         'A star waits at the very top, for anyone brave enough to jump that high.',
       ],
       active: ['Up, up, up the clouds. The star is waiting at the top.'],
-      turnIn: ['You reached the top of the dream! You are a true dreamer. Now: DREAM HEAL (press U) and STAR SHIELD (press O).'],
+      turnIn: ['You reached the top of the dream! You are a true dreamer. Now your Star Burst heals you too: that is DREAM HEAL.'],
       complete: ['Come back whenever you like, dreamer. The dream is always here.'],
+    },
+  },
+  thomage: {
+    giver: 'Dream Keeper',
+    title: 'The Nightmare Mage',
+    text: {
+      offer: [
+        'Dreamer... I have not told you everything. Someone else lives in the dream.',
+        'Thomage. Once he was a dream wizard, but now he only makes nightmares, and he wants the whole dream for himself.',
+        'He floats where swords cannot reach, and his staff glows before every spell. Watch it!',
+        'But even a great mage gets tired. When he sinks down to rest... that is your moment.',
+      ],
+      active: ['His staff glows before every spell. When he gets tired and sinks down, strike!'],
+      turnIn: ['The nightmares are gone, and the dream is peaceful again. You are the greatest dreamer I have ever known. Take this treasure!'],
+      complete: ['Sweet dreams, hero. Sweet dreams.'],
+      later: ['Rest a while, dreamer. There is something else I must tell you, when you are ready.'],
     },
   },
 });

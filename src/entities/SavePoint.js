@@ -10,7 +10,7 @@ const REARM = 5; // walk this far away and it'll save again next time
  * A save point: a glowing crystal floating over a stone stand. There's one on every island.
  * Walk up to it and the game saves straight away, under the name you're playing as (the save
  * you loaded or last saved). If your adventure has no name yet, it opens the saved games menu so
- * you can give it one.
+ * you can give it one. It's also where you get back up if you're knocked out.
  */
 export class SavePoint extends Entity {
   constructor({ x, y = 0, z }, name = 'a save point') {
@@ -53,8 +53,9 @@ export class SavePoint extends Entity {
     if (dist > REARM) this.armed = true;
     if (!near || !this.armed || game.isUiOpen()) return;
     this.armed = false;
+    player.spawn.copy(p); // knocked out? You'll get back up here.
     if (!game.saveName) {
-      game.questLog?.toast('A save point! Give your adventure a name, and every save point will save it for you.', 5);
+      game.questLog?.toast('A save crystal! Name your adventure, and every crystal will save it for you. (If you get knocked out, you get back up at the last one you touched.)', { seconds: 7, icon: '💎' });
       game.saveMenu?.open();
       return;
     }

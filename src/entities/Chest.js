@@ -1,5 +1,6 @@
 import { Entity } from '../core/Entity.js';
 import { createChest } from '../models/gear.js';
+import { Pickup } from './Pickup.js';
 
 const OPEN_RANGE = 1.9;
 
@@ -36,8 +37,8 @@ export class Chest extends Entity {
     const top = this.object3d.position.clone().setY(1);
     game.particles?.burst(top, { count: 30, colors: ['#ffc93c', '#ffe08a', '#f0a500'], speed: 6, size: 0.16, life: 1.2 });
     if (this.coins) {
-      game.player.addCoins(this.coins);
-      game.questLog?.toast(`You found ${this.coins} gold coins!`);
+      Pickup.coins(game, top.clone().setY(top.y + 0.4), this.coins); // they burst out and fly to you
+      game.questLog?.toast(`Treasure! ${this.coins} coins!`, { icon: '💰' });
     }
     this.onOpen?.();
   }

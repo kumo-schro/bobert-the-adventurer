@@ -38,6 +38,7 @@ function flameCone(length, radius, material) {
 export class Velizar extends Monster {
   constructor({ x, z }) {
     super({ x, z, health: VELIZAR.health, damage: VELIZAR.damage, radius: 2, barHeight: 5.2, colors: ['#ff5a1f', '#a3201c', '#ffd23f'] });
+    this.boss = 'Velizar the Dragon';
     this.isVelizar = true;
     this.awake = false;
     this.state = 'walk';

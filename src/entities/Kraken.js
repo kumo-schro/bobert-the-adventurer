@@ -52,6 +52,7 @@ export class Kraken extends Monster {
       aquatic: true,
       touchDamage: false,
     });
+    this.boss = 'The Kraken';
     this.slam = null; // { x, z, timer } while a slam is coming
     this.slamCooldown = 2;
     this.buildModel();
