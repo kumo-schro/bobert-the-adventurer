@@ -35,6 +35,8 @@ const NAMES = {
   Space: 'Space',
   Enter: 'Return',
   NumpadEnter: 'Enter',
+  NumpadAdd: 'Num +',
+  NumpadSubtract: 'Num -',
   ShiftLeft: 'Shift',
   ShiftRight: 'R-Shift',
   ControlLeft: 'Ctrl',
