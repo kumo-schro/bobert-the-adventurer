@@ -3,6 +3,7 @@ import { Monster, attackTime } from './Monster.js';
 import { JACKSON } from '../config.js';
 
 const CIRCLE_DISTANCE = 2.8; // he keeps about this far away, circling you...
+const WARY_DISTANCE = 5.6; // ...or this far, out of reach of a spin, when he sees your sword sparkling
 const CIRCLE_SPEED = 2.4;
 const WINDUP = 0.45; // ...then draws back his practice sword for this long...
 const JAB_TIME = 0.2; // ...and darts in
@@ -14,7 +15,9 @@ const DODGE_SPEED = 9;
 /**
  * Master Jackson in his duel. He's the master of dodging: every sword swing, arrow and Sky Strike
  * misses as he leaps aside. Only a spin attack (it comes from every side at once) can catch him.
- * He circles you, then darts in with quick jabs of his wooden practice sword. When beaten he bows.
+ * He circles you, then darts in with quick jabs of his wooden practice sword. He's no fool: when
+ * your sword sparkles with a charged spin he keeps out of reach, so let it go as he darts in.
+ * When beaten he bows.
  */
 export class JacksonFighter extends Monster {
   constructor({ x, z }, model) {
@@ -81,16 +84,19 @@ export class JacksonFighter extends Monster {
       return;
     }
     if (this.state === 'circle') {
-      // Circle round you, keeping his distance.
-      const away = toPlayer.dist - CIRCLE_DISTANCE;
-      const vx = toPlayer.x * away * 1.5 - toPlayer.z * this.circleDir * CIRCLE_SPEED;
-      const vz = toPlayer.z * away * 1.5 + toPlayer.x * this.circleDir * CIRCLE_SPEED;
+      // Circle round you, keeping his distance (more of it if your spin is charged).
+      // He can tell when you're holding back a spin (and he won't walk into one).
+      const wary = (game.player.spinCharge ?? 0) > 0.15 || game.player.spinning;
+      const away = toPlayer.dist - (wary ? WARY_DISTANCE : CIRCLE_DISTANCE);
+      const pull = wary ? 3 : 1.5;
+      const vx = toPlayer.x * away * pull - toPlayer.z * this.circleDir * CIRCLE_SPEED;
+      const vz = toPlayer.z * away * pull + toPlayer.x * this.circleDir * CIRCLE_SPEED;
       const len = Math.hypot(vx, vz) || 1;
-      const speed = Math.min(CIRCLE_SPEED * 1.4, len);
+      const speed = Math.min(wary && away < 0 ? CIRCLE_SPEED * 2.8 : CIRCLE_SPEED * 1.4, len);
       this.velocity.x = (vx / len) * speed;
       this.velocity.z = (vz / len) * speed;
       this.moving = speed;
-      if (this.timer <= 0 && toPlayer.dist < CIRCLE_DISTANCE + 1.5) {
+      if (this.timer <= 0 && toPlayer.dist < WARY_DISTANCE + 1.5) {
         this.state = 'windup';
         this.timer = WINDUP;
       }
@@ -98,7 +104,7 @@ export class JacksonFighter extends Monster {
       this.velocity.x = this.velocity.z = 0;
       if (this.timer <= 0) {
         this.state = 'jab';
-        this.timer = JAB_TIME;
+        this.timer = Math.max(JAB_TIME, (toPlayer.dist - 1) / JAB_SPEED); // all the way in
         this.jabHit = false;
         this.jabDir = { x: toPlayer.x, z: toPlayer.z };
         game.sound?.play('swish');

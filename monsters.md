@@ -320,7 +320,7 @@ Notes:
 
 ### Master Jackson (in the duel)
 
-`src/entities/JacksonFighter.js`. He dodges every sword swing, arrow and Sky Strike; only a spin attack hits him. He doesn't flinch.
+`src/entities/JacksonFighter.js`. He dodges every sword swing, arrow and Sky Strike; only a spin attack hits him. He doesn't flinch, and he keeps out of reach while your spin is charged, so you have to let it go as he darts in to jab.
 
 | Stat | Value | Code |
 | --- | --- | --- |
@@ -328,6 +328,7 @@ Notes:
 | Jab damage | 2 | `config.js`, `JACKSON.damage` |
 | Coins | 60 (from the quest) | `config.js`, `JACKSON.reward` |
 | Circles you at | 2.8 | `CIRCLE_DISTANCE` |
+| Circles you at, when your spin is charged (out of its reach) | 5.6 | `WARY_DISTANCE` |
 | Circling speed | 2.4 | `CIRCLE_SPEED` |
 | Warning before a jab | 0.45 s | `WINDUP` |
 | Jab reach | 1.5 | `JAB_REACH` |
