@@ -178,6 +178,6 @@ export class Boat extends Entity {
       return;
     }
     const d = Math.hypot(p.x - pos.x, p.z - pos.z);
-    if (d < 3.6) game.dialog.offerInteraction('Press T to get in the boat', d, () => this.board(game));
+    if (d < 4.8) game.dialog.offerInteraction('Press T to get in the boat', d, () => this.board(game)); // (reachable from where you build it)
   }
 }
