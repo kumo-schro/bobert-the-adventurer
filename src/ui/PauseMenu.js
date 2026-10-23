@@ -2,9 +2,10 @@ import { Entity } from '../core/Entity.js';
 import { keyName } from '../controls.js';
 
 /**
- * Esc: the pause menu. The world stops while it's open. From here you can save or load, change
- * how Bobert looks, change the keys, turn the sound on or off and suggest a change; closing one
- * of those brings you back here. It also shows how to play. Lives at game.pauseMenu.
+ * Esc: the pause menu (it also opens by itself when you switch to another window). The world
+ * stops while it's open. From here you can save or load, change how Bobert looks, change the
+ * keys, turn the sound on or off and suggest a change; closing one of those brings you back
+ * here. It also shows how to play. Lives at game.pauseMenu.
  */
 export class PauseMenu extends Entity {
   constructor() {
@@ -18,6 +19,9 @@ export class PauseMenu extends Entity {
       if (button?.dataset.choice) this.pending = button.dataset.choice;
     });
     document.body.append(this.el);
+    // Switching to another window or tab pauses the game.
+    window.addEventListener('blur', () => (this.autoPause = true));
+    document.addEventListener('visibilitychange', () => document.hidden && (this.autoPause = true));
   }
 
   onAdd(game) {
@@ -118,5 +122,9 @@ export class PauseMenu extends Entity {
     }
     // Only an Esc that didn't just close something else opens the menu.
     if (input.wasPressed('Escape') && !game.uiWasOpen && !game.isUiOpen()) this.open();
+    if (this.autoPause) {
+      this.autoPause = false;
+      if (!game.isUiOpen() && !game.player.dead) this.open();
+    }
   }
 }

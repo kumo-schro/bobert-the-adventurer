@@ -5,6 +5,7 @@ import { DROPS } from '../config.js';
 const GRAVITY = 22;
 const COLLECT_DISTANCE = 0.9;
 const GIVE_UP = 8; // seconds: after this, whatever's left is just given to you
+let lastJingle = 0;
 
 const coinGeometry = new THREE.BoxGeometry(0.34, 0.34, 0.1);
 const coinMaterial = new THREE.MeshLambertMaterial({ color: '#ffc93c', emissive: '#a86b00', emissiveIntensity: 0.35 });
@@ -113,7 +114,12 @@ export class Pickup extends Entity {
     const player = game.player;
     if (this.kind === 'coin') {
       player.coins += this.value;
-      game.sound?.play('coin', { volume: 0.6 });
+      // A pile of coins arriving together jingles, rather than playing eight sounds at once.
+      const now = performance.now();
+      if (now - lastJingle > 70) {
+        lastJingle = now;
+        game.sound?.play('coin', { volume: 0.6 });
+      }
       game.statusBar?.coinPop();
     } else {
       player.heal(this.value);
