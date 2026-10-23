@@ -124,6 +124,15 @@ export class CameraRig extends Entity {
     const distance = this.zoom;
     this.seeThrough(dt, game, distance);
 
+    // A touch wider while running or rolling, for a sense of speed (the angle never changes).
+    const player = this.target;
+    const fov = 60 + (player.running ? 4 : 0) + (player.rolling ? 5 : 0);
+    const nextFov = camera.fov + (fov - camera.fov) * (dt === 0 ? 1 : 1 - Math.exp(-6 * dt));
+    if (Math.abs(nextFov - camera.fov) > 0.01) {
+      camera.fov = nextFov;
+      camera.updateProjectionMatrix();
+    }
+
     camera.position.copy(this.focus).addScaledVector(_dir, distance);
     camera.lookAt(this.focus);
     cameraFade.focus.value.copy(this.focus); // tree leaves in the way fade out
