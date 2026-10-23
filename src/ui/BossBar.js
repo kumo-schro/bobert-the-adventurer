@@ -38,6 +38,10 @@ export class BossBar extends Entity {
     return best;
   }
 
+  onAdd(game) {
+    game.bossBar = this;
+  }
+
   update(dt, game) {
     const boss = game.player.dead ? null : this.findBoss(game);
     if (boss !== this.boss) {

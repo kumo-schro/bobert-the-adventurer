@@ -55,6 +55,7 @@ import { Tips } from './ui/Tips.js';
 import { TouchControls } from './ui/TouchControls.js';
 import { Customizer, storedLook } from './ui/Customizer.js';
 import { Sound } from './core/Sound.js';
+import { Music } from './core/Music.js';
 import { ArtifactQuest } from './quest/ArtifactQuest.js';
 import {
   FindGemsQuest,
@@ -523,6 +524,7 @@ const customizer = game.add(new Customizer()); // P: pick how Bobert looks
 game.add(new PauseMenu()); // Esc (after the menus it opens, so it knows when they close)
 const titleScreen = game.add(new TitleScreen());
 game.add(new Sound()); // sword swishes and hits (M turns sound off)
+game.add(new Music()); // background music that follows the mood (pause menu turns it off)
 mainQuest.announce();
 
 // Camera last so it follows the player's final position each frame

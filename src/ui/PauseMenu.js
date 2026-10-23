@@ -4,7 +4,7 @@ import { keyName } from '../controls.js';
 /**
  * Esc: the pause menu (it also opens by itself when you switch to another window). The world
  * stops while it's open. From here you can save or load, change how Bobert looks, change the
- * keys, turn the sound on or off and suggest a change; closing one of those brings you back
+ * keys, turn the sound and music on or off and suggest a change; closing one of those brings you back
  * here. It also shows how to play. Lives at game.pauseMenu.
  */
 export class PauseMenu extends Entity {
@@ -82,6 +82,7 @@ export class PauseMenu extends Entity {
           <button data-choice="look">Customize Bobert</button>
           <button data-choice="controls">Controls</button>
           <button data-choice="sound">Sound: ${sound}</button>
+          <button data-choice="music">Music: ${game.music?.enabled ? 'On' : 'Off'}</button>
           <button data-choice="suggest">Suggest a change</button>
         </div>
       </div>
@@ -100,6 +101,9 @@ export class PauseMenu extends Entity {
     else if (choice === 'controls') this.openChild(game.controlsMenu);
     else if (choice === 'sound') {
       game.sound?.toggle(game);
+      this.render();
+    } else if (choice === 'music') {
+      game.music?.toggle();
       this.render();
     } else if (choice === 'suggest') {
       this.close();

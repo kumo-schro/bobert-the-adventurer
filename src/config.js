@@ -53,6 +53,7 @@ export const VILLAGE = {
 // Sound effects (made in code, see core/Sound.js). Press M in the game to turn them off.
 export const SOUND = {
   volume: 0.6,
+  music: 0.55, // background music, on top of the volume (core/Music.js)
 };
 
 // The character customization screen (press P): the choices for each part of Bobert, and how he

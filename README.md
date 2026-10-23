@@ -20,6 +20,8 @@ npm run build    # production build into dist/
 
 **🔊 Sound:** swinging the sword swishes, and hits sound different for monsters (squishy slimes, stony gargoyles), trees, chests and posts (a wooden knock) and rocks and walls (a clink). The sounds are made in code (`src/core/Sound.js`), no sound files. **M** turns them off.
 
+**🎵 Music:** made in code too (`src/core/Music.js`): a bass line, an arpeggio and a little melody whose mood follows where you are (sunny by day, slower at night, floaty in the dream, rolling at sea, quick and tense in a boss fight). Turn it on or off in the pause menu.
+
 **🏰 The story:** the game opens on a title screen (Continue, New adventure, Load). A new adventure starts with an intro in Tulane Kingdom: Bobert is banished after a sword juggling accident and marched to Crestview Village (Esc skips it). Finishing quests wins **fame** (⭐ in the status bar). At 120 fame, Tulane's herald comes for Bobert, and the last boss, King Stuart, waits on his throne. See `story.md`.
 
 **💎 Save points:** there's a glowing save crystal on every island. Walk up to one and it saves straight away, under the name of the adventure you're playing (the first time, it asks for a name).
